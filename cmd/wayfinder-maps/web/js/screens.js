@@ -43,6 +43,20 @@ function updateGraph(ng) {
   if (S.selected) { if (S.byNum[S.selected.num]) fillPanel(S.selected); else closePanel(); }
 }
 
+// refreshMap force-fetches the open map and folds it in, regardless of the
+// change token, so sources the version check cannot see still update.
+export function refreshMap() {
+  var eff = S.currentEffort;
+  if (!eff) return Promise.resolve();
+  return fetch("/api/graph?effort=" + encodeURIComponent(eff)).then(function(r) { return r.json(); }).then(function(g) {
+    if (S.currentEffort !== eff) return;
+    updateGraph(g);
+    return fetch("/api/version?effort=" + encodeURIComponent(eff)).then(function(r) { return r.text(); }).then(function(v) {
+      if (S.currentEffort === eff) S.lastVersion = v.trim();
+    });
+  });
+}
+
 // One poller for the whole app: only runs while a map is open, and re-checks the
 // effort mid-flight so switching maps never applies stale data.
 export function startPolling() {
