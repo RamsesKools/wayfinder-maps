@@ -51,7 +51,7 @@ function drawStars(W, H) {
   ctx.globalAlpha = 1;
 }
 
-// --- stations, glyphs, belt ------------------------------------------------
+// --- stations, glyphs ------------------------------------------------
 var GP = {afk: new Path2D(GLYPH.afk), hitl: new Path2D(GLYPH.hitl)};
 
 function hexPath(x, y, R) {
@@ -79,15 +79,6 @@ function drawWho(n, c, x, y, en) {
   ctx.strokeStyle = hexA(color, 0.5 * en); ctx.lineWidth = 1; ctx.stroke();
   ctx.save(); ctx.translate(gx - 5, gy - 5); ctx.fillStyle = hexA(color, 0.95 * en);
   ctx.fill(n.afk ? GP.afk : GP.hitl, "evenodd"); ctx.restore();
-}
-
-function drawBelt() {
-  var sum = 0, cnt = 0, lo = 1e9, hi = -1e9;
-  S.nodes.forEach(function(n) { if (n.kind === "implement") { sum += n.px; cnt++; lo = Math.min(lo, n.py); hi = Math.max(hi, n.py); } });
-  if (!cnt) return;
-  var x = sum / cnt, pad = 90;
-  ctx.strokeStyle = hexA(STATION, 0.34); ctx.lineWidth = 1.8 / Math.max(S.ec.s, 0.3); ctx.setLineDash([4, 10]);
-  ctx.beginPath(); ctx.moveTo(x, lo - pad); ctx.lineTo(x, hi + pad); ctx.stroke(); ctx.setLineDash([]);
 }
 
 // --- nodes, edges, labels ---------------------------------------------------
@@ -243,7 +234,7 @@ export function render() {
   ctx.fillStyle = "#05070d"; ctx.fillRect(0, 0, W, H);
   drawStars(W, H); // starfield backdrop never fades
   ctx.save(); ctx.globalAlpha = S.mapAlpha; ctx.translate(S.ec.x, S.ec.y); ctx.scale(S.ec.s, S.ec.s);
-  drawEndpoints(); drawBelt(); drawFog(); S.edges.forEach(drawEdge); S.nodes.forEach(drawNode);
+  drawEndpoints(); drawFog(); S.edges.forEach(drawEdge); S.nodes.forEach(drawNode);
   ctx.restore();
   // Labels take the fade as an argument rather than through globalAlpha: WebKit's
   // canvas ignores globalAlpha on fillText once a shadow is set, so text drawn that

@@ -54,12 +54,10 @@ same data, exactly as the first web UI was. Re-read-on-refresh stays. The
    label and in the detail panel. Two additions ride on top of status (see
    [the implement phase](implement-phase-design.md)):
    - implement tickets are **stations**: a lit hexagon in a teal frame instead of a
-     round star, laid out in a column past the decision columns (a faint dotted
-     line marks it). The belt is a hard floor: after every relaxation step a
+     round star, laid out in a column past the decision columns. The belt is a hard floor: after every relaxation step a
      station left of its column is pushed right, keeping its y, so edges only steer
-     it up and down. The column sits 190 past the rightmost decision column,
-     with a legible teal line. Stations never draw smaller than at 0.5x zoom. Status colours,
-     glow, pulse and rings keep their meaning.
+     it up and down. The column sits 190 past the rightmost decision column.
+     Stations never draw smaller than at 0.5x zoom. Status colours, glow, pulse and rings keep their meaning.
    - a frontier ticket carries a small badge at its upper right: a robot when an
      agent can take it alone, a person when it needs the human.
 
