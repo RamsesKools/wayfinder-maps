@@ -104,6 +104,8 @@ What this fork adds:
   edge, so the title, counts, progress bar and legend all stay visible.
   The small arrow tab on the bar's top edge folds it down to just the title, and back out.
 
+  <img src="docs/images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
+
   <img src="docs/images/hud-narrow.png" alt="The status bar at 360px wide: clipped before, wrapped onto several rows after">
 
 The [design record](docs/implement-phase-design.md) has the full plan.
