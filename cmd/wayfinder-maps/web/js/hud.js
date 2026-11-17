@@ -9,7 +9,6 @@ export function buildHud() {
   title.appendChild(el("h1", null, S.graph.name));
   if (S.graph.destination) title.appendChild(el("div", "dest", S.graph.destination));
   hud.appendChild(title);
-  hud.appendChild(el("div", "spacer"));
   var c = S.graph.counts, impl = c.implement && c.implement.total > 0;
   hud.classList.toggle("hasimpl", !!impl);
   var counts = el("div", "counts"), f = frontierSplit();
