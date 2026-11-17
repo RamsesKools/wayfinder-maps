@@ -175,9 +175,10 @@ export function fitCamera() {
   [S.startPt, S.goalPt].forEach(function(p) { if (p) { minx = Math.min(minx, p.x - p.r); miny = Math.min(miny, p.y - p.r); maxx = Math.max(maxx, p.x + p.r); maxy = Math.max(maxy, p.y + p.r); } });
   var pad = 70; minx -= pad; miny -= pad; maxx += pad; maxy += pad;
   var spanx = maxx - minx || 1, spany = maxy - miny || 1;
-  // Leave the top hint and the bottom HUD bar their own bands, and fit/centre the
+  // Leave the top bar and the bottom HUD bar their own bands, and fit/centre the
   // constellation into what is left so no star hides behind the chrome.
-  var topInset = 54, botInset = S.nodes.some(function(n) { return n.kind === "implement"; }) ? 96 : 72, availH = Math.max(120, innerHeight - topInset - botInset);
+  var topbar = document.getElementById("topbar"), topInset = Math.max(54, (topbar.offsetHeight || 0) + 26),
+     botInset = S.nodes.some(function(n) { return n.kind === "implement"; }) ? 96 : 72, availH = Math.max(120, innerHeight - topInset - botInset);
   var s = Math.min(innerWidth / spanx, availH / spany); s = clamp(s, 0.15, 1.4);
   S.cam.s = s;
   var cx = (minx + maxx) / 2, cy = (miny + maxy) / 2;

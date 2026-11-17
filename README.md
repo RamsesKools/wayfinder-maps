@@ -109,6 +109,12 @@ What this fork adds:
 
   <img src="docs/images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
 
+- **One top bar.** The Maps and Pull buttons, the project name and the hint share a single bar that wraps onto extra rows instead of overlapping, and it gives way to the detail panel when that opens.
+
+  <img src="docs/images/topbar-narrow.png" alt="The top bar at 360px wide: overlapping before, wrapped after">
+
+  <img src="docs/images/topbar-medium.png" alt="The top bar at 720px wide: before and after">
+
 The [design record](docs/implement-phase-design.md) has the full plan.
 
 ### Why these additions
