@@ -155,6 +155,34 @@ You may include any of the extras under [`skills/.optional/`](skills/.optional/)
 
 ### The binary
 
+One-liner for macOS and Linux (amd64 and arm64):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/RamsesKools/wayfinder-maps/main/scripts/install.sh | bash
+# or a pinned release
+curl -fsSL https://raw.githubusercontent.com/RamsesKools/wayfinder-maps/main/scripts/install.sh | bash -s -- --version v0.5.1
+```
+
+It resolves the release, verifies the archive against `checksums.txt`, extracts it to
+`~/.local/share/wayfinder-maps/` (honours `XDG_DATA_HOME`) and symlinks the binary into
+`~/.local/bin/`, so the double-clickable launchers stay next to the real binary.
+Flags: `--version <tag>`, `--prefix <dir>`, `--bin-dir <dir>`, `--force`. Rerunning with
+the same version is a no-op. `<prefix>/.install.json` records what was installed
+(`version`, `commit`, `installed_at`, `asset`, `sha256`).
+
+```
+~/.local/bin/
+  wayfinder-maps          -> ~/.local/share/wayfinder-maps/wayfinder-maps
+  wayfinder-maps-webview  -> ~/.local/share/wayfinder-maps/wayfinder-maps-webview  (Linux only)
+~/.local/share/wayfinder-maps/
+  wayfinder-maps
+  wayfinder-maps-webview          (Linux only)
+  wayfinder-app, wayfinder-web    (.command on macOS)
+  .install.json                   receipt: version, commit, installed_at, asset, sha256
+```
+
+Or install by hand:
+
 - Download from [Releases](https://github.com/RamsesKools/wayfinder-maps/releases) — no Go
   toolchain needed, native window and folder dialog on all three platforms. macOS uses
   WKWebView (part of the OS); Windows uses WebView2 (ships with Windows 10/11); the
