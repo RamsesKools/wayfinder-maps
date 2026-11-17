@@ -1,0 +1,40 @@
+$ gh auth token --user ghost   # not logged in
+no oauth token found for ghost
+
+$ wayfinder-pull acme/private 100 out   # active account (bob) has no access
+gh: Not Found (HTTP 404)
+exit 1
+
+$ wayfinder-pull --account ghost acme/private 100 out
+wayfinder-pull: gh account 'ghost' is not logged in (run: gh auth login)
+exit 2
+
+$ wayfinder-pull --account alice --progress acme/private 100 out
+progress 0 1
+progress 1 1
+progress 1 5
+  #101  research  closed
+progress 2 5
+  #102  research  open
+progress 3 5
+  #103  research  open
+progress 4 5
+  #104  research  closed
+progress 5 5
+wayfinder-pull: acme/private#100 -> /tmp/wm-proof/t/out (4 tickets)
+exit 0
+
+$ cat out/.source.json
+{
+  "repo": "acme/private",
+  "map": 100,
+  "auth": "gh",
+  "account": "alice"
+}
+
+$ wayfinder-pull --refresh out   # reuses the stored account
+  #101  research  closed
+  #102  research  open
+  #103  research  open
+  #104  research  closed
+wayfinder-pull: acme/private#100 -> /tmp/wm-proof/t/out (4 tickets)
