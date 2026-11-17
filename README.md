@@ -100,6 +100,15 @@ What this fork adds:
 
   <img src="docs/images/compass-column.png" alt="The same map docked in a narrow column: east is small and sparse, south fills the column and starts at the top">
 
+- **Narrow screens.** The bottom status bar wraps onto extra rows instead of running off the
+  edge, so the title, counts, progress bar and legend all stay visible.
+
+  <img src="docs/images/hud-narrow.png" alt="The status bar at 360px wide: clipped before, wrapped onto several rows after">
+
+  The small arrow tab on the bar's top edge folds it down to just the title, and back out.
+
+  <img src="docs/images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
+
 The [design record](docs/implement-phase-design.md) has the full plan.
 
 ### Why these additions

@@ -8,18 +8,24 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05070d;
 /* HUD: a flat full-width bar along the bottom, out of the constellation's way.
    Slides down and fades when a detail panel opens so the reader sees only the map. */
 #hud{position:fixed;left:0;right:0;bottom:0;z-index:5;
-  display:flex;align-items:center;gap:20px;padding:11px 22px;
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:11px 22px;
   background:linear-gradient(0deg,rgba(7,10,16,.94),rgba(11,14,21,.55));
   border-top:1px solid #1b212e;backdrop-filter:blur(10px);
   transition:transform .24s cubic-bezier(.2,.7,.2,1),opacity .24s}
 body.panelopen #hud{transform:translateY(105%);opacity:0;pointer-events:none}
-#hud .htitle{min-width:110px;flex:0 1 auto;max-width:34%}
+#hud.folded>:not(.htitle):not(.hudfold){display:none}
+#hud .hudfold{position:absolute;right:16px;top:0;transform:translateY(-100%);width:34px;height:18px;padding:0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8b93a3;
+  background:rgba(11,14,21,.85);border:1px solid #1b212e;border-bottom:0;border-radius:8px 8px 0 0}
+#hud .hudfold:hover{color:#e6e9ef}
+#hud .hudfold svg{width:10px;height:6px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+#hud.folded .hudfold svg{transform:rotate(180deg)}
+#hud .htitle{min-width:110px;flex:1 1 180px}
 #hud h1{font-size:14px;font-weight:600;margin:0;line-height:1.25;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #hud .dest{font-size:11px;color:#8b93a3;line-height:1.35;margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#hud .spacer{flex:1 1 auto}
-#hud .counts{display:flex;gap:6px;flex-wrap:nowrap}
+#hud .counts{display:flex;gap:6px;flex-wrap:wrap}
 /* .c is the pill/chip, shared by the HUD counts and the panel's meta row. */
 .c{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid #262b36;color:#8b93a3;white-space:nowrap}
 .c.resolved{color:#b9d6c4;border-color:#42604f}
@@ -40,7 +46,7 @@ a.c.pr:hover{background:rgba(95,209,192,.12);border-color:#5fd1c0}
 #hud .counts{align-items:center}
 #hud.hasimpl .counts{gap:14px}
 #hud .ckinds{padding-left:14px;border-left:1px solid #20242e}
-#hud .krow{display:flex;align-items:center;gap:6px}
+#hud .krow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
 #hud .klabel{display:flex;align-items:center;min-width:72px;font-size:11px;color:#8b93a3}
 #hud .klabel .glyph{margin-right:4px}
 /* Edge rows in the panel ("blocked by" / "blocks"): each on its own line, a
@@ -51,9 +57,9 @@ a.c.pr:hover{background:rgba(95,209,192,.12);border-color:#5fd1c0}
 #panel .erow .elabel{font-size:11px;color:#8b93a3;min-width:64px}
 .tl{cursor:pointer;font-variant-numeric:tabular-nums}
 .tl:hover{text-decoration:underline}
-#hud .bar{flex:0 1 150px;min-width:48px;height:6px;background:#20242e;border-radius:999px;overflow:hidden}
+#hud .bar{flex:0 1 120px;min-width:48px;height:6px;background:#20242e;border-radius:999px;overflow:hidden}
 #hud .bar>span{display:block;height:100%;background:linear-gradient(90deg,#6d86ad,#b9c9e0)}
-#hud .legend{display:flex;gap:12px;flex-wrap:nowrap;font-size:11px;color:#8b93a3}
+#hud .legend{display:flex;gap:4px 12px;flex-wrap:wrap;font-size:11px;color:#8b93a3}
 #hud .legend b{font-weight:400;white-space:nowrap}
 #hud .legend .glyph{margin-right:4px}
 #hud.hasimpl .legend{flex-wrap:wrap;gap:4px 12px;max-width:230px}
