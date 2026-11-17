@@ -1,0 +1,6 @@
+{
+  "repo": "acme/widgets",
+  "map": 10,
+  "auth": "gh",
+  "account": "alice"
+}
