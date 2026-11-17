@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -37,15 +38,30 @@ func readPullSource(effort string) (pullSource, bool) {
 var pullMu sync.Mutex
 
 // runPull re-pulls the effort from GitHub by running the embedded
-// wayfinder-pull in --refresh mode, which reuses the gh account recorded
-// at the first pull. It returns the script's stderr on failure.
-var runPull = func(effort string) error {
+// wayfinder-pull in --refresh mode, which reuses the gh account recorded in
+// .source.json. progress gets each "progress <done> <total>" line the script
+// prints. It returns the script's stderr on failure.
+var runPull = func(effort string, progress func(done, total int)) error {
 	pullMu.Lock()
 	defer pullMu.Unlock()
-	cmd := exec.Command("bash", "-c", scripts.WayfinderPull, "wayfinder-pull", "--refresh", effort)
+	cmd := exec.Command("bash", "-c", scripts.WayfinderPull, "wayfinder-pull", "--progress", "--refresh", effort)
 	var stderr strings.Builder
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
+	out, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	sc := bufio.NewScanner(out)
+	for sc.Scan() {
+		var d, t int
+		if _, err := fmt.Sscanf(sc.Text(), "progress %d %d", &d, &t); err == nil {
+			progress(d, t)
+		}
+	}
+	if err := cmd.Wait(); err != nil {
 		msg := strings.TrimSpace(stderr.String())
 		if msg == "" {
 			msg = err.Error()

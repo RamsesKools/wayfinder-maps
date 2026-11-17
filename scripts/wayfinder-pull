@@ -3,19 +3,49 @@
 # wayfinder-maps reads. Read-only against GitHub; the .plan tree is a cache and
 # is safe to delete. Needs `gh` (logged in) and `jq`.
 #
-#   scripts/wayfinder-pull <owner/repo> <map-issue-number> [out-dir]
-#   scripts/wayfinder-pull --refresh <out-dir>
+#   scripts/wayfinder-pull [--account <gh-user>] [--progress] <owner/repo> <map-issue-number> [out-dir]
+#   scripts/wayfinder-pull [--account <gh-user>] [--progress] --refresh <out-dir>
 #
+# --account (or WAYFINDER_GH_ACCOUNT) pulls as that gh account instead of the
+# active one, via GH_TOKEN=$(gh auth token --user <gh-user>).
+# --progress also prints "progress <done> <total>" lines; the total can grow
+# mid-pull. The viewer uses them for its progress display.
 # Each pull records <out-dir>/.source.json (repo, map issue, gh auth kind and
 # account). --refresh re-pulls from it, using that account's token even if the
-# active gh account has since changed.
+# active gh account has since changed; --account on a refresh changes it.
 # Ticket numbers are the GitHub issue numbers, so #22 stays 22 everywhere.
 set -euo pipefail
 
+usage() {
+  echo "usage: wayfinder-pull [--account <gh-user>] [--progress] <owner/repo> <map-issue-number> [out-dir]" >&2
+  echo "       wayfinder-pull [--account <gh-user>] [--progress] --refresh <out-dir>" >&2
+  exit 2
+}
+
 auth=""
-account=""
-if [ "${1:-}" = "--refresh" ]; then
-  out=${2:-}
+account=${WAYFINDER_GH_ACCOUNT:-}
+want_account=$account
+refresh=""
+progress=""
+pos=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --refresh) refresh=1 ;;
+    --progress) progress=1 ;;
+    --account)
+      [ $# -ge 2 ] && [ -n "$2" ] || { echo "wayfinder-pull: --account needs a gh user name" >&2; exit 2; }
+      want_account=$2; shift ;;
+    --account=*) want_account=${1#--account=} ;;
+    -*) echo "wayfinder-pull: unknown option $1" >&2; usage ;;
+    *) pos+=("$1") ;;
+  esac
+  shift
+done
+
+emit() { [ -z "$progress" ] || echo "progress $1 $2"; }
+
+if [ -n "$refresh" ]; then
+  out=${pos[0]:-}
   if [ -z "$out" ] || [ ! -f "$out/.source.json" ]; then
     echo "wayfinder-pull: --refresh needs a pulled map dir containing .source.json" >&2
     exit 2
@@ -24,20 +54,27 @@ if [ "${1:-}" = "--refresh" ]; then
   map=$(jq -r '.map // ""' "$out/.source.json")
   auth=$(jq -r '.auth // ""' "$out/.source.json")
   account=$(jq -r '.account // ""' "$out/.source.json")
-  if [ "$auth" = "gh" ] && [ -n "$account" ]; then
-    GH_TOKEN=$(gh auth token --user "$account") \
-      || { echo "wayfinder-pull: gh account '$account' is not logged in" >&2; exit 2; }
-    export GH_TOKEN
+  if [ -n "$want_account" ]; then
+    auth=gh
+    account=$want_account
   fi
 else
-  repo=${1:-}
-  map=${2:-}
-  out=${3:-}
+  repo=${pos[0]:-}
+  map=${pos[1]:-}
+  out=${pos[2]:-}
+  if [ -n "$want_account" ]; then
+    auth=gh
+    account=$want_account
+  fi
 fi
 if [ -z "$repo" ] || [ -z "$map" ]; then
-  echo "usage: wayfinder-pull <owner/repo> <map-issue-number> [out-dir]" >&2
-  echo "       wayfinder-pull --refresh <out-dir>" >&2
-  exit 2
+  usage
+fi
+
+if [ "$auth" = "gh" ] && [ -n "$account" ]; then
+  GH_TOKEN=$(gh auth token --user "$account" 2>/dev/null) && [ -n "$GH_TOKEN" ] \
+    || { echo "wayfinder-pull: gh account '$account' is not logged in (run: gh auth login)" >&2; exit 2; }
+  export GH_TOKEN
 fi
 
 slugify() {
@@ -56,6 +93,7 @@ if [ -z "$auth" ]; then
   fi
 fi
 
+emit 0 1
 mapjson=$(gh api "repos/$repo/issues/$map")
 maptitle=$(jq -r .title <<<"$mapjson")
 mapbody=$(jq -r '.body // ""' <<<"$mapjson")
@@ -64,6 +102,7 @@ if [ -z "$out" ]; then
   out=".plan/$(slugify "$maptitle")"
 fi
 
+emit 1 1
 subs=$(gh api --paginate "repos/$repo/issues/$map/sub_issues")
 count=$(jq 'length' <<<"$subs")
 if [ "$count" = "0" ]; then
@@ -71,6 +110,8 @@ if [ "$count" = "0" ]; then
   exit 2
 fi
 
+total=$((count + 1))
+emit 1 "$total"
 rm -rf "$out"
 mkdir -p "$out/tickets"
 
@@ -167,6 +208,7 @@ for i in $(seq 0 $((count - 1))); do
   fi
 
   echo "  #$num  $type  $state${assignee:+  @$assignee}"
+  emit $((i + 2)) "$total"
 done
 
 # The map issue body is already a wayfinder map; its ticket references are

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -140,10 +141,17 @@ func TestPullEndpoint(t *testing.T) {
 	}
 	var pulled []string
 	old := runPull
-	runPull = func(e string) error { pulled = append(pulled, e); return nil }
+	var fail error
+	runPull = func(e string, progress func(done, total int)) error {
+		pulled = append(pulled, e)
+		progress(1, 3)
+		progress(2, 4)
+		return fail
+	}
 	defer func() { runPull = old }()
 	h := newServer("")
 
+	var body string
 	post := func(effort string, hdr bool) int {
 		req := httptest.NewRequest(http.MethodPost, "/api/pull?effort="+url.QueryEscape(effort), nil)
 		if hdr {
@@ -151,6 +159,7 @@ func TestPullEndpoint(t *testing.T) {
 		}
 		rec := httptest.NewRecorder()
 		h.ServeHTTP(rec, req)
+		body = rec.Body.String()
 		return rec.Code
 	}
 	if c := post(dir, false); c != http.StatusBadRequest {
@@ -159,8 +168,18 @@ func TestPullEndpoint(t *testing.T) {
 	if c := post(plain, true); c != http.StatusBadRequest {
 		t.Errorf("not a mirror: %d", c)
 	}
-	if c := post(dir, true); c != http.StatusNoContent || len(pulled) != 1 || pulled[0] != dir {
+	if c := post(dir, true); c != http.StatusOK || len(pulled) != 1 || pulled[0] != dir {
 		t.Errorf("pull: %d %v", c, pulled)
+	}
+	for _, want := range []string{"event: progress\ndata: {\"done\":2,\"total\":4}\n\n", "event: done\n"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("stream missing %q: %q", want, body)
+		}
+	}
+	fail = errors.New("gh account 'x' is not logged in")
+	post(dir, true)
+	if !strings.Contains(body, "event: error\ndata: {\"message\":\"gh account 'x' is not logged in\"}") || strings.Contains(body, "event: done") {
+		t.Errorf("error stream: %q", body)
 	}
 
 	rec := httptest.NewRecorder()

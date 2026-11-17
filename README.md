@@ -296,7 +296,7 @@ such a map back into the local layout, so `status`, `lint` and the viewer read i
 change to the reader — the tool still only knows about files.
 
 ```
-scripts/wayfinder-pull <owner/repo> <map-issue-number> [out-dir]
+scripts/wayfinder-pull [--account <gh-user>] <owner/repo> <map-issue-number> [out-dir]
 ```
 
 It needs [`gh`](https://cli.github.com) (already logged in) and `jq`; there is no token to
@@ -304,11 +304,29 @@ configure. The default out-dir is `.plan/<slug of the map's title>`, wiped and r
 each run — a cache, not a source, so nothing in it should be hand-edited and the directory
 belongs in the host repo's `.gitignore`.
 
+`--account <gh-user>` (or `WAYFINDER_GH_ACCOUNT`) pulls as that `gh` account instead of the active
+one, using `GH_TOKEN=$(gh auth token --user <gh-user>)`. If the account is not logged in, the pull
+stops with a clear message before touching anything.
+
 Each pull also writes `<out-dir>/.source.json` (repo, map issue, `gh` auth kind and account).
 `scripts/wayfinder-pull --refresh <out-dir>` re-pulls from it, using that account's token
-(`gh auth token --user`) even if the active `gh` account has changed since. The viewer shows a
-"Pull from GitHub" button for any map with a `.source.json`, running exactly that; the script is
-embedded in the binary. Maps pulled before this need one manual pull to get the file.
+(`gh auth token --user`) even if the active `gh` account has changed since; `--account` on a
+refresh switches the stored account. The viewer shows a "Pull from GitHub" button for any map with
+a `.source.json`, running exactly that; the script is embedded in the binary. Maps pulled before
+this need one manual pull to get the file.
+
+The account in use is shown next to the button:
+
+![The pull button with the gh account it pulls as](docs/images/pull-account.png)
+
+While a pull runs, the viewer shows a spinner and an `N/M items` counter. The total can grow
+mid-pull. The script prints `progress <done> <total>` lines with `--progress`, and the server
+streams them to the viewer as server-sent events. A pull ends in a done or error state; an error
+shows the script's message, e.g. an account that is not logged in.
+
+![Pull in progress: spinner and 5/13 items](docs/images/pull-progress.png)
+![Pull finished](docs/images/pull-done.png)
+![Pull failed: account not logged in](docs/images/pull-error.png)
 
 The mapping follows the GitHub adapter in the skill's setup notes. 
 Two adjustments make the round trip parse. Headings inside a resolve comment are demoted one
