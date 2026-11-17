@@ -139,6 +139,9 @@ You may include any of the extras under [`skills/.optional/`](skills/.optional/)
   starts the server and opens your browser — no terminal needed (`.command` on macOS).
 - `go install github.com/RamsesKools/wayfinder-maps/cmd/wayfinder-maps@latest`
 
+Check what you have with `wayfinder-maps --version` (the Linux helper answers
+`wayfinder-maps-webview --version`). Both print the release version, and `dev` for a local build.
+
 Skill and binary are independent — each just reads the on-disk contract.
 
 ## Why
@@ -311,6 +314,10 @@ has no GitHub representation, so a mirrored map never paints an undermined node.
 go build ./cmd/wayfinder-maps      # pure Go: status, lint, serve
 go test ./...
 ```
+
+Release builds inject the version with
+`-ldflags "-X github.com/RamsesKools/wayfinder-maps/internal/version.Version=<x.y.z>"`;
+without it `--version` prints `dev`, or the tag for a `go install ...@vX.Y.Z` build.
 
 The native window needs cgo on macOS (WKWebView); Windows is pure Go (WebView2). On
 Linux the webkit linkage lives in a separate helper, `./cmd/wayfinder-maps-webview`,
