@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/RamsesKools/wayfinder-maps/internal/ghpull"
 	"github.com/RamsesKools/wayfinder-maps/internal/version"
 	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
 )
@@ -17,11 +18,16 @@ const usage = `wayfinder-maps — inspect a wayfinder map
 usage:
   wayfinder-maps status <effort-dir>   print the frontier and the state of the map
   wayfinder-maps lint   <effort-dir>   check the map's format invariants
+  wayfinder-maps pull <owner/repo> <map-issue> [out-dir]
+                                       mirror a map kept as GitHub issues into .plan/
+  wayfinder-maps pull --refresh <out-dir>
+                                       re-pull a mirrored map from its .source.json
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window
   wayfinder-maps --version             print the version
 
 <effort-dir> holds map.md and tickets/; status/lint default to the working dir.
+pull needs gh (logged in); out-dir defaults to .plan/<slug of the map title>.
 For serve/app, [path] is optional: an effort opens straight into its map, a
 project (a folder with a .plan/) into its map list, and no path shows a splash
 with an Open Folder button and recent projects.
@@ -41,6 +47,10 @@ func main() {
 	if args[0] == "--version" {
 		fmt.Println(version.String("wayfinder-maps"))
 		return
+	}
+
+	if args[0] == "pull" {
+		os.Exit(pullCmd(args[1:], ghpull.GH, os.Stdout, os.Stderr))
 	}
 
 	cmd := args[0]

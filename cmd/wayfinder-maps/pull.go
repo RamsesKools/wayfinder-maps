@@ -1,56 +1,81 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
-	"os/exec"
-	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/RamsesKools/wayfinder-maps/scripts"
+	"github.com/RamsesKools/wayfinder-maps/internal/ghpull"
 )
 
-// pullSource is what wayfinder-pull records in <effort>/.source.json.
-type pullSource struct {
-	Repo    string `json:"repo"`
-	Map     int    `json:"map"`
-	Auth    string `json:"auth"`
-	Account string `json:"account"`
-}
+// pullSource is what a pull records in <effort>/.source.json.
+type pullSource = ghpull.Source
 
 // readPullSource reports whether the effort is a GitHub mirror made by
-// wayfinder-pull, and where from.
-func readPullSource(effort string) (pullSource, bool) {
-	var src pullSource
-	if effort == "" {
-		return src, false
-	}
-	b, err := os.ReadFile(filepath.Join(effort, ".source.json"))
-	if err != nil || json.Unmarshal(b, &src) != nil || src.Repo == "" || src.Map == 0 {
-		return src, false
-	}
-	return src, true
-}
+// wayfinder-maps pull, and where from.
+func readPullSource(effort string) (pullSource, bool) { return ghpull.ReadSource(effort) }
 
 var pullMu sync.Mutex
 
-// runPull re-pulls the effort from GitHub by running the embedded
-// wayfinder-pull in --refresh mode, which reuses the gh account recorded
-// at the first pull. It returns the script's stderr on failure.
+// newPuller is the seam for the gh runner and the environment.
+func newPuller(gh ghpull.Runner, stdout, stderr io.Writer) *ghpull.Puller {
+	return &ghpull.Puller{GH: gh, Getenv: os.Getenv, Stdout: stdout, Stderr: stderr}
+}
+
+// runPull re-pulls the effort from GitHub in-process, reusing the gh account
+// recorded at the first pull.
 var runPull = func(effort string) error {
 	pullMu.Lock()
 	defer pullMu.Unlock()
-	cmd := exec.Command("bash", "-c", scripts.WayfinderPull, "wayfinder-pull", "--refresh", effort)
-	var stderr strings.Builder
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		msg := strings.TrimSpace(stderr.String())
-		if msg == "" {
-			msg = err.Error()
+	return newPuller(ghpull.GH, io.Discard, io.Discard).Pull(ghpull.Options{Out: effort, Refresh: true})
+}
+
+// pullCmd is `wayfinder-maps pull`; it returns the exit code.
+func pullCmd(args []string, gh ghpull.Runner, stdout, stderr io.Writer) int {
+	var o ghpull.Options
+	var pos []string
+	for _, a := range args {
+		switch {
+		case a == "--refresh":
+			o.Refresh = true
+		case strings.HasPrefix(a, "-") && a != "-":
+			fmt.Fprintf(stderr, "wayfinder-maps pull: unknown option %s\n", a)
+			return 2
+		default:
+			pos = append(pos, a)
 		}
-		return fmt.Errorf("%s", msg)
 	}
-	return nil
+	if o.Refresh {
+		if len(pos) > 0 {
+			o.Out = pos[0]
+		}
+	} else {
+		if len(pos) > 0 {
+			o.Repo = pos[0]
+		}
+		if len(pos) > 1 {
+			n, err := strconv.Atoi(pos[1])
+			if err != nil || n <= 0 {
+				fmt.Fprintf(stderr, "wayfinder-maps pull: map issue number must be a positive integer, got %q\n", pos[1])
+				return 2
+			}
+			o.Map = n
+		}
+		if len(pos) > 2 {
+			o.Out = pos[2]
+		}
+	}
+	if err := newPuller(gh, stdout, stderr).Pull(o); err != nil {
+		fmt.Fprintf(stderr, "wayfinder-maps pull: %v\n", err)
+		var pe *ghpull.Error
+		if errors.As(err, &pe) {
+			return pe.Code
+		}
+		return 1
+	}
+	return 0
 }
