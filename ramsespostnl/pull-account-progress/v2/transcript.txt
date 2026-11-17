@@ -1,0 +1,47 @@
+$ wayfinder-maps pull acme/private 100 out   # active account (bob) has no access
+wayfinder-maps pull: cannot read repos/acme/private/issues/100 as gh account 'bob' (HTTP 404). Check the repo name and issue number, and that this account can see the repo; check with: gh auth status
+exit 2
+
+$ wayfinder-maps pull --account ghost acme/private 100 out
+wayfinder-maps pull: gh account 'ghost' is not logged in. Run: gh auth login
+exit 2
+
+$ wayfinder-maps pull --account alice acme/private 100 out | cat   # not a TTY: plain lines
+pulled 1/5 items
+  #101  research  closed
+pulled 2/5 items
+  #102  research  open
+pulled 3/5 items
+  #103  research  open
+pulled 4/5 items
+  #104  research  closed
+pulled 5/5 items
+wayfinder-maps pull: acme/private#100 -> out (4 tickets)
+exit 0
+
+$ cat out/.source.json
+{
+  "repo": "acme/private",
+  "map": 100,
+  "auth": "gh",
+  "account": "alice"
+}
+
+$ wayfinder-maps pull --refresh out | cat   # stored account reused
+pulled 1/5 items
+  #101  research  closed
+pulled 2/5 items
+  #102  research  open
+pulled 3/5 items
+  #103  research  open
+pulled 4/5 items
+  #104  research  closed
+pulled 5/5 items
+wayfinder-maps pull: acme/private#100 -> out (4 tickets)
+
+$ wayfinder-maps pull -q --refresh out   # --quiet drops the progress lines
+  #101  research  closed
+  #102  research  open
+  #103  research  open
+  #104  research  closed
+wayfinder-maps pull: acme/private#100 -> out (4 tickets)
