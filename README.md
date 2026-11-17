@@ -334,11 +334,34 @@ wayfinder-maps pull <owner/repo> <map-issue-number> [out-dir]
 wayfinder-maps pull --refresh <out-dir>
 ```
 
-It is built into the binary, so a [release install](#install) can pull right away. It needs only
-[`gh`](https://cli.github.com) (already logged in); there is no token to configure and no `jq` or
-`bash`. The default out-dir is `.plan/<slug of the map's title>`, wiped and rewritten on
-each run — a cache, not a source, so nothing in it should be hand-edited and the directory
-belongs in the host repo's `.gitignore`.
+It is built into the binary, so a [release install](#install) can pull right away. The default
+out-dir is `.plan/<slug of the map's title>`, wiped and rewritten on each run (a cache, not a
+source, so nothing in it should be hand-edited and the directory belongs in the host repo's
+`.gitignore`). A pull that fails part way leaves the previous mirror untouched.
+
+### Prerequisites
+
+`pull` needs the [GitHub CLI](https://cli.github.com) (`gh`) installed and logged in. There is no
+token to configure and no `jq` or `bash`. The rest of wayfinder-maps works without `gh`.
+
+```
+gh auth login      # once
+gh auth status     # which account is active, and whether it is logged in
+```
+
+The account must be able to read the repo and its issues. If not, `pull` stops before touching
+anything and says what to do:
+
+```
+$ wayfinder-maps pull acme/widgets 10      # gh not installed
+wayfinder-maps pull: gh is not installed or not on PATH. Install it from https://cli.github.com, then run: gh auth login
+$ wayfinder-maps pull acme/widgets 10      # gh not logged in
+wayfinder-maps pull: gh is not logged in. Run: gh auth login (or set GH_TOKEN)
+$ wayfinder-maps pull acme/secret 10       # no access to the repo or issue
+wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'alice' (HTTP 404). Check the repo name and issue number, and that this account can see the repo; check with: gh auth status
+```
+
+These exit with code 2. In the viewer the same message shows when a Pull fails.
 
 ```
 $ wayfinder-maps pull acme/widgets 10

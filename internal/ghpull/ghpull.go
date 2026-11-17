@@ -30,13 +30,7 @@ func GH(token string, args ...string) ([]byte, error) {
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
 	if err != nil {
-		msg := strings.TrimSpace(stderr.String())
-		if errors.Is(err, exec.ErrNotFound) {
-			msg = "gh not found; install it from https://cli.github.com"
-		} else if msg == "" {
-			msg = err.Error()
-		}
-		return nil, fmt.Errorf("gh %s: %s", strings.Join(args[:min(len(args), 2)], " "), msg)
+		return nil, classify(args, err, stderr.String())
 	}
 	return out, nil
 }
@@ -131,8 +125,21 @@ query($owner: String!, $name: String!, $number: Int!) {
   }
 }`
 
-// Pull mirrors the map into o.Out, wiping it first.
+// Pull mirrors the map into o.Out. The mirror is built in a staging dir and
+// swapped in at the end, so a failed pull leaves the previous mirror intact.
 func (p *Puller) Pull(o Options) error {
+	var who string
+	return explainWith(p.pull(o, &who), &who)
+}
+
+func explainWith(err error, who *string) error {
+	if *who == "" {
+		*who = "the active gh account"
+	}
+	return explain(err, *who)
+}
+
+func (p *Puller) pull(o Options, who *string) error {
 	repo, mapNum, out := o.Repo, o.Map, o.Out
 	var auth, account, token string
 	if o.Refresh {
@@ -142,6 +149,7 @@ func (p *Puller) Pull(o Options) error {
 		}
 		repo, mapNum, auth, account = src.Repo, src.Map, src.Auth, src.Account
 		if auth == "gh" && account != "" {
+			*who = fmt.Sprintf("gh account '%s'", account)
 			var err error
 			if token, err = p.accountToken(account); err != nil {
 				return err
@@ -163,6 +171,13 @@ func (p *Puller) Pull(o Options) error {
 		}
 	}
 
+	switch {
+	case auth == "env":
+		*who = "the GH_TOKEN/GITHUB_TOKEN token"
+	case account != "":
+		*who = fmt.Sprintf("gh account '%s'", account)
+	}
+
 	var m issue
 	if err := p.getJSON(token, &m, "api", fmt.Sprintf("repos/%s/issues/%d", repo, mapNum)); err != nil {
 		return err
@@ -179,10 +194,18 @@ func (p *Puller) Pull(o Options) error {
 		return userErr("issue #%d has no sub-issues", mapNum)
 	}
 
-	if err := os.RemoveAll(out); err != nil {
+	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Join(out, "tickets"), 0o755); err != nil {
+	stage, err := os.MkdirTemp(filepath.Dir(out), ".wayfinder-pull-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(stage)
+	if err := os.Chmod(stage, 0o755); err != nil {
+		return err
+	}
+	if err := os.Mkdir(filepath.Join(stage, "tickets"), 0o755); err != nil {
 		return err
 	}
 
@@ -190,7 +213,7 @@ func (p *Puller) Pull(o Options) error {
 	var rewrites []*regexp.Regexp
 	var rewriteTo []string
 	for _, t := range subs {
-		link, err := p.pullTicket(token, repo, out, t, &decisions, &implemented, &outOfScope)
+		link, err := p.pullTicket(token, repo, stage, t, &decisions, &implemented, &outOfScope)
 		if err != nil {
 			return err
 		}
@@ -222,7 +245,7 @@ func (p *Puller) Pull(o Options) error {
 		}
 		fmt.Fprintf(&mb, "\n%s\n\n%s", s.heading, s.list)
 	}
-	if err := os.WriteFile(filepath.Join(out, "map.md"), []byte(mb.String()), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(stage, "map.md"), []byte(mb.String()), 0o644); err != nil {
 		return err
 	}
 
@@ -233,7 +256,13 @@ func (p *Puller) Pull(o Options) error {
 	if err := enc.Encode(Source{Repo: repo, Map: mapNum, Auth: auth, Account: account}); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(out, ".source.json"), sb.Bytes(), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(stage, ".source.json"), sb.Bytes(), 0o644); err != nil {
+		return err
+	}
+	if err := os.RemoveAll(out); err != nil {
+		return err
+	}
+	if err := os.Rename(stage, out); err != nil {
 		return err
 	}
 
@@ -245,7 +274,11 @@ func (p *Puller) Pull(o Options) error {
 func (p *Puller) accountToken(account string) (string, error) {
 	b, err := p.GH("", "auth", "token", "--user", account)
 	if err != nil {
-		return "", userErr("gh account '%s' is not logged in", account)
+		var ge *GHError
+		if errors.As(err, &ge) && ge.Kind == KindMissing {
+			return "", err
+		}
+		return "", userErr("gh account '%s' is not logged in. Run: gh auth login", account)
 	}
 	return strings.TrimSpace(string(b)), nil
 }
@@ -403,7 +436,7 @@ func (p *Puller) getJSON(token string, v any, args ...string) error {
 		return err
 	}
 	if err := json.Unmarshal(b, v); err != nil {
-		return fmt.Errorf("gh %s: bad JSON: %v", args[len(args)-1], err)
+		return fmt.Errorf("gh %s: bad JSON: %v", endpointOf(args), err)
 	}
 	return nil
 }

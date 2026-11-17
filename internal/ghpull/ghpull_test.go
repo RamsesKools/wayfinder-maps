@@ -3,7 +3,6 @@ package ghpull
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -78,7 +77,7 @@ func (f *fakeGH) run(token string, args ...string) ([]byte, error) {
 	}
 	b, err := os.ReadFile(filepath.Join(f.dir, file))
 	if err != nil {
-		return nil, fmt.Errorf("HTTP 404: %s", endpoint)
+		return nil, classify([]string{"api", endpoint}, errors.New("exit status 1"), "gh: Not Found (HTTP 404)")
 	}
 	if slurp {
 		b = append(append([]byte("["), b...), ']')
@@ -198,7 +197,7 @@ func TestRefreshAccountNotLoggedIn(t *testing.T) {
 	f.calls = nil
 	err := p.Pull(Options{Out: out, Refresh: true})
 	var pe *Error
-	if !errors.As(err, &pe) || pe.Code != 2 || pe.Msg != "gh account 'alice' is not logged in" {
+	if !errors.As(err, &pe) || pe.Code != 2 || pe.Msg != "gh account 'alice' is not logged in. Run: gh auth login" {
 		t.Fatalf("got %v", err)
 	}
 	if len(f.calls) != 1 {
