@@ -87,6 +87,18 @@ What this fork adds:
   the linked PRs, and runs on macOS's stock `sed`.
 - **Viewer.** Implement tickets are hexagonal stations in an outer belt, frontier tickets
   carry an agent or person badge, and a ticket panel links its PR when it has one.
+- **Flow direction.** A small compass in the bottom left corner points the map any of 8 ways, and
+  the centre button drops the direction for the original radial layout. East (left to
+  right) is the default.
+  The choice is saved in `settings.json` next to `recents.json` in your user config
+  directory, so it survives restarts.
+
+  <img src="docs/images/compass-directions.png" alt="The same map in four layouts: east, south, south-east and radial, with the compass dial in the bottom left highlighting the chosen direction">
+
+  South (top to bottom) suits a tall, narrow column: it fills the width and opens on the
+  start.
+
+  <img src="docs/images/compass-column.png" alt="The same map docked in a narrow column: east is small and sparse, south fills the column and starts at the top">
 
 The [design record](docs/implement-phase-design.md) has the full plan.
 
@@ -313,6 +325,7 @@ has no GitHub representation, so a mirrored map never paints an undermined node.
 ```
 go build ./cmd/wayfinder-maps      # pure Go: status, lint, serve
 go test ./...
+node --test cmd/wayfinder-maps/webtests/*.test.mjs   # viewer layout and markdown tests
 ```
 
 Release builds inject the version with
