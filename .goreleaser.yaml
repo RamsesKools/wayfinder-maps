@@ -7,6 +7,7 @@ project_name: wayfinder-maps
 # Windows gets its native window via pure-Go WebView2 bindings; Linux stays
 # pure Go here and carries its webkit linkage in the helper binary, which CI
 # builds on Linux runners and drops into helpers/ before this config runs.
+# Every binary takes its --version from the tag, same as the Linux helper in release.yml.
 builds:
   - id: darwin
     main: ./cmd/wayfinder-maps
@@ -20,6 +21,8 @@ builds:
     goarch:
       - arm64
       - amd64
+    ldflags:
+      - -s -w -X github.com/RamsesKools/wayfinder-maps/internal/version.Version={{ .Version }}
   - id: windows
     main: ./cmd/wayfinder-maps
     binary: wayfinder-maps
@@ -30,6 +33,8 @@ builds:
     goarch:
       - arm64
       - amd64
+    ldflags:
+      - -s -w -X github.com/RamsesKools/wayfinder-maps/internal/version.Version={{ .Version }}
   - id: linux
     main: ./cmd/wayfinder-maps
     binary: wayfinder-maps
@@ -40,6 +45,8 @@ builds:
     goarch:
       - arm64
       - amd64
+    ldflags:
+      - -s -w -X github.com/RamsesKools/wayfinder-maps/internal/version.Version={{ .Version }}
 
 archives:
   # darwin and linux ship double-clickable launchers for the app window and

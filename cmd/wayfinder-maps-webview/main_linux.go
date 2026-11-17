@@ -3,8 +3,9 @@
 // wayfinder-maps-webview is the Linux native-window helper. The main binary
 // stays pure Go so status/lint/serve run on headless machines; everything that
 // needs webkit2gtk lives here, exec'd from the same directory. It answers
-// three calls:
+// these calls:
 //
+//	wayfinder-maps-webview --version              print the version
 //	wayfinder-maps-webview --check                exit 0 (loading it is the check)
 //	wayfinder-maps-webview --pick-folder          print a chosen folder, or nothing
 //	wayfinder-maps-webview --window <url> <title> open the native window
@@ -46,15 +47,19 @@ import (
 	"fmt"
 	"os"
 	"unsafe"
+
+	"github.com/RamsesKools/wayfinder-maps/internal/version"
 )
 
 func main() {
 	args := os.Args[1:]
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: wayfinder-maps-webview --check | --pick-folder | --window <url> [title]")
+		fmt.Fprintln(os.Stderr, "usage: wayfinder-maps-webview --version | --check | --pick-folder | --window <url> [title]")
 		os.Exit(2)
 	}
 	switch args[0] {
+	case "--version":
+		fmt.Println(version.String("wayfinder-maps-webview"))
 	case "--check":
 		// Reaching main means the dynamic linker found webkit2gtk.
 		os.Exit(0)

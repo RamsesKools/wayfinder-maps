@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/RamsesKools/wayfinder-maps/internal/version"
 	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
 )
 
@@ -18,6 +19,7 @@ usage:
   wayfinder-maps lint   <effort-dir>   check the map's format invariants
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window
+  wayfinder-maps --version             print the version
 
 <effort-dir> holds map.md and tickets/; status/lint default to the working dir.
 For serve/app, [path] is optional: an effort opens straight into its map, a
@@ -33,6 +35,11 @@ func main() {
 	args := os.Args[1:]
 	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
 		fmt.Println(usage)
+		return
+	}
+
+	if args[0] == "--version" {
+		fmt.Println(version.String("wayfinder-maps"))
 		return
 	}
 
