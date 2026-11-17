@@ -102,6 +102,7 @@ What this fork adds:
 
 - **Narrow screens.** The bottom status bar wraps onto extra rows instead of running off the
   edge, so the title, counts, progress bar and legend all stay visible.
+  The small arrow tab on the bar's top edge folds it down to just the title, and back out.
 
   <img src="docs/images/hud-narrow.png" alt="The status bar at 360px wide: clipped before, wrapped onto several rows after">
 

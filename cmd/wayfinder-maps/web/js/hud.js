@@ -11,6 +11,7 @@ export function buildHud() {
   hud.appendChild(title);
   var c = S.graph.counts, impl = c.implement && c.implement.total > 0;
   hud.classList.toggle("hasimpl", !!impl);
+  if (!hud.dataset.foldInit) { hud.dataset.foldInit = "1"; try { hud.classList.toggle("folded", localStorage.getItem("hudFolded") === "1"); } catch (e) {} }
   var counts = el("div", "counts"), f = frontierSplit();
   if (impl) {
     var front = el("div", "cfront");
@@ -36,6 +37,27 @@ export function buildHud() {
   });
   if (impl) legendGlyph(lg, GLYPH.station, STATION, "implement");
   hud.appendChild(lg);
+  hud.appendChild(foldButton(hud));
+}
+
+function foldButton(hud) {
+  var b = el("button", "hudfold"), ns = "http://www.w3.org/2000/svg";
+  var s = document.createElementNS(ns, "svg"), p = document.createElementNS(ns, "polyline");
+  s.setAttribute("viewBox", "0 0 10 6"); p.setAttribute("points", "1,1 5,5 9,1");
+  s.appendChild(p); b.appendChild(s);
+  function sync() {
+    var folded = hud.classList.contains("folded");
+    b.setAttribute("aria-expanded", String(!folded));
+    b.setAttribute("aria-label", folded ? "Unfold status bar" : "Fold status bar");
+    b.title = b.getAttribute("aria-label");
+  }
+  b.onclick = function() {
+    var folded = hud.classList.toggle("folded");
+    try { localStorage.setItem("hudFolded", folded ? "1" : "0"); } catch (e) {}
+    sync();
+  };
+  sync();
+  return b;
 }
 
 function chip(parent, cls, txt, glyph, color) {
