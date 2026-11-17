@@ -33,7 +33,7 @@ jobs:
       - name: Install webkit2gtk dev headers
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
       - name: Build helper
-        run: CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o wayfinder-maps-webview ./cmd/wayfinder-maps-webview
+        run: CGO_ENABLED=1 go build -trimpath -ldflags="-s -w -X github.com/RamsesKools/wayfinder-maps/internal/version.Version=${GITHUB_REF_NAME#v}" -o wayfinder-maps-webview ./cmd/wayfinder-maps-webview
       - uses: actions/upload-artifact@v4
         with:
           name: linux_${{ matrix.arch }}
