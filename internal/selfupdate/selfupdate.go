@@ -25,8 +25,11 @@ import (
 	"time"
 )
 
-// DefaultBaseURL is the GitHub repo releases are fetched from.
-const DefaultBaseURL = "https://github.com/RamsesKools/wayfinder-maps"
+// Default endpoints, overridable like install.sh does (WAYFINDER_RELEASES_URL, WAYFINDER_API_URL).
+const (
+	DefaultReleasesURL = "https://github.com/RamsesKools/wayfinder-maps/releases"
+	DefaultAPIURL      = "https://api.github.com/repos/RamsesKools/wayfinder-maps"
+)
 
 // ReceiptName is the receipt file written next to the binary.
 const ReceiptName = ".install.json"
@@ -36,12 +39,14 @@ const (
 	maxFileBytes     = 512 << 20
 )
 
-var tagRe = regexp.MustCompile(`^v(\d+)\.(\d+)\.(\d+)$`)
+// tagRe matches install.sh's version check, including an optional prerelease suffix.
+var tagRe = regexp.MustCompile(`^v(\d+)\.(\d+)\.(\d+)([.-][0-9A-Za-z.-]+)?$`)
+var hexSHA = regexp.MustCompile(`^[0-9a-f]{40}$`)
 
 // Receipt records what is installed; the schema is shared with install.sh.
 type Receipt struct {
 	Version     string `json:"version"`
-	Commit      string `json:"commit,omitempty"`
+	Commit      string `json:"commit"`
 	InstalledAt string `json:"installed_at"`
 	Asset       string `json:"asset"`
 	SHA256      string `json:"sha256"`
@@ -54,10 +59,12 @@ func (e *RefusalError) Error() string { return e.Reason }
 
 // Updater holds everything an update needs, so tests can point it at a fake server.
 type Updater struct {
-	BaseURL string
-	Client  *http.Client
-	GOOS    string
-	GOARCH  string
+	ReleasesURL string
+	// APIURL is used only to look up the release commit for the receipt; empty skips it.
+	APIURL string
+	Client *http.Client
+	GOOS   string
+	GOARCH string
 	// Current is the running version without the leading v, or "dev".
 	Current string
 	// Exe is the running binary with symlinks resolved.
@@ -149,7 +156,7 @@ func (u *Updater) resolveTarget(ctx context.Context, pin string) (string, error)
 	}
 	client := *u.client()
 	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.BaseURL+"/releases/latest", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.ReleasesURL+"/latest", nil)
 	if err != nil {
 		return "", err
 	}
@@ -219,11 +226,39 @@ func (u *Updater) install(ctx context.Context, tag string) (Receipt, error) {
 		InstalledAt: u.now().UTC().Format(time.RFC3339),
 		Asset:       asset,
 		SHA256:      got,
+		Commit:      u.commit(ctx, tag),
 	}
 	if err := writeReceipt(dir, stage, rcpt); err != nil {
 		return Receipt{}, err
 	}
 	return rcpt, nil
+}
+
+// commit is best effort: the receipt records an empty commit when the API is unreachable, like install.sh.
+func (u *Updater) commit(ctx context.Context, tag string) string {
+	if u.APIURL == "" {
+		return ""
+	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.APIURL+"/commits/"+tag, nil)
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("Accept", "application/vnd.github.sha")
+	resp, err := u.client().Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return ""
+	}
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 128))
+	if sha := strings.TrimSpace(string(b)); hexSHA.MatchString(sha) {
+		return sha
+	}
+	return ""
 }
 
 func writeReceipt(dir, stage string, r Receipt) error {
@@ -293,7 +328,7 @@ func (u *Updater) get(ctx context.Context, url string) (io.ReadCloser, error) {
 }
 
 func (u *Updater) releaseURL(tag, name string) string {
-	return u.BaseURL + "/releases/download/" + tag + "/" + name
+	return u.ReleasesURL + "/download/" + tag + "/" + name
 }
 
 func (u *Updater) client() *http.Client {
@@ -366,7 +401,7 @@ func extract(archive, dir string) ([]string, error) {
 	}
 }
 
-// compare orders two vX.Y.Z tags; an unparsable side sorts as equal.
+// compare orders two version tags; a prerelease sorts below its release, and an unparsable side sorts as equal.
 func compare(a, b string) int {
 	pa, pb := tagRe.FindStringSubmatch(a), tagRe.FindStringSubmatch(b)
 	if pa == nil || pb == nil {
@@ -382,7 +417,15 @@ func compare(a, b string) int {
 			return 1
 		}
 	}
-	return 0
+	switch {
+	case pa[4] == pb[4]:
+		return 0
+	case pa[4] == "":
+		return 1
+	case pb[4] == "":
+		return -1
+	}
+	return strings.Compare(pa[4], pb[4])
 }
 
 func contains(ss []string, s string) bool {

@@ -177,9 +177,9 @@ wayfinder-maps self-update --force            # reinstall the same version
 ![self-update --check, update, pin and refusal](docs/images/self-update.png)
 
 - It downloads the release archive and `checksums.txt`, verifies the sha256, then renames each file over the old one. A running `serve` or `app` keeps its old binary until restarted.
-- It reads and rewrites `.install.json` next to the binary, and refuses (exit 2, with the reason) for a `dev` build, a `go install` build, or any binary without that receipt.
+- It reads and rewrites `.install.json` next to the binary (same fields as `install.sh` writes), and refuses (exit 2, with the reason) for a `dev` build, a `go install` build, or any binary without that receipt.
 - Windows is not supported yet.
-- `WAYFINDER_MAPS_RELEASE_URL` points it at another release host, for testing.
+- `WAYFINDER_RELEASES_URL` and `WAYFINDER_API_URL` point it at another release host, the same overrides `install.sh` honours.
 
 Skill and binary are independent — each just reads the on-disk contract.
 

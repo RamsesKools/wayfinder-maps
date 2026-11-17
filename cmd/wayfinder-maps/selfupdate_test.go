@@ -15,7 +15,7 @@ func TestRunSelfUpdateExitCodes(t *testing.T) {
 	dir := t.TempDir()
 	exe := filepath.Join(dir, "wayfinder-maps")
 	os.WriteFile(exe, []byte("x"), 0o755)
-	u := &selfupdate.Updater{BaseURL: "http://127.0.0.1:1", GOOS: runtime.GOOS, GOARCH: runtime.GOARCH, Exe: exe}
+	u := &selfupdate.Updater{ReleasesURL: "http://127.0.0.1:1/releases", GOOS: runtime.GOOS, GOARCH: runtime.GOARCH, Exe: exe}
 
 	var out, errb bytes.Buffer
 	u.Current = "dev"

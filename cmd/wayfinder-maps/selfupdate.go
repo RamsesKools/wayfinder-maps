@@ -14,8 +14,11 @@ import (
 	"github.com/RamsesKools/wayfinder-maps/internal/version"
 )
 
-// baseURLEnv overrides the release host, for testing against a fake server.
-const baseURLEnv = "WAYFINDER_MAPS_RELEASE_URL"
+// Same overrides as install.sh, for tests and mirrors.
+const (
+	releasesURLEnv = "WAYFINDER_RELEASES_URL"
+	apiURLEnv      = "WAYFINDER_API_URL"
+)
 
 func selfUpdate(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("self-update", flag.ContinueOnError)
@@ -36,14 +39,18 @@ func selfUpdate(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	u := &selfupdate.Updater{
-		BaseURL: selfupdate.DefaultBaseURL,
-		GOOS:    runtime.GOOS,
-		GOARCH:  runtime.GOARCH,
-		Current: version.Get(),
-		Exe:     exe,
+		ReleasesURL: selfupdate.DefaultReleasesURL,
+		APIURL:      selfupdate.DefaultAPIURL,
+		GOOS:        runtime.GOOS,
+		GOARCH:      runtime.GOARCH,
+		Current:     version.Get(),
+		Exe:         exe,
 	}
-	if v := os.Getenv(baseURLEnv); v != "" {
-		u.BaseURL = v
+	if v := os.Getenv(releasesURLEnv); v != "" {
+		u.ReleasesURL = v
+	}
+	if v := os.Getenv(apiURLEnv); v != "" {
+		u.APIURL = v
 	}
 	return runSelfUpdate(u, *pin, *check, *force, stdout, stderr)
 }

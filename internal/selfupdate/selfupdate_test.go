@@ -28,6 +28,8 @@ type fakeRelease struct {
 	files map[string]map[string][]byte
 	// tamper serves a different archive than the one checksums.txt describes.
 	tamper bool
+	// noAPI makes the commit lookup fail.
+	noAPI bool
 }
 
 func tarball(t *testing.T, files map[string][]byte) []byte {
@@ -61,6 +63,13 @@ func newFake(t *testing.T, latest string, tags ...string) (*fakeRelease, *httpte
 		})
 	}
 	mux := http.NewServeMux()
+	mux.HandleFunc("/api/commits/", func(w http.ResponseWriter, r *http.Request) {
+		if f.noAPI {
+			http.Error(w, "rate limited", http.StatusForbidden)
+			return
+		}
+		fmt.Fprint(w, strings.Repeat("ab", 20))
+	})
 	mux.HandleFunc("/releases/latest", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/releases/tag/"+f.latest, http.StatusFound)
 	})
@@ -109,7 +118,7 @@ func install(t *testing.T, version string, receipt bool) string {
 
 func updater(srv *httptest.Server, exe, current string) *Updater {
 	return &Updater{
-		BaseURL: srv.URL, GOOS: runtime.GOOS, GOARCH: runtime.GOARCH,
+		ReleasesURL: srv.URL + "/releases", APIURL: srv.URL + "/api", GOOS: runtime.GOOS, GOARCH: runtime.GOARCH,
 		Current: current, Exe: exe,
 		Now: func() time.Time { return time.Date(2026, 11, 17, 9, 0, 0, 0, time.UTC) },
 	}
@@ -165,7 +174,7 @@ func TestUpdateLatestRewritesReceipt(t *testing.T) {
 		t.Fatal(err)
 	}
 	asset := assetName("v0.6.0", runtime.GOOS, runtime.GOARCH)
-	if r.Version != "v0.6.0" || r.Asset != asset || r.InstalledAt != "2026-11-17T09:00:00Z" || len(r.SHA256) != 64 {
+	if r.Commit != strings.Repeat("ab", 20) || r.Version != "v0.6.0" || r.Asset != asset || r.InstalledAt != "2026-11-17T09:00:00Z" || len(r.SHA256) != 64 {
 		t.Fatalf("receipt = %+v", r)
 	}
 	entries, _ := os.ReadDir(dir)
@@ -173,6 +182,19 @@ func TestUpdateLatestRewritesReceipt(t *testing.T) {
 		if strings.HasPrefix(e.Name(), ".update-") {
 			t.Fatalf("staging dir left behind: %s", e.Name())
 		}
+	}
+}
+
+func TestReceiptCommitIsEmptyWhenAPIFails(t *testing.T) {
+	f, srv := newFake(t, "v0.6.0", "v0.6.0")
+	f.noAPI = true
+	exe := install(t, "0.5.1", true)
+	st, err := updater(srv, exe, "0.5.1").Update(context.Background(), "", false)
+	if err != nil || st.Receipt.Commit != "" {
+		t.Fatalf("%+v %v", st, err)
+	}
+	if !strings.Contains(read(t, filepath.Join(filepath.Dir(exe), ReceiptName)), `"commit": ""`) {
+		t.Fatal("receipt must keep an empty commit field like install.sh")
 	}
 }
 
@@ -312,7 +334,7 @@ func TestCompare(t *testing.T) {
 		a, b string
 		want int
 	}{
-		{"v0.5.1", "v0.5.1", 0}, {"v0.5.1", "v0.6.0", -1}, {"v0.10.0", "v0.9.9", 1}, {"v1.0.0", "v0.99.99", 1}, {"vdev", "v1.0.0", 0},
+		{"v0.5.1", "v0.5.1", 0}, {"v0.5.1", "v0.6.0", -1}, {"v0.10.0", "v0.9.9", 1}, {"v1.0.0", "v0.99.99", 1}, {"vdev", "v1.0.0", 0}, {"v0.9.0-rc1", "v0.9.0", -1}, {"v0.9.0", "v0.9.0-rc1", 1}, {"v0.9.0-rc1", "v0.9.0-rc2", -1}, {"v0.9.0-rc1", "v0.8.9", 1},
 	} {
 		if got := compare(c.a, c.b); got != c.want {
 			t.Errorf("compare(%s,%s) = %d, want %d", c.a, c.b, got, c.want)
