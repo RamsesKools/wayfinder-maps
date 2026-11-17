@@ -19,6 +19,8 @@ usage:
   wayfinder-maps lint   <effort-dir>   check the map's format invariants
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window
+  wayfinder-maps self-update           upgrade a release install in place
+                 [--version vX.Y.Z] [--check] [--force]
   wayfinder-maps --version             print the version
 
 <effort-dir> holds map.md and tickets/; status/lint default to the working dir.
@@ -41,6 +43,10 @@ func main() {
 	if args[0] == "--version" {
 		fmt.Println(version.String("wayfinder-maps"))
 		return
+	}
+
+	if args[0] == "self-update" {
+		os.Exit(selfUpdate(args[1:], os.Stdout, os.Stderr))
 	}
 
 	cmd := args[0]

@@ -163,6 +163,24 @@ You may include any of the extras under [`skills/.optional/`](skills/.optional/)
 Check what you have with `wayfinder-maps --version` (the Linux helper answers
 `wayfinder-maps-webview --version`). Both print the release version, and `dev` for a local build.
 
+### Updating
+
+A binary installed from a release by `install.sh` upgrades itself in place:
+
+```sh
+wayfinder-maps self-update                    # latest release
+wayfinder-maps self-update --version v0.5.1   # pin or downgrade
+wayfinder-maps self-update --check            # report only, exit 1 if behind
+wayfinder-maps self-update --force            # reinstall the same version
+```
+
+![self-update --check, update, pin and refusal](docs/images/self-update.png)
+
+- It downloads the release archive and `checksums.txt`, verifies the sha256, then renames each file over the old one. A running `serve` or `app` keeps its old binary until restarted.
+- It reads and rewrites `.install.json` next to the binary, and refuses (exit 2, with the reason) for a `dev` build, a `go install` build, or any binary without that receipt.
+- Windows is not supported yet.
+- `WAYFINDER_MAPS_RELEASE_URL` points it at another release host, for testing.
+
 Skill and binary are independent — each just reads the on-disk contract.
 
 ## Why
