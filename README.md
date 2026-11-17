@@ -170,7 +170,16 @@ Flags: `--version <tag>`, `--prefix <dir>`, `--bin-dir <dir>`, `--force`. Rerunn
 the same version is a no-op. `<prefix>/.install.json` records what was installed
 (`version`, `commit`, `installed_at`, `asset`, `sha256`).
 
-![Install layout](docs/images/install-layout.svg)
+```
+~/.local/bin/
+  wayfinder-maps          -> ~/.local/share/wayfinder-maps/wayfinder-maps
+  wayfinder-maps-webview  -> ~/.local/share/wayfinder-maps/wayfinder-maps-webview  (Linux only)
+~/.local/share/wayfinder-maps/
+  wayfinder-maps
+  wayfinder-maps-webview          (Linux only)
+  wayfinder-app, wayfinder-web    (.command on macOS)
+  .install.json                   receipt: version, commit, installed_at, asset, sha256
+```
 
 Or install by hand:
 
