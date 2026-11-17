@@ -176,9 +176,8 @@ function unmountMap() {
 export function leaveMap(next) {
   S.currentEffort = null; // stop the poller applying mid-dissolve
   document.getElementById("hud").style.display = "none";
-  document.getElementById("topleft").style.display = "none";
+  document.getElementById("topbar").style.display = "none";
   document.getElementById("compass").style.display = "none";
-  document.getElementById("hint").style.display = "none";
   closePanel();
   if (S.screen !== "map" || !S.nodes.length) { unmountMap(); next(); return; }
   next();                                  // destination appears at once
@@ -190,9 +189,8 @@ function setScreen(s) {
   document.getElementById("splash").style.display = s === "splash" ? "flex" : "none";
   document.getElementById("maplist").style.display = s === "maplist" ? "flex" : "none";
   document.getElementById("hud").style.display = s === "map" ? "flex" : "none";
-  document.getElementById("topleft").style.display = s === "map" ? "flex" : "none";
+  document.getElementById("topbar").style.display = s === "map" ? "flex" : "none";
   document.getElementById("compass").style.display = s === "map" ? "grid" : "none";
-  document.getElementById("hint").style.display = s === "map" ? "block" : "none";
   if (s !== "map") closePanel();
 }
 
@@ -264,6 +262,6 @@ export function loadMap(effort) {
   document.getElementById("projtag").textContent = projectName(effort);
   showPullButton(effort);
   fetch("/api/graph?effort=" + encodeURIComponent(effort)).then(function(r) { return r.json(); }).then(function(g) {
-    applyGraph(g); setScreen("map"); startFade(0, 1, 2.2); // dissolve the constellation in
+    setScreen("map"); applyGraph(g); startFade(0, 1, 2.2); // dissolve the constellation in
   });
 }

@@ -161,7 +161,7 @@ func newServer(initial string) http.Handler {
 
 	// Re-pull a GitHub-backed effort into .plan/ and stream progress as SSE
 	// ("progress" {done,total}, then "done" or "error" {message}). POST with a
-	// custom header (forces a CORS preflight), since it runs a script and
+	// custom header (forces a CORS preflight), since it pulls from GitHub and
 	// writes files; the viewer then refreshes the map.
 	mux.HandleFunc("/api/pull", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost || r.Header.Get("X-Wayfinder") == "" {
@@ -170,7 +170,7 @@ func newServer(initial string) http.Handler {
 		}
 		effort := r.URL.Query().Get("effort")
 		if _, ok := readPullSource(effort); !ok {
-			http.Error(w, "not a GitHub-backed map (no .source.json); run wayfinder-pull once", http.StatusBadRequest)
+			http.Error(w, "not a GitHub-backed map (no .source.json); run wayfinder-maps pull once", http.StatusBadRequest)
 			return
 		}
 		fl, _ := w.(http.Flusher)

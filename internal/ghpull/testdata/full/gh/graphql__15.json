@@ -1,0 +1,20 @@
+{
+  "data": {
+    "repository": {
+      "issue": {
+        "closedByPullRequestsReferences": {
+          "nodes": [
+            {
+              "url": "https://github.com/acme/widgets/pull/50",
+              "merged": false
+            },
+            {
+              "url": "https://github.com/acme/widgets/pull/51",
+              "merged": true
+            }
+          ]
+        }
+      }
+    }
+  }
+}
