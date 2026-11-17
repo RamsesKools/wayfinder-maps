@@ -105,16 +105,18 @@ a.c.pr:hover{background:rgba(95,209,192,.12);border-color:#5fd1c0}
 #backbtn:hover,#pullbtn:hover{color:#e6e9ef;border-color:#3a4356}
 #pullbtn[hidden]{display:none}
 #pullbtn:disabled{opacity:.5;cursor:default}
-/* Compass: a small 3x3 pad under the top-left chrome. Dim arrows, the chosen one glows. */
-#compass{position:fixed;top:58px;left:16px;z-index:7;display:none;grid-template-columns:repeat(3,24px);gap:2px;
-  padding:4px;background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:12px;backdrop-filter:blur(8px)}
-.cbtn{width:24px;height:24px;padding:0;display:flex;align-items:center;justify-content:center;
-  background:none;border:none;border-radius:6px;color:#4b5261;cursor:pointer}
+/* Compass: a small round dial in the bottom-left corner, sitting on top of the HUD
+   bar (main.js keeps --hudh at the bar's height). Eight arrows on a ring, a dot in
+   the middle; dim until chosen, then glowing. compass.js places the buttons. */
+#compass{position:fixed;bottom:calc(var(--hudh,80px) + 10px);left:12px;z-index:7;display:none;width:46px;height:46px;
+  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;backdrop-filter:blur(8px)}
+.cbtn{position:absolute;width:12px;height:12px;padding:0;display:flex;align-items:center;justify-content:center;
+  background:none;border:none;border-radius:50%;color:#4b5261;cursor:pointer}
 .cbtn:hover{color:#b7bdc9;background:rgba(255,255,255,.05)}
-.cbtn .cglyph{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cbtn .cglyph{width:9px;height:9px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .cbtn.cnone .cglyph{fill:currentColor;stroke:none}
 .cbtn.on{color:#ffe29a}
-.cbtn.on .cglyph{filter:drop-shadow(0 0 3px #ffd36e) drop-shadow(0 0 6px rgba(255,211,110,.6))}
+.cbtn.on .cglyph{filter:drop-shadow(0 0 2px #ffd36e) drop-shadow(0 0 4px rgba(255,211,110,.6))}
 #projtag{font-size:12px;color:#8b93a3;max-width:32vw;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* splash + map list overlays, floating over the live starfield */

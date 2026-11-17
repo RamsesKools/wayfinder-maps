@@ -1,4 +1,4 @@
-// The compass control: a 3x3 pad. The eight outer buttons point the map's flow
+// The compass control: a round dial. Eight buttons on a ring point the map's flow
 // that way, the centre one turns the direction off (radial layout). The active
 // button glows.
 import {el} from "./util.js";
@@ -6,6 +6,7 @@ import {NONE, flow} from "./direction.js";
 
 var GRID = ["NW", "N", "NE", "W", NONE, "E", "SW", "S", "SE"];
 var NAME = {N: "north", NE: "north-east", E: "east", SE: "south-east", S: "south", SW: "south-west", W: "west", NW: "north-west"};
+var SIZE = 44, BTN = 12, RING = 15; // dial interior, button, ring radius in px
 var NS = "http://www.w3.org/2000/svg";
 
 function svg(markup, rotate) {
@@ -16,7 +17,7 @@ function svg(markup, rotate) {
   return s;
 }
 
-// mountCompass fills root with the pad and returns set(dir) to move the glow.
+// mountCompass fills root with the dial and returns set(dir) to move the glow.
 export function mountCompass(root, onPick) {
   var buttons = {};
   root.innerHTML = "";
@@ -31,6 +32,8 @@ export function mountCompass(root, onPick) {
       b.title = "Flow " + NAME[d]; b.setAttribute("aria-label", "Flow " + NAME[d]);
       b.appendChild(svg('<path d="M3 10h12M10.5 4.5L16 10l-5.5 5.5"/>', Math.round(Math.atan2(f.y, f.x) * 180 / Math.PI)));
     }
+    var f0 = flow(d) || {x: 0, y: 0};
+    b.style.left = (SIZE / 2 + f0.x * RING - BTN / 2) + "px"; b.style.top = (SIZE / 2 + f0.y * RING - BTN / 2) + "px";
     b.dataset.dir = d;
     b.onclick = function() { onPick(d); };
     buttons[d] = b; root.appendChild(b);

@@ -87,13 +87,13 @@ What this fork adds:
   the linked PRs, and runs on macOS's stock `sed`.
 - **Viewer.** Implement tickets are hexagonal stations in an outer belt, frontier tickets
   carry an agent or person badge, and a ticket panel links its PR when it has one.
-- **Flow direction.** A compass under the Maps button points the map any of 8 ways, and
+- **Flow direction.** A small compass in the bottom left corner points the map any of 8 ways, and
   the centre button drops the direction for the original radial layout. East (left to
   right) is the default.
   The choice is saved in `settings.json` next to `recents.json` in your user config
   directory, so it survives restarts.
 
-  <img src="docs/images/compass-directions.png" alt="The same map in four layouts: east, south, south-east and radial, with the compass pad in the top left highlighting the chosen direction">
+  <img src="docs/images/compass-directions.png" alt="The same map in four layouts: east, south, south-east and radial, with the compass dial in the bottom left highlighting the chosen direction">
 
   South (top to bottom) suits a tall, narrow column: it fills the width and opens on the
   start.

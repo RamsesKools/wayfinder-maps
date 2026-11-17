@@ -24,6 +24,10 @@ document.getElementById("backbtn").onclick = function() {
 
 document.getElementById("pullbtn").onclick = pullFromGithub;
 
+// The compass rides above the HUD bar, whose height changes with its content and width.
+var hudEl = document.getElementById("hud");
+new ResizeObserver(function() { document.documentElement.style.setProperty("--hudh", hudEl.offsetHeight + "px"); }).observe(hudEl);
+
 var setCompass = mountCompass(document.getElementById("compass"), function(d) { setDirection(d); setCompass(S.dir); });
 setCompass(S.dir);
 
