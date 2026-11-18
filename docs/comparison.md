@@ -81,12 +81,14 @@ The [design record](implement-phase-design.md) has the full plan.
   <img src="images/install-skill.png" alt="install-skill dry run, install, no-op rerun and a refused overwrite">
 
 - **`--version`.** On `wayfinder-maps` and the Linux webview helper.
-- **Favicon.** The viewer tab shows a small glowing constellation climbing from a lone start light to a finish light.
+- **Favicon.** The viewer tab and the splash logo show a small glowing constellation climbing from a lone start light to a finish light.
   Blue is the default, red and green ship as spare variants for a future status signal.
 
   <img src="images/favicon-tab-light.png" alt="The viewer in a light browser tab strip with the blue favicon">
 
   <img src="images/favicon-tab-dark.png" alt="The viewer in a dark browser tab strip with the blue favicon">
+
+  <img src="images/favicon-splash.png" alt="The splash screen with the blue favicon as its logo">
 
   <img src="images/favicon-colors.png" alt="The favicon in blue (default), red and green at 16, 32 and 64 px on light and dark tabs">
 
