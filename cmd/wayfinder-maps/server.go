@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,11 +34,27 @@ func serve(dir string) int {
 	} else {
 		fmt.Printf("wayfinder-maps: serving %s at http://%s\n", dir, addr)
 	}
-	if err := http.ListenAndServe(addr, newServer(dir)); err != nil {
+	ln, err := listenAndRecord(addr, dir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "wayfinder-maps: %v\n", err)
+		return 2
+	}
+	if err := http.Serve(ln, newServer(dir)); err != nil {
 		fmt.Fprintf(os.Stderr, "wayfinder-maps: %v\n", err)
 		return 2
 	}
 	return 0
+}
+
+// listenAndRecord binds addr and only then records the CLI path as recent, so a
+// busy port never leaves a recents entry behind.
+func listenAndRecord(addr, dir string) (net.Listener, error) {
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	addRecent(dir)
+	return ln, nil
 }
 
 // newServer serves the app: a single-page shell at "/" (splash, map list, and
@@ -149,6 +166,10 @@ func newServer(initial string) http.Handler {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+		// open=1 marks a user opening the map; the poller's refetches omit it.
+		if r.URL.Query().Get("open") != "" {
+			addRecent(e.Dir)
 		}
 		writeJSON(w, buildGraph(e))
 	})

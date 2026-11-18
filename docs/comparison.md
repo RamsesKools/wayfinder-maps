@@ -94,6 +94,11 @@ The [design record](implement-phase-design.md) has the full plan.
 
   <img src="images/favicon-colors.png" alt="The favicon in blue (default), red and green at 16, 32 and 64 px on light and dark tabs">
 
+- **Recent maps.** A map opened with `serve <path>`, `app <path>` or the viewer is recorded in `recents.json`, so the `Maps` button and the splash list it, see [Recent maps](../README.md#recent-maps).
+  A folder with a `map.md` is one entry and any other folder is a project entry; a path that fails to load records nothing.
+
+  <img src="images/recent-maps-splash.png" alt="The splash screen listing a map served from the CLI under Recent">
+
 ## Why these additions
 
 Wayfinder exists because planning and deciding don't always fit in one session. I think

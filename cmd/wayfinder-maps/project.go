@@ -96,10 +96,21 @@ func initialKind(dir string) (effort, project string) {
 
 // --- recent projects ------------------------------------------------------
 
+// maxRecents is generous because maps and their projects share the list.
+const maxRecents = 20
+
+const (
+	kindProject = "project"
+	kindMap     = "map"
+)
+
+// recentEntry is a project (a folder of maps) or a single map. Files from before
+// Kind existed hold projects only, so an empty Kind reads as a project.
 type recentEntry struct {
 	Path string `json:"path"`
 	Name string `json:"name"`
 	Maps int    `json:"maps"`
+	Kind string `json:"kind,omitempty"`
 }
 
 func recentsFile() (string, error) {
@@ -133,7 +144,7 @@ func loadRecents() []recentEntry {
 			continue
 		}
 		seen[r.Path] = true
-		if fi, err := os.Stat(r.Path); err == nil && fi.IsDir() {
+		if fi, err := os.Stat(r.Path); err == nil && fi.IsDir() && (r.Kind != kindMap || isEffort(r.Path)) {
 			r.Maps = len(listMaps(r.Path))
 			live = append(live, r)
 		}
@@ -147,8 +158,8 @@ func saveRecents(rs []recentEntry) {
 	if err != nil {
 		return
 	}
-	if len(rs) > 8 {
-		rs = rs[:8]
+	if len(rs) > maxRecents {
+		rs = rs[:maxRecents]
 	}
 	os.MkdirAll(filepath.Dir(f), 0o755)
 	if b, err := json.MarshalIndent(rs, "", "  "); err == nil {
@@ -156,17 +167,33 @@ func saveRecents(rs []recentEntry) {
 	}
 }
 
-// addRecent moves a project to the front of the recents list (deduped, capped).
-func addRecent(project string) {
-	if project == "" {
+// addRecent moves a path to the front of the recents list (deduped, capped). A
+// folder holding a map.md is recorded as a single map, any other folder as a
+// project. A path that is not a folder, or a map that fails to load, is skipped.
+func addRecent(path string) {
+	if path == "" {
 		return
 	}
 	// Clean before comparing: the folder picker hands back trailing-slash
 	// paths, and "/p/x/" vs "/p/x" must not become two entries.
-	project = filepath.Clean(project)
-	out := []recentEntry{{Path: project, Name: filepath.Base(project), Maps: len(listMaps(project))}}
+	path = filepath.Clean(path)
+	if fi, err := os.Stat(path); err != nil || !fi.IsDir() {
+		return
+	}
+	entry := recentEntry{Path: path, Name: filepath.Base(path), Kind: kindProject, Maps: len(listMaps(path))}
+	if isEffort(path) {
+		e, err := wayfinder.Load(path)
+		if err != nil {
+			return
+		}
+		entry.Kind, entry.Maps = kindMap, 1
+		if e.Map.Name != "" {
+			entry.Name = e.Map.Name
+		}
+	}
+	out := []recentEntry{entry}
 	for _, r := range loadRecents() {
-		if r.Path != project {
+		if r.Path != path {
 			out = append(out, r)
 		}
 	}
