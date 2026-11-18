@@ -15,6 +15,7 @@
 ## Docs
 
 - Document user-facing features in the README with visuals (screenshots or short diagrams in `docs/images/`), not only prose.
+- Any PR that adds or changes a user-facing feature updates both the README comparison table and `docs/comparison.md`.
 
 ## Releases
 

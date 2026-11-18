@@ -108,6 +108,7 @@ a.c.pr:hover{background:rgba(95,209,192,.12);border-color:#5fd1c0}
 #topbar>*{pointer-events:auto}
 body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 @media (max-width:700px){body.panelopen #topbar{opacity:0;pointer-events:none}body.panelopen #topbar>*{pointer-events:none}}
+#brand{width:28px;height:28px;pointer-events:none}
 #hint{font-size:11px;color:#4b5261;margin-left:auto;pointer-events:none}
 #backbtn,#pullbtn{display:flex;align-items:center;
   background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:999px;color:#b7bdc9;
@@ -144,7 +145,8 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
   background:radial-gradient(80% 80% at 50% 30%,rgba(8,11,18,.6),rgba(5,7,13,.92))}
 #splash{align-items:center;justify-content:center}
 .splashcard{width:min(420px,90vw);text-align:center;padding:8px}
-.logo{font-size:30px;font-weight:600;letter-spacing:.02em;color:#e6e9ef;margin-bottom:26px}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;font-size:30px;font-weight:600;letter-spacing:.02em;color:#e6e9ef;margin-bottom:26px}
+.logo img{height:1.7em;width:1.7em}
 #openfolder{display:inline-block;background:#2b62d6;border:none;color:#fff;font-size:14px;
   padding:11px 22px;border-radius:10px;cursor:pointer;box-shadow:0 4px 20px rgba(43,98,214,.35)}
 #openfolder:hover{background:#356fe6}
