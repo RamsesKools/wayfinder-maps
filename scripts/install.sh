@@ -173,6 +173,7 @@ EOF
   say "  files:   $prefix"
   say "  binary:  $bin_dir/wayfinder-maps"
   say "  receipt: $receipt"
+  say "Next: wayfinder-maps install-skill   # install the matching skills"
 
   case ":$PATH:" in
     *":$bin_dir:"*) ;;

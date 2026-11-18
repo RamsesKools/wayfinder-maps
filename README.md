@@ -141,7 +141,7 @@ done.
 ```
 
 `/wayfinder-maps` then works in every project; the map lands in that project's `.plan/`. The
-plugin bundles `wayfinder-maps` plus the four skills it invokes by name — `grill-me`,
+plugin bundles `wayfinder-maps` plus the four skills it invokes by name: `grill-me`,
 `research`, `prototype`, `domain-modeling`. All five were originally authored by Matt
 Pocock in [mattpocock/skills](https://github.com/mattpocock/skills); the copies under
 [`skills/`](skills/) are MIT-licensed adaptations.
@@ -150,8 +150,9 @@ Pocock in [mattpocock/skills](https://github.com/mattpocock/skills); the copies 
 
 Copy [`skills/`](skills/) into your project and tell your agent to read
 `skills/wayfinder-maps/SKILL.md` and follow it; the skills it names live alongside.
-You may include any of the extras under [`skills/.optional/`](skills/.optional/) too —
+You may include any of the extras under [`skills/.optional/`](skills/.optional/) too,
 [`skills/README.md`](skills/README.md) describes the full set.
+Or let the binary write them for you, see [Installing the skills](#installing-the-skills).
 
 ### The binary
 
@@ -197,7 +198,61 @@ Or install by hand:
 Check what you have with `wayfinder-maps --version` (the Linux helper answers
 `wayfinder-maps-webview --version`). Both print the release version, and `dev` for a local build.
 
-### Updating
+### Installing the skills
+
+Install is two steps: the binary, then the skills that match it.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/RamsesKools/wayfinder-maps/main/scripts/install.sh | bash
+wayfinder-maps install-skill
+```
+
+The skills are embedded in the binary, so they always match what `status` and `lint` do.
+`install-skill` proposes the personal skills dir of each harness and asks per dir:
+
+- `~/.claude/skills` (Claude Code)
+- `~/.copilot/skills` (GitHub Copilot)
+- `~/.agents/skills` (Codex)
+
+Dirs that resolve to the same place (a symlinked `~/.claude/skills`, say) are installed once.
+Copilot also reads the other two dirs, so declining its own dir avoids duplicates.
+
+```sh
+wayfinder-maps install-skill                        # ask per default dir
+wayfinder-maps install-skill --yes                  # all default dirs, no questions (automation)
+wayfinder-maps install-skill --dir .claude/skills   # project-local; repeatable, never asks
+wayfinder-maps install-skill --only grill-me,research
+wayfinder-maps install-skill --with-optional        # also the extras from skills/.optional/
+wayfinder-maps install-skill --dry-run              # list what would change, write nothing
+wayfinder-maps install-skill --force                # replace wayfinder dirs that are unmanaged or edited
+```
+
+![install-skill dry run, install, no-op rerun and a refused overwrite](docs/images/install-skill.png)
+
+- Without a terminal it needs `--yes` or `--dir`, so a script never writes into your agent dirs by accident.
+- Skills install as `wayfinder-maps` and `wayfinder-<name>` (`wayfinder-grill-me`, `wayfinder-research`, ...), so they are recognisable in a dir listing and never clash with your own `grill-me`. Cross-references inside the skills are rewritten to match.
+- Each dir gets `.wayfinder-maps-skills.lock.json` with `version`, `commit` (when the binary has an install receipt), `installed_at` and a sha256 per file. Only skill dirs listed in it are managed; everything else in the dir is left alone. Commit it when you vendor the skills into a repo (`--dir <repo>/skills` is the sync primitive).
+- Without `--force` it stops with exit 2 and changes nothing (in any dir) when a target skill dir exists but is not in the lock, or has files that differ from the lock. A clean upgrade replaces the dirs and drops files removed upstream.
+- Rerunning at the same version is a no-op.
+- Each skill dir also carries the upstream MIT `LICENSE`.
+
+### Updating the skills
+
+A new release carries new embedded skills, so updating is the same two steps as installing:
+
+```sh
+wayfinder-maps self-update       # new binary, new embedded skills
+wayfinder-maps install-skill     # skills dirs that follow the lock are upgraded in place
+```
+
+![install-skill upgrading one skill and refusing a locally edited one](docs/images/install-skill-update.png)
+
+- Only skills whose content changed are shown as `update`; the rest stay `unchanged`, and a dir with no changes is not rewritten.
+- An upgrade replaces the whole skill dir, so files removed upstream disappear, and the lock records the new `version`.
+- A skill you edited locally (or a stray file in a managed skill dir) blocks the run with exit 2 and no changes in any dir. Re-run with `--force` to take upstream's version, or move your edits elsewhere first.
+- Use `--dry-run` first to see which skills would change.
+
+### Updating the binary
 
 A binary installed from a release by `install.sh` upgrades itself in place:
 
