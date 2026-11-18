@@ -5,7 +5,6 @@ package ghpull
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -171,7 +170,7 @@ func (p *Puller) pull(o Options, who *string) error {
 	if auth == "gh" && account != "" {
 		*who = fmt.Sprintf("gh account '%s'", account)
 		var err error
-		if token, err = p.accountToken(account); err != nil {
+		if token, err = AccountToken(p.GH, account); err != nil {
 			return err
 		}
 	}
@@ -200,7 +199,7 @@ func (p *Puller) pull(o Options, who *string) error {
 		return err
 	}
 	if out == "" {
-		out = filepath.Join(".plan", slugify(m.Title))
+		out = filepath.Join(".plan", Slugify(m.Title))
 	}
 
 	subs, err := getPaged[issue](p, token, fmt.Sprintf("repos/%s/issues/%d/sub_issues", repo, mapNum))
@@ -290,19 +289,6 @@ func (p *Puller) pull(o Options, who *string) error {
 	return nil
 }
 
-// accountToken returns the token of a logged-in gh account.
-func (p *Puller) accountToken(account string) (string, error) {
-	b, err := p.GH("", "auth", "token", "--user", account)
-	if err != nil {
-		var ge *GHError
-		if errors.As(err, &ge) && ge.Kind == KindMissing {
-			return "", err
-		}
-		return "", userErr("gh account '%s' is not logged in. Run: gh auth login", account)
-	}
-	return strings.TrimSpace(string(b)), nil
-}
-
 // pullTicket writes one ticket file and returns its relative link. It also
 // files the ticket into the generated map sections.
 func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, implemented, outOfScope *strings.Builder) (string, error) {
@@ -358,7 +344,7 @@ func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, impleme
 	}
 	blockedJSON, _ := json.Marshal(blockedBy)
 
-	slug := slugify(t.Title)
+	slug := Slugify(t.Title)
 	name := fmt.Sprintf("%d-%s.md", t.Number, slug)
 	link := "./tickets/" + name
 
@@ -476,8 +462,8 @@ func getPaged[T any](p *Puller, token, endpoint string) ([]T, error) {
 
 var nonSlug = regexp.MustCompile(`[^a-z0-9]+`)
 
-// slugify lowercases ASCII, collapses other runs to "-", and caps at 50 chars.
-func slugify(s string) string {
+// Slugify lowercases ASCII, collapses other runs to "-", and caps at 50 chars.
+func Slugify(s string) string {
 	lower := strings.Map(func(r rune) rune {
 		if r >= 'A' && r <= 'Z' {
 			return r + 'a' - 'A'

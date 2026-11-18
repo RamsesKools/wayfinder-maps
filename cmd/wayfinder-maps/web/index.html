@@ -21,6 +21,14 @@
   <div class="splashcard">
     <div class="logo"><img src="favicon.svg" alt="">wayfinder</div>
     <button id="openfolder">Open Folder&hellip;</button>
+    <div id="gh">
+      <div class="recent-h">GitHub</div>
+      <div id="ghstatus"></div>
+      <input id="ghrepo" list="ghrepos" placeholder="owner/repo or GitHub URL" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub repository">
+      <datalist id="ghrepos"></datalist>
+      <div id="ghmap"><button id="ghmapbtn" type="button" aria-haspopup="listbox" aria-expanded="false" disabled>Choose a map&hellip;</button><div id="ghmaplist" role="listbox" hidden></div></div>
+      <div class="ghrow"><button id="ghopen" disabled>Open from GitHub</button><span id="ghstat" hidden><i class="spin"></i><span class="txt"></span></span></div>
+    </div>
     <div class="recent-h">Recent</div>
     <div id="recents"></div>
   </div>

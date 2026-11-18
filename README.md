@@ -68,6 +68,36 @@ It lives in `recents.json` in your user config directory, and the `x` on an entr
 
 <img src="docs/images/recent-maps-splash.png" alt="The splash screen after serving a map from the CLI, listing it under Recent as a map">
 
+The list scrolls when it is long.
+A map cached from GitHub (see below) also has a `clean up` button, which deletes the cached copy and the entry.
+The `x` only forgets an entry and never touches files.
+
+## Open a map from GitHub
+
+A map kept as [GitHub issues](#maps-kept-as-github-issues) opens straight from the splash, with no `pull` first.
+It needs the [GitHub CLI](https://cli.github.com), logged in.
+
+1. The splash shows the `gh` account in use, with a dropdown to switch when several are logged in.
+   Without `gh`, or without a login, it shows a hint (install it, or run `gh auth login`) and dims and disables the button.
+2. Paste `owner/repo` or a GitHub URL into the repo box, or pick from its dropdown: the 10 repos you pushed to most recently, plus repos you opened from GitHub before.
+3. The repo is scanned for maps, which are issues with sub-issues where a child carries a `wayfinder:<type>` label.
+   Each map shows its percent completed, and closed maps are dimmed.
+   The scan reads the 100 most recently updated issues of the repo.
+4. `Open from GitHub` pulls the map with the usual progress into `<user cache dir>/wayfinder-maps/github/<owner>-<repo>/<slug>`, then opens it and lists it under Recent.
+
+<img src="docs/images/github-open-pick-map.png" alt="The splash with the gh account, a pasted repo URL and the map dropdown showing three maps with their percent completed, the closed one dimmed" width="420">
+
+<img src="docs/images/github-open-not-logged-in.png" alt="The splash without a gh login: a hint to run gh auth login, and the repo box, map dropdown and Open from GitHub button dimmed" width="420">
+
+The copy is a read-only mirror: nothing is written back to GitHub, and the `Pull from GitHub` button refreshes it.
+Cached maps carry a `clean up` button in Recent, next to the `x` that only forgets the entry.
+
+<img src="docs/images/github-open-recents.png" alt="The Recent list with a GitHub map hovered, showing its clean up and forget buttons" width="420">
+
+<img src="docs/images/github-open-recents-scrolled.png" alt="The Recent list scrolled to its bottom, showing it scrolls when long" width="420">
+
+<img src="docs/images/github-open-map.png" alt="The map opened from GitHub, with the repo name in the top bar and the pull button next to the account">
+
 ## Fork vs upstream
 
 [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) stops where the decisions stop.
@@ -90,6 +120,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | `install-skill` | Skills embedded in the binary, installed per harness |
 | Favicon | A glowing constellation in the browser tab |
 | Recent maps | Maps opened from the CLI or the viewer are listed on the splash |
+| Open from GitHub | Find a map in a repo and open it from the splash, with account choice, no `pull` first |
 
 The full list, with screenshots, is in [docs/comparison.md](docs/comparison.md).
 

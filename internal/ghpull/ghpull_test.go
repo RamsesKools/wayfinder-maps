@@ -303,11 +303,11 @@ func TestSlugify(t *testing.T) {
 		long:                            "a-very-long-title-that-keeps-going-well-past-the-f",
 		"":                              "",
 	} {
-		if got := slugify(in); got != want {
-			t.Errorf("slugify(%q) = %q, want %q", in, got, want)
+		if got := Slugify(in); got != want {
+			t.Errorf("Slugify(%q) = %q, want %q", in, got, want)
 		}
 	}
-	if !regexp.MustCompile(`^[a-z0-9-]{0,50}$`).MatchString(slugify(strings.Repeat("ab ", 40))) {
+	if !regexp.MustCompile(`^[a-z0-9-]{0,50}$`).MatchString(Slugify(strings.Repeat("ab ", 40))) {
 		t.Error("slug not capped")
 	}
 }
