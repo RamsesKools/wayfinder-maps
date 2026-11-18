@@ -8,7 +8,8 @@ import {setupEndpoints} from "./endpoints.js";
 import {buildHud} from "./hud.js";
 import {fillPanel, closePanel} from "./panel.js";
 import {startFade} from "./draw.js";
-import {parseSSE, progressText} from "./sse.js";
+import {readEvents, progressText} from "./sse.js";
+import {refreshGithub} from "./ghpicker.js";
 
 function sortNodes(g) { return (g.nodes || []).slice().sort(function(a, b) { return a.num - b.num; }); }
 
@@ -82,7 +83,7 @@ function setPullStat(kind, text) {
   st.querySelector(".txt").textContent = text || "";
 }
 
-function errText(m) { return (m || "Pull failed").replace(/^wayfinder-pull: /, ""); }
+function errText(m) { return (m || "Refresh failed").replace(/^wayfinder-pull: /, ""); }
 
 // pullFromGithub re-pulls a GitHub-backed map into .plan/ on the server, which
 // streams progress as SSE (POST, so fetch rather than EventSource), then shows
@@ -101,23 +102,14 @@ export function pullFromGithub() {
   fetch("/api/pull?effort=" + encodeURIComponent(eff), {method: "POST", headers: {"X-Wayfinder": "1"}})
     .then(function(r) {
       if (!r.ok) return r.text().then(function(t) { throw new Error(t.trim()); });
-      var reader = r.body.getReader(), dec = new TextDecoder(), buf = "";
-      var pump = function() {
-        return reader.read().then(function(c) {
-          if (c.done) return;
-          var p = parseSSE(buf + dec.decode(c.value, {stream: true})); buf = p.rest;
-          p.events.forEach(onEvent);
-          return pump();
-        });
-      };
-      return pump();
+      return readEvents(r, onEvent);
     })
     .then(function() {
       if (failed) return;
-      if (!finished) throw new Error("Pull ended without finishing");
+      if (!finished) throw new Error("Refresh ended without finishing");
       return refreshMap().then(function() {
         if (!live()) return;
-        setPullStat("done", "Pulled " + total + " items");
+        setPullStat("done", "Refreshed " + total + " items");
         setTimeout(function() { if (live() && document.getElementById("pullstat").className === "done") setPullStat("", ""); }, 5000);
       });
     })
@@ -132,8 +124,9 @@ function showPullButton(eff) {
   btn.hidden = true; acct.hidden = true; setPullStat("", "");
   fetch("/api/source?effort=" + encodeURIComponent(eff)).then(function(r) { return r.json(); }).then(function(s) {
     if (S.currentEffort !== eff || !s.pullable) return;
+    if (!document.getElementById("projtag").textContent) document.getElementById("projtag").textContent = s.repo;
     btn.hidden = false;
-    btn.title = "Re-pull " + s.repo + "#" + s.map + (s.account ? " as " + s.account : "");
+    btn.title = "Refresh " + s.repo + "#" + s.map + (s.account ? " as " + s.account : "");
     if (s.account) { acct.hidden = false; acct.textContent = "@" + s.account; acct.title = "gh account used to pull " + s.repo + "#" + s.map; }
   }).catch(function() {});
 }
@@ -202,9 +195,9 @@ function renderRecents(rs) {
   if (!rs || !rs.length) { rc.innerHTML = "<div class='muted' style='text-align:left;font-size:12px'>No recent maps yet.</div>"; return; }
   rs.forEach(function(p) {
     var isMap = p.kind === "map";
-    var b = el("button", "recent");
+    var b = el("button", "recent" + (p.cached ? " cached" : ""));
     b.appendChild(el("span", "rname", p.name));
-    b.appendChild(el("span", "rmeta", isMap ? "map" : p.maps + " map" + (p.maps === 1 ? "" : "s")));
+    b.appendChild(el("span", "rmeta", p.cached ? "github" : isMap ? "map" : p.maps + " map" + (p.maps === 1 ? "" : "s")));
     // A span, not a button: this row is itself a button, and nesting one inside
     // another is invalid. stopPropagation keeps the dismiss from opening the
     // project it is dismissing.
@@ -215,6 +208,15 @@ function renderRecents(rs) {
         .then(function(r) { return r.json(); }).then(renderRecents);
     };
     b.appendChild(x);
+    if (p.cached) {
+      var c = el("span", "rclean", "clean up"); c.title = "Delete the cached copy from disk and forget it (pull again to get it back)";
+      c.onclick = function(ev) {
+        ev.stopPropagation();
+        fetch("/api/recents/cleanup?project=" + encodeURIComponent(p.path), {method: "POST", headers: {"X-Wayfinder": "1"}})
+          .then(function(r) { return r.ok ? r.json() : Promise.reject(); }).then(renderRecents).catch(function() {});
+      };
+      b.appendChild(c);
+    }
     b.title = p.path;
     b.onclick = function() {
       if (!isMap) { openProject(p.path); return; }
@@ -229,6 +231,7 @@ export function showSplash() {
   setScreen("splash");
   document.getElementById("recents").innerHTML = "";
   fetch("/api/recents").then(function(r) { return r.json(); }).then(renderRecents);
+  refreshGithub();
 }
 
 export function openProject(path) {

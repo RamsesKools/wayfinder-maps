@@ -97,3 +97,12 @@ func explain(err error, who string) error {
 	}
 	return fmt.Errorf("%v", ge)
 }
+
+// Explain is explain for callers outside Pull; who names the credentials, e.g.
+// "gh account 'alice'", or "" for the active account.
+func Explain(err error, who string) error {
+	if who == "" {
+		who = "the active gh account"
+	}
+	return explain(err, who)
+}

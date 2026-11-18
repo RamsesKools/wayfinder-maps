@@ -174,6 +174,8 @@ func newServer(initial string) http.Handler {
 		writeJSON(w, buildGraph(e))
 	})
 
+	registerGitHub(mux, func(w http.ResponseWriter, v any) { writeJSON(w, v) })
+
 	// Whether the effort is a GitHub mirror, so the client can offer a pull.
 	mux.HandleFunc("/api/source", func(w http.ResponseWriter, r *http.Request) {
 		src, ok := readPullSource(r.URL.Query().Get("effort"))
@@ -194,25 +196,9 @@ func newServer(initial string) http.Handler {
 			http.Error(w, "not a GitHub-backed map (no .source.json); run wayfinder-maps pull once", http.StatusBadRequest)
 			return
 		}
-		fl, _ := w.(http.Flusher)
-		w.Header().Set("Content-Type", "text/event-stream")
-		w.Header().Set("Cache-Control", "no-cache")
-		send := func(event string, v any) {
-			b, _ := json.Marshal(v)
-			fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event, b)
-			if fl != nil {
-				fl.Flush()
-			}
-		}
-		send("progress", map[string]int{"done": 0, "total": 0})
-		err := runPull(effort, func(done, total int) {
-			send("progress", map[string]int{"done": done, "total": total})
+		streamSSE(w, func(progress func(done, total int)) (any, error) {
+			return map[string]string{}, runPull(effort, progress)
 		})
-		if err != nil {
-			send("error", map[string]string{"message": err.Error()})
-			return
-		}
-		send("done", map[string]string{})
 	})
 
 	// A cheap change token the client polls: the newest mtime across map.md +

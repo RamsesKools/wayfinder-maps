@@ -18,3 +18,18 @@ export function parseSSE(buf) {
 export function progressText(done, total) {
   return total > 0 ? done + "/" + total + " items" : "starting…";
 }
+
+// readEvents pumps a fetch Response body through parseSSE, calling onEvent per
+// event; it resolves when the stream ends.
+export function readEvents(res, onEvent) {
+  var reader = res.body.getReader(), dec = new TextDecoder(), buf = "";
+  var pump = function() {
+    return reader.read().then(function(c) {
+      if (c.done) return;
+      var p = parseSSE(buf + dec.decode(c.value, {stream: true})); buf = p.rest;
+      p.events.forEach(onEvent);
+      return pump();
+    });
+  };
+  return pump();
+}

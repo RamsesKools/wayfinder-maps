@@ -111,6 +111,9 @@ type recentEntry struct {
 	Name string `json:"name"`
 	Maps int    `json:"maps"`
 	Kind string `json:"kind,omitempty"`
+	// Cached marks a mirror the viewer pulled into the user cache dir, which
+	// may be cleaned up; it is recomputed on every load.
+	Cached bool `json:"cached,omitempty"`
 }
 
 func recentsFile() (string, error) {
@@ -146,6 +149,7 @@ func loadRecents() []recentEntry {
 		seen[r.Path] = true
 		if fi, err := os.Stat(r.Path); err == nil && fi.IsDir() && (r.Kind != kindMap || isEffort(r.Path)) {
 			r.Maps = len(listMaps(r.Path))
+			r.Cached = isCachedMirror(r.Path)
 			live = append(live, r)
 		}
 	}

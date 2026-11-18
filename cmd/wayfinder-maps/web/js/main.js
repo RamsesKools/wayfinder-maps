@@ -5,6 +5,7 @@ import {initStars, render} from "./draw.js";
 import "./input.js"; // wires pan/zoom/click on the canvas
 import "./panel.js"; // wires the panel close button and cross-ticket links
 import {startPolling, showSplash, openProject, loadMap, leaveMap, pullFromGithub, setDirection} from "./screens.js";
+import {mountGithub} from "./ghpicker.js";
 import {mountCompass} from "./compass.js";
 import {DEFAULT, isDir} from "./direction.js";
 
@@ -23,6 +24,7 @@ document.getElementById("backbtn").onclick = function() {
 };
 
 document.getElementById("pullbtn").onclick = pullFromGithub;
+mountGithub(function(path, refresh) { S.lastProject = null; loadMap(path); if (refresh) pullFromGithub(); });
 
 // The compass rides above the HUD bar, whose height changes with its content and width.
 var hudEl = document.getElementById("hud");
