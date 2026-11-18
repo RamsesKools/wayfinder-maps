@@ -84,14 +84,17 @@ It needs the [GitHub CLI](https://cli.github.com), logged in.
    Each map shows its percent completed, and closed maps are dimmed.
    The scan reads the 100 most recently updated issues of the repo.
 4. `Open from GitHub` pulls the map with the usual progress into `<user cache dir>/wayfinder-maps/github/<owner>-<repo>/<slug>`, then opens it and lists it under Recent.
+   A map already in the cache opens at once instead, and the viewer starts the same refresh as the `Refresh from GitHub` button, so you see the spinner and `N/M items` in the top bar while it updates.
 
 <img src="docs/images/github-open-repos.png" alt="The repo box with its list of recently active repos open, and a chevron on the right of the box" width="420">
+
+<img src="docs/images/github-open-cached-refresh.png" alt="A map opened from the cache straight away, with the top bar showing the Refresh from GitHub button, the gh account and a spinner at 3/11 items while the refresh runs" width="720">
 
 <img src="docs/images/github-open-pick-map.png" alt="The splash with the gh account, a pasted repo URL and the map dropdown showing three maps with their percent completed, the closed one dimmed" width="420">
 
 <img src="docs/images/github-open-not-logged-in.png" alt="The splash without a gh login: a hint to run gh auth login, and the repo box, map dropdown and Open from GitHub button dimmed" width="420">
 
-The copy is a read-only mirror: nothing is written back to GitHub, and the `Pull from GitHub` button refreshes it.
+The copy is a read-only mirror: nothing is written back to GitHub, and the `Refresh from GitHub` button refreshes it.
 Cached maps carry a `clean up` button in Recent, next to the `x` that only forgets the entry.
 
 <img src="docs/images/github-open-recents.png" alt="The Recent list with a GitHub map hovered, showing its clean up and forget buttons" width="420">
@@ -117,7 +120,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | Compass | The map flows in any of 8 directions or radially |
 | Narrow-screen layout | Wrapping top bar and foldable status bar |
 | `pull` in the binary | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
-| Pull button | The same pull from the viewer |
+| Refresh button | The same pull from the viewer |
 | `self-update` | The binary upgrades itself |
 | `install-skill` | Skills embedded in the binary, installed per harness |
 | Favicon | A glowing constellation in the browser tab |
@@ -429,7 +432,7 @@ $ wayfinder-maps pull acme/secret 10       # no access to the repo or issue
 wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'alice' (HTTP 404). Check the repo name and issue number, and that this account can see the repo; check with: gh auth status
 ```
 
-These exit with code 2. In the viewer the same message shows when a Pull fails.
+These exit with code 2. In the viewer the same message shows when a refresh fails.
 
 ```
 $ wayfinder-maps pull acme/widgets 10
@@ -495,7 +498,7 @@ pulled 1/6 items
 pulled 6/6 items
 ```
 
-The viewer shows the same progress: the Pull button streams it from the server (server-sent
+The viewer shows the same progress: the Refresh button streams it from the server (server-sent
 events) as a spinner and `N/M items`, then a done or error state with the message. The account
 in use is shown next to the button.
 

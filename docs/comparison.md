@@ -49,7 +49,7 @@ graph. A map with no implement tickets reads exactly as it does upstream.
 
   <img src="images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
 
-- **One top bar.** The Maps and Pull buttons, the project name and the hint share a single bar that wraps onto extra rows instead of overlapping, and it gives way to the detail panel when that opens.
+- **One top bar.** The Maps and Refresh buttons, the project name and the hint share a single bar that wraps onto extra rows instead of overlapping, and it gives way to the detail panel when that opens.
 
   <img src="images/topbar-narrow.png" alt="The top bar at 360px wide: overlapping before, wrapped after">
 
@@ -61,7 +61,7 @@ The [design record](implement-phase-design.md) has the full plan.
 
 - **`wayfinder-maps pull` in the binary.** Upstream ships a `wayfinder-pull` script that mirrors a map kept as GitHub issues into `.plan/`.
   Here it is a subcommand, with the implement labels and linked PRs imported, see [Maps kept as GitHub issues](../README.md#maps-kept-as-github-issues).
-- **Pull from the viewer.** A Pull button in the top bar re-pulls the map and streams progress (spinner and `N/M items`), then a done or error state.
+- **Refresh from the viewer.** A Refresh from GitHub button in the top bar re-pulls the map and streams progress (spinner and `N/M items`), then a done or error state.
 - **Choosing the `gh` account.** `--account <gh-user>` pulls as another logged-in account, and the viewer shows which account it uses, see [Choosing the gh account](../README.md#choosing-the-gh-account).
 
   <img src="images/pull-account.png" alt="The pull button with the gh account it pulls as">
@@ -99,11 +99,13 @@ The [design record](implement-phase-design.md) has the full plan.
 
   <img src="images/recent-maps-splash.png" alt="The splash screen listing a map served from the CLI under Recent">
 
-- **Open a map from GitHub.** The splash shows the `gh` account (and switches between logged-in ones), takes a pasted repo or picks from the 10 repos you were most recently active in, scans the repo for maps with their percent completed, and opens the chosen one into the user cache dir, see [Open a map from GitHub](../README.md#open-a-map-from-github).
+- **Open a map from GitHub.** The splash shows the `gh` account (and switches between logged-in ones), takes a pasted repo or picks from the 10 repos you were most recently active in, scans the repo for maps with their percent completed, and opens the chosen one into the user cache dir (a map already cached opens at once and refreshes in the background, with the spinner in the top bar), see [Open a map from GitHub](../README.md#open-a-map-from-github).
   Without `gh` or a login the button is dimmed, with a hint.
   The Recent list scrolls, and a cached map has a `clean up` button that deletes its mirror, apart from the `x` that only forgets the entry.
 
   <img src="images/github-open-repos.png" alt="The repo box with its list of recently active repos open, and a chevron on the right of the box" width="420">
+
+  <img src="images/github-open-cached-refresh.png" alt="A map opened from the cache straight away, with the top bar showing the Refresh from GitHub button, the gh account and a spinner at 3/11 items while the refresh runs" width="720">
 
   <img src="images/github-open-pick-map.png" alt="The splash with the gh account, a pasted repo and the map dropdown with percent completed, the closed map dimmed" width="420">
 

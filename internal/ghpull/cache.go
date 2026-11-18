@@ -28,6 +28,20 @@ func MirrorDir(cacheRoot, repo, title string, num int) string {
 	return dir
 }
 
+// FindMirror locates the cached mirror of a repo's map by issue number, so a
+// map renamed on GitHub is still found under its old slug.
+func FindMirror(cacheRoot, repo string, num int) (string, bool) {
+	repoDir := filepath.Join(githubCache(cacheRoot), strings.ReplaceAll(repo, "/", "-"))
+	entries, _ := os.ReadDir(repoDir)
+	for _, e := range entries {
+		dir := filepath.Join(repoDir, e.Name())
+		if src, ok := ReadSource(dir); ok && src.Map == num && strings.EqualFold(src.Repo, repo) {
+			return dir, true
+		}
+	}
+	return "", false
+}
+
 // IsMirror reports whether path is exactly <cache>/.../<owner>-<repo>/<slug>
 // holding a pull's .source.json, so cleanup can never reach anything else.
 func IsMirror(cacheRoot, path string) bool {

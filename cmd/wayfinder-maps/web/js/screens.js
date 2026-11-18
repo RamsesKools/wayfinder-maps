@@ -83,7 +83,7 @@ function setPullStat(kind, text) {
   st.querySelector(".txt").textContent = text || "";
 }
 
-function errText(m) { return (m || "Pull failed").replace(/^wayfinder-pull: /, ""); }
+function errText(m) { return (m || "Refresh failed").replace(/^wayfinder-pull: /, ""); }
 
 // pullFromGithub re-pulls a GitHub-backed map into .plan/ on the server, which
 // streams progress as SSE (POST, so fetch rather than EventSource), then shows
@@ -106,10 +106,10 @@ export function pullFromGithub() {
     })
     .then(function() {
       if (failed) return;
-      if (!finished) throw new Error("Pull ended without finishing");
+      if (!finished) throw new Error("Refresh ended without finishing");
       return refreshMap().then(function() {
         if (!live()) return;
-        setPullStat("done", "Pulled " + total + " items");
+        setPullStat("done", "Refreshed " + total + " items");
         setTimeout(function() { if (live() && document.getElementById("pullstat").className === "done") setPullStat("", ""); }, 5000);
       });
     })
@@ -126,7 +126,7 @@ function showPullButton(eff) {
     if (S.currentEffort !== eff || !s.pullable) return;
     if (!document.getElementById("projtag").textContent) document.getElementById("projtag").textContent = s.repo;
     btn.hidden = false;
-    btn.title = "Re-pull " + s.repo + "#" + s.map + (s.account ? " as " + s.account : "");
+    btn.title = "Refresh " + s.repo + "#" + s.map + (s.account ? " as " + s.account : "");
     if (s.account) { acct.hidden = false; acct.textContent = "@" + s.account; acct.title = "gh account used to pull " + s.repo + "#" + s.map; }
   }).catch(function() {});
 }

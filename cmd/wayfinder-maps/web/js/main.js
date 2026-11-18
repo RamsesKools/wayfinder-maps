@@ -24,7 +24,7 @@ document.getElementById("backbtn").onclick = function() {
 };
 
 document.getElementById("pullbtn").onclick = pullFromGithub;
-mountGithub(function(path) { S.lastProject = null; loadMap(path); });
+mountGithub(function(path, refresh) { S.lastProject = null; loadMap(path); if (refresh) pullFromGithub(); });
 
 // The compass rides above the HUD bar, whose height changes with its content and width.
 var hudEl = document.getElementById("hud");

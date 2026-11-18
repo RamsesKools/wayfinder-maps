@@ -60,6 +60,7 @@ func TestGitHubEndpointsNeedTheCustomHeader(t *testing.T) {
 		{"GET", "/api/github/status"},
 		{"GET", "/api/github/repos"},
 		{"GET", "/api/github/maps?repo=acme/widgets"},
+		{"GET", "/api/github/cached?repo=acme/widgets&map=1"},
 		{"POST", "/api/github/open?repo=acme/widgets&map=1&title=x"},
 		{"POST", "/api/recents/cleanup?project=/x"},
 	} {
@@ -268,3 +269,26 @@ func TestForgettingARecentNeverDeletesTheCachedFiles(t *testing.T) {
 }
 
 var errBoom = errors.New("boom")
+
+func TestGitHubCachedReportsAnExistingMirrorOfTheMap(t *testing.T) {
+	isolateGitHub(t, func(string, ...string) ([]byte, error) { return nil, errBoom })
+	cache, _ := userCacheDir()
+	dir := fakeMirror(t, cache, "acme/widgets", "Live map", 2)
+	get := func(target string) (res struct {
+		Cached bool   `json:"cached"`
+		Path   string `json:"path"`
+	}) {
+		rec := call(newServer(""), "GET", target, true)
+		if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil || rec.Code != 200 {
+			t.Fatalf("%s: %d %s", target, rec.Code, rec.Body)
+		}
+		return res
+	}
+
+	if r := get("/api/github/cached?repo=https://github.com/acme/widgets&map=2"); !r.Cached || r.Path != dir {
+		t.Errorf("cached = %+v, want %q", r, dir)
+	}
+	if r := get("/api/github/cached?repo=acme/widgets&map=5"); r.Cached || r.Path != "" {
+		t.Errorf("an unpulled map reported as cached: %+v", r)
+	}
+}

@@ -136,12 +136,23 @@ function renderList() {
   });
 }
 
+// open shows a map already in the cache at once and has the viewer refresh it
+// from GitHub; only a map never opened before is pulled first.
 function open() {
   var m = st.pick; if (!m || st.busy) return;
-  st.busy = true; sync(); setStat("run", progressText(0, 0));
+  st.busy = true; sync(); setStat("run", "Opening…");
+  var ids = "repo=" + encodeURIComponent(st.repo) + "&map=" + m.number;
+  getJSON("/api/github/cached?" + ids).catch(function() { return {cached: false}; }).then(function(c) {
+    if (c.cached) { setStat("", ""); openMap(c.path, true); return; }
+    return pull(m, ids);
+  }).catch(function(e) { setStat("err", e.message); }).then(function() { st.busy = false; sync(); });
+}
+
+function pull(m, ids) {
+  setStat("run", progressText(0, 0));
   var failed = false, path = "";
-  var url = "/api/github/open?repo=" + encodeURIComponent(st.repo) + "&map=" + m.number + "&title=" + encodeURIComponent(m.title) + "&account=" + encodeURIComponent(st.account);
-  fetch(url, {method: "POST", headers: H.headers}).then(function(r) {
+  var url = "/api/github/open?" + ids + "&title=" + encodeURIComponent(m.title) + "&account=" + encodeURIComponent(st.account);
+  return fetch(url, {method: "POST", headers: H.headers}).then(function(r) {
     if (!r.ok) return r.text().then(function(t) { throw new Error(t.trim()); });
     return readEvents(r, function(ev) {
       if (ev.event === "progress") setStat("run", progressText(ev.data.done, ev.data.total));
@@ -151,8 +162,8 @@ function open() {
   }).then(function() {
     if (failed) return;
     if (!path) throw new Error("Pull ended without finishing");
-    setStat("", ""); openMap(path);
-  }).catch(function(e) { setStat("err", e.message); }).then(function() { st.busy = false; sync(); });
+    setStat("", ""); openMap(path, false);
+  });
 }
 
 // refreshGithub re-reads the gh status each time the splash shows, so logging
@@ -183,7 +194,9 @@ export function mountGithub(onOpen) {
   repo.onchange = function() { scan(); };
   repo.oninput = function() {
     clearTimeout(timer);
-    if (renderRepos(repo.value)) repoMenu.open(); else repoMenu.close();
+    var typed = repo.value.trim().toLowerCase(), n = renderRepos(repo.value);
+    // A complete name needs no suggestion, and its list would cover the map box.
+    if (n && !(n === 1 && st.repos.some(function(r) { return r.toLowerCase() === typed; }))) repoMenu.open(); else repoMenu.close();
     timer = setTimeout(function() { if (/^\S+\/\S+$|github\.com/.test(repo.value.trim())) scan(); }, 500);
   };
   repo.onkeydown = function(ev) {

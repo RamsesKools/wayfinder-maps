@@ -111,3 +111,20 @@ func TestRemoveMirrorRefusesAnythingThatIsNotACachedMirror(t *testing.T) {
 		t.Errorf("outside dir touched: %v", err)
 	}
 }
+
+func TestFindMirrorLocatesAMirrorByMapNumberEvenAfterTheTitleChanged(t *testing.T) {
+	root := t.TempDir()
+	old := MirrorDir(root, "acme/widgets", "Old title", 2)
+	writeMirror(t, old, "acme/widgets", 2)
+	writeMirror(t, MirrorDir(root, "acme/widgets", "Other", 3), "acme/widgets", 3)
+
+	if got, ok := FindMirror(root, "acme/widgets", 2); !ok || got != old {
+		t.Errorf("FindMirror = %q, %v; want %q", got, ok, old)
+	}
+	if _, ok := FindMirror(root, "acme/widgets", 9); ok {
+		t.Error("map 9 was never pulled")
+	}
+	if _, ok := FindMirror(root, "acme/gadgets", 2); ok {
+		t.Error("map 2 of another repo was never pulled")
+	}
+}

@@ -190,6 +190,23 @@ func registerGitHub(mux *http.ServeMux, writeJSON func(http.ResponseWriter, any)
 
 	// Pull a map into the user cache dir, streaming progress as SSE. The
 	// "done" event carries the mirror's path, which the client then opens.
+	// Whether the map already has a cached mirror, which the picker opens
+	// straight away and then refreshes.
+	mux.HandleFunc("/api/github/cached", func(w http.ResponseWriter, r *http.Request) {
+		if !needsHeader(w, r, http.MethodGet) {
+			return
+		}
+		repo, err := ghpull.ParseRepo(r.URL.Query().Get("repo"))
+		num, nerr := strconv.Atoi(r.URL.Query().Get("map"))
+		cache, cerr := userCacheDir()
+		if err != nil || nerr != nil || cerr != nil {
+			http.Error(w, "repo, map and the user cache dir are required", http.StatusBadRequest)
+			return
+		}
+		path, ok := ghpull.FindMirror(cache, repo, num)
+		writeJSON(w, map[string]any{"cached": ok, "path": path})
+	})
+
 	mux.HandleFunc("/api/github/open", func(w http.ResponseWriter, r *http.Request) {
 		if !needsHeader(w, r, http.MethodPost) {
 			return
