@@ -58,6 +58,16 @@ Blocked:
 Fog: 0 patches, 0 anchored to a ticket
 ```
 
+## Recent maps
+
+Every map you open with `serve`, `app` or the viewer is remembered on this machine, so the `Maps` button and the splash list it next time.
+A map with a `map.md` is one entry, any other folder is a project entry that opens its map list.
+A path that fails to load, or a port that is already taken, records nothing.
+The list holds 20 entries, newest first, without duplicates, and drops folders that no longer exist.
+It lives in `recents.json` in your user config directory, and the `x` on an entry forgets it.
+
+<img src="docs/images/recent-maps-splash.png" alt="The splash screen after serving a map from the CLI, listing it under Recent as a map">
+
 ## Fork vs upstream
 
 [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) stops where the decisions stop.
@@ -79,6 +89,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | `self-update` | The binary upgrades itself |
 | `install-skill` | Skills embedded in the binary, installed per harness |
 | Favicon | A glowing constellation in the browser tab |
+| Recent maps | Maps opened from the CLI or the viewer are listed on the splash |
 
 The full list, with screenshots, is in [docs/comparison.md](docs/comparison.md).
 

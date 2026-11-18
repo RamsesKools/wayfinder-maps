@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -12,7 +11,7 @@ import (
 // startAppServer starts the web server on an ephemeral localhost port for the
 // native window (or its browser fallback) to point at.
 func startAppServer(dir string) (url, title string, err error) {
-	ln, err := net.Listen("tcp", "localhost:0")
+	ln, err := listenAndRecord("localhost:0", dir)
 	if err != nil {
 		return "", "", err
 	}

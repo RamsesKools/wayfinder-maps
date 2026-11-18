@@ -194,27 +194,33 @@ function setScreen(s) {
   if (s !== "map") closePanel();
 }
 
-// renderRecents paints the list. The remove endpoint answers with the trimmed
+// renderRecents paints the list of projects and single maps. The remove endpoint answers with the trimmed
 // list, so forgetting an entry re-renders from the server's truth rather than
 // from a guess about what is left.
 function renderRecents(rs) {
   var rc = document.getElementById("recents"); rc.innerHTML = "";
-  if (!rs || !rs.length) { rc.innerHTML = "<div class='muted' style='text-align:left;font-size:12px'>No recent projects yet.</div>"; return; }
+  if (!rs || !rs.length) { rc.innerHTML = "<div class='muted' style='text-align:left;font-size:12px'>No recent maps yet.</div>"; return; }
   rs.forEach(function(p) {
+    var isMap = p.kind === "map";
     var b = el("button", "recent");
     b.appendChild(el("span", "rname", p.name));
-    b.appendChild(el("span", "rmeta", p.maps + " map" + (p.maps === 1 ? "" : "s")));
+    b.appendChild(el("span", "rmeta", isMap ? "map" : p.maps + " map" + (p.maps === 1 ? "" : "s")));
     // A span, not a button: this row is itself a button, and nesting one inside
     // another is invalid. stopPropagation keeps the dismiss from opening the
     // project it is dismissing.
-    var x = el("span", "rx", "×"); x.title = "Forget this project";
+    var x = el("span", "rx", "×"); x.title = isMap ? "Forget this map" : "Forget this project";
     x.onclick = function(ev) {
       ev.stopPropagation();
       fetch("/api/recents/remove?project=" + encodeURIComponent(p.path), {method: "POST"})
         .then(function(r) { return r.json(); }).then(renderRecents);
     };
     b.appendChild(x);
-    b.onclick = function() { openProject(p.path); };
+    b.title = p.path;
+    b.onclick = function() {
+      if (!isMap) { openProject(p.path); return; }
+      S.lastProject = null; // a lone map has no project list to go back to
+      loadMap(p.path);
+    };
     rc.appendChild(b);
   });
 }
@@ -261,7 +267,7 @@ export function loadMap(effort) {
   S.currentEffort = effort; S.lastVersion = null; S.selected = null;
   document.getElementById("projtag").textContent = projectName(effort);
   showPullButton(effort);
-  fetch("/api/graph?effort=" + encodeURIComponent(effort)).then(function(r) { return r.json(); }).then(function(g) {
+  fetch("/api/graph?open=1&effort=" + encodeURIComponent(effort)).then(function(r) { return r.json(); }).then(function(g) {
     setScreen("map"); applyGraph(g); startFade(0, 1, 2.2); // dissolve the constellation in
   });
 }
