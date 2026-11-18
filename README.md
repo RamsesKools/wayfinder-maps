@@ -58,78 +58,29 @@ Blocked:
 Fog: 0 patches, 0 anchored to a ticket
 ```
 
-## Rengwu's wayfinder CLI vs RamsesKools' wayfinder CLI
+## Fork vs upstream
 
-[rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) stops where the
-decisions stop: a map is done when the way is clear, and the build happens somewhere else.
-This fork lets a map carry on into the implementation, so the whole journey lives in one
-graph. A map with no implement tickets reads exactly as it does upstream.
+[rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) stops where the decisions stop.
+This fork lets a map carry on into implementation, so the whole journey lives in one graph.
+A map with no implement tickets reads exactly as it does upstream.
 
-<img src="docs/images/compare.png" alt="The same map in the upstream viewer (v0.2.3) and in this fork (v0.4.0), with callouts for implement stations, frontier badges, the start and goal, the split HUD and the ticket panel with its PR chip">
+<img src="docs/images/compare.png" alt="The same map in the upstream viewer and in this fork, with callouts for implement stations, frontier badges, the start and goal, the split HUD and the ticket panel with its PR chip">
 
-What this fork adds:
+| Addition | What it gives you |
+| --- | --- |
+| `implement` tickets | Shipped work lives on the map, with an optional PR link |
+| AFK or HITL frontier | Each ready ticket says whether an agent can take it |
+| Split `status`, lint, graph JSON | Decisions and implementation counted apart |
+| Start and goal in the viewer | A virtual start and a goal cloud holding the fog |
+| Compass | The map flows in any of 8 directions or radially |
+| Narrow-screen layout | Wrapping top bar and foldable status bar |
+| `pull` in the binary | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
+| Pull button | The same pull from the viewer |
+| `self-update` | The binary upgrades itself |
+| `install-skill` | Skills embedded in the binary, installed per harness |
+| Favicon | A glowing constellation in the browser tab |
 
-- **`implement` tickets.** Each one ships in one repo, usually as one PR, with a `## What to build`
-  body plus acceptance criteria, and resolves when the work has shipped. The optional `pr:`
-  field links the PR when there is one.
-- **Planning the implementation.** A "Plan the implementation of X" grilling ticket breaks
-  the destination into implement tickets, following
-  [`IMPLEMENT-PLAN.md`](skills/wayfinder-maps/IMPLEMENT-PLAN.md).
-- **`## Implemented so far`.** It lists shipped work, next to Decisions-so-far.
-- **AFK or HITL per ticket.** Every frontier ticket says whether an agent can take it
-  alone or it needs you, so a hub session can run the AFK ones in parallel workers.
-  A task marks itself with `afk: true`.
-- **`status` splits the map.** With implement tickets it counts decisions and
-  implementation separately, lists in-flight and shipped implement tickets (with their PR, when they have one),
-  and marks every frontier row AFK or HITL.
-- **Lint and graph JSON** know about all of the above.
-- **`pull`** imports the `wayfinder:implement` and `wayfinder:afk` labels and
-  the linked PRs.
-- **Viewer.** Implement tickets are hexagonal stations in an outer belt, frontier tickets
-  carry an agent or person badge, and a ticket panel links its PR when it has one.
-- **Flow direction.** A small compass in the bottom left corner points the map any of 8 ways, and
-  the centre button drops the direction for the original radial layout. East (left to
-  right) is the default.
-  The choice is saved in `settings.json` next to `recents.json` in your user config
-  directory, so it survives restarts.
-
-  <img src="docs/images/compass-directions.png" alt="The same map in four layouts: east, south, south-east and radial, with the compass dial in the bottom left highlighting the chosen direction">
-
-  South (top to bottom) suits a tall, narrow column: it fills the width and opens on the
-  start.
-
-  <img src="docs/images/compass-column.png" alt="The same map docked in a narrow column: east is small and sparse, south fills the column and starts at the top">
-
-- **Narrow screens.** The bottom status bar wraps onto extra rows instead of running off the
-  edge, so the title, counts, progress bar and legend all stay visible.
-
-  <img src="docs/images/hud-narrow.png" alt="The status bar at 360px wide: clipped before, wrapped onto several rows after">
-
-  The small arrow tab on the bar's top edge folds it down to just the title, and back out.
-
-  <img src="docs/images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
-
-- **One top bar.** The Maps and Pull buttons, the project name and the hint share a single bar that wraps onto extra rows instead of overlapping, and it gives way to the detail panel when that opens.
-
-  <img src="docs/images/topbar-narrow.png" alt="The top bar at 360px wide: overlapping before, wrapped after">
-
-  <img src="docs/images/topbar-medium.png" alt="The top bar at 720px wide: before and after">
-
-The [design record](docs/implement-phase-design.md) has the full plan.
-
-### Why these additions
-
-Wayfinder exists because planning and deciding don't always fit in one session. I think
-the same holds for implementation:
-
-1. Some of the fog only clears once you start building. An implementation regularly turns
-   up new questions that need a grilling, research or a prototype, and those belong on
-   the same map rather than in a fresh plan.
-2. I like tracking progress on the visual map, and an implementation too big for one
-   session deserves that view as well.
-
-So one map now tracks the decisions and the implementation, all the way until the work is
-done.
+The full list, with screenshots, is in [docs/comparison.md](docs/comparison.md).
 
 ## Install
 
