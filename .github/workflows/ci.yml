@@ -1,4 +1,4 @@
-# Push/PR guard. release.yml only fires on tags, so nothing here caught a
+# Push/PR guard. release.yml only fires on releases, so nothing here caught a
 # broken build — or, since the web/ refactor, a syntax error in an embedded JS
 # module, which no longer fails `go build` and would surface only at runtime in
 # the browser. This keeps it minimal: Go health plus an ESM syntax pass.

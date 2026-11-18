@@ -1,4 +1,5 @@
-# Release binaries on tag push. The Linux webkit helper must be built on Linux
+# Release binaries from a manual run on main (tag derived from plugin.json) or
+# from a pushed/selected vX.Y.Z tag. The Linux webkit helper must be built on Linux
 # (cgo against webkit2gtk), so two runner jobs build it per-arch first; the
 # GoReleaser job (Linux, goreleaser-cross) then builds everything else, darwin
 # with cgo via osxcross for the native window, windows and linux mains as pure Go — and packs the
@@ -11,12 +12,71 @@ name: release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
+  prepare:
+    name: Resolve and tag version
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: resolve
+        run: |
+          # plugin.json is the only version source; a tag must agree with it
+          VERSION=$(jq -r .version .claude-plugin/plugin.json)
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            TAG="$GITHUB_REF_NAME"
+          elif [ "$GITHUB_REF_NAME" = "main" ]; then
+            TAG="v$VERSION"
+          else
+            echo "Releases can only be cut from main or from a version tag, not from $GITHUB_REF_NAME."
+            exit 1
+          fi
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Not a valid version tag: $TAG"
+            exit 1
+          fi
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "Tag $TAG does not match plugin.json version $VERSION."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG"
+
+      - name: Tag the commit
+        if: github.ref_type == 'branch'
+        uses: actions/github-script@v7
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            try {
+              const { data } = await github.rest.git.getRef({ owner, repo, ref: `tags/${process.env.TAG}` });
+              if (data.object.sha !== context.sha) {
+                core.setFailed(`Tag ${process.env.TAG} already exists on ${data.object.sha}. Bump the version in plugin.json.`);
+              } else {
+                console.log(`Tag ${process.env.TAG} already on this commit, continuing.`);
+              }
+              return;
+            } catch (err) {
+              if (err.status !== 404) throw err;
+            }
+            await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${process.env.TAG}`, sha: context.sha });
+
   linux-helper:
+    needs: prepare
     strategy:
       matrix:
         include:
@@ -27,26 +87,31 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
       - uses: actions/setup-go@v5
         with:
           go-version: stable
       - name: Install webkit2gtk dev headers
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
       - name: Build helper
-        run: CGO_ENABLED=1 go build -trimpath -ldflags="-s -w -X github.com/RamsesKools/wayfinder-maps/internal/version.Version=${GITHUB_REF_NAME#v}" -o wayfinder-maps-webview ./cmd/wayfinder-maps-webview
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: CGO_ENABLED=1 go build -trimpath -ldflags="-s -w -X github.com/RamsesKools/wayfinder-maps/internal/version.Version=${TAG#v}" -o wayfinder-maps-webview ./cmd/wayfinder-maps-webview
       - uses: actions/upload-artifact@v4
         with:
           name: linux_${{ matrix.arch }}
           path: wayfinder-maps-webview
 
   goreleaser:
-    needs: linux-helper
+    needs: [prepare, linux-helper]
     runs-on: ubuntu-latest
     # osxcross + macOS SDK let this Linux job build the darwin cgo targets.
     container: ghcr.io/goreleaser/goreleaser-cross:v1.26.10
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.prepare.outputs.tag }}
           fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
@@ -59,3 +124,4 @@ jobs:
           goreleaser release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ needs.prepare.outputs.tag }}

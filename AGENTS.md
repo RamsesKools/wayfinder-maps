@@ -15,3 +15,9 @@
 ## Docs
 
 - Document user-facing features in the README with visuals (screenshots or short diagrams in `docs/images/`), not only prose.
+
+## Releases
+
+- Bump the version in `.claude-plugin/plugin.json` in the PR, the only version source.
+- After merging, run the `release` workflow from `main` (Actions tab or `gh workflow run release --ref main`); it tags `v<version>` and publishes the GitHub release.
+- Re-run a failed release from its existing `vX.Y.Z` tag: `gh workflow run release --ref vX.Y.Z`.
