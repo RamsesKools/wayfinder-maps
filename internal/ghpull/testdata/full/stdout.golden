@@ -1,0 +1,11 @@
+  #11  grilling  closed
+  #12  research  open  @alice
+  #13  prototype  closed
+  #14  task  open
+  #15  implement  closed
+  #16  implement  open  @bob
+  #17  grilling  closed
+  #18  implement  closed
+  #19  grilling  open
+  #20  implement  closed
+wayfinder-maps pull: acme/widgets#10 -> OUT (10 tickets)

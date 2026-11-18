@@ -109,12 +109,11 @@ Map body adds, after Decisions so far:
 
 - `status`: decisions and implementation as separate sections; each frontier ticket marked AFK or HITL, so a hub can see which can run in parallel.
 
-### GitHub importer (`scripts/wayfinder-pull`)
+### GitHub importer (`wayfinder-maps pull`)
 
 - `wayfinder:implement` label maps to `type: implement`; `wayfinder:afk` maps to `afk: true`.
 - Fetch `closedByPullRequestsReferences` (GraphQL) per implement issue and write `pr:` (the merged one; more than one means the ticket was mis-sliced).
 - A closed implement issue with no comment gets a synthesized answer (`Shipped in <PR url>`) when a PR was found, else the usual `_Closed on GitHub with no answer comment._`; it counts as implemented either way.
-- Keep it portable to macOS BSD `sed` (`sed -E`, no `\+`, no `\b`). The script currently uses both, in `slugify` and the URL rewrites.
 
 ## Work breakdown
 
@@ -122,7 +121,7 @@ Map body adds, after Decisions so far:
 | --- | --- |
 | A. Format contract: SKILL.md, TRACKER-MARKDOWN.md, IMPLEMENT-PLAN.md, README format section | none |
 | B. Model: parse, lint, `AFK()`, graph JSON, Go tests | A |
-| C. `wayfinder-pull`: labels, PR import, BSD sed | A |
+| C. `wayfinder-maps pull`: labels, PR import | A |
 | D. Rendering: stations, AFK/HITL frontier, HUD, PR chip | B |
 | E. CLI: `status` split and AFK/HITL frontier | B |
 | F. Fixture map exercising every case, verified in the viewer (`.claude/skills/verify`) | D, E |

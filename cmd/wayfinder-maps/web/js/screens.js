@@ -8,6 +8,7 @@ import {setupEndpoints} from "./endpoints.js";
 import {buildHud} from "./hud.js";
 import {fillPanel, closePanel} from "./panel.js";
 import {startFade} from "./draw.js";
+import {parseSSE, progressText} from "./sse.js";
 
 function sortNodes(g) { return (g.nodes || []).slice().sort(function(a, b) { return a.num - b.num; }); }
 
@@ -73,30 +74,67 @@ function refreshMap() {
   });
 }
 
-// pullFromGithub re-pulls a GitHub-backed map into .plan/ on the server, then
-// shows the result. The button label carries progress and failure.
+// setPullStat shows the pull status next to the button: kind is "run" (spinner),
+// "done", "err" or "" (hidden). The full text is also the tooltip.
+function setPullStat(kind, text) {
+  var st = document.getElementById("pullstat");
+  st.hidden = !kind; st.className = kind; st.title = text || "";
+  st.querySelector(".txt").textContent = text || "";
+}
+
+function errText(m) { return (m || "Pull failed").replace(/^wayfinder-pull: /, ""); }
+
+// pullFromGithub re-pulls a GitHub-backed map into .plan/ on the server, which
+// streams progress as SSE (POST, so fetch rather than EventSource), then shows
+// the result.
 export function pullFromGithub() {
   var btn = document.getElementById("pullbtn"), eff = S.currentEffort;
   if (!eff || btn.disabled) return;
-  var label = btn.textContent;
-  btn.disabled = true; btn.textContent = "Pulling\u2026"; btn.title = "";
+  var live = function() { return S.currentEffort === eff; };
+  var failed = false, finished = false, total = 0;
+  btn.disabled = true; setPullStat("run", progressText(0, 0));
+  var onEvent = function(ev) {
+    if (ev.event === "progress") { total = ev.data.total; if (live()) setPullStat("run", progressText(ev.data.done, ev.data.total)); }
+    else if (ev.event === "error") { failed = true; if (live()) setPullStat("err", errText(ev.data.message)); }
+    else if (ev.event === "done") finished = true;
+  };
   fetch("/api/pull?effort=" + encodeURIComponent(eff), {method: "POST", headers: {"X-Wayfinder": "1"}})
-    .then(function(r) { return r.ok ? refreshMap() : r.text().then(function(t) { throw new Error(t.trim()); }); })
-    .then(function() { btn.textContent = label; })
-    .catch(function(e) {
-      btn.textContent = "Pull failed"; btn.title = e.message;
-      setTimeout(function() { btn.textContent = label; btn.title = ""; }, 6000);
+    .then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { throw new Error(t.trim()); });
+      var reader = r.body.getReader(), dec = new TextDecoder(), buf = "";
+      var pump = function() {
+        return reader.read().then(function(c) {
+          if (c.done) return;
+          var p = parseSSE(buf + dec.decode(c.value, {stream: true})); buf = p.rest;
+          p.events.forEach(onEvent);
+          return pump();
+        });
+      };
+      return pump();
     })
+    .then(function() {
+      if (failed) return;
+      if (!finished) throw new Error("Pull ended without finishing");
+      return refreshMap().then(function() {
+        if (!live()) return;
+        setPullStat("done", "Pulled " + total + " items");
+        setTimeout(function() { if (live() && document.getElementById("pullstat").className === "done") setPullStat("", ""); }, 5000);
+      });
+    })
+    .catch(function(e) { if (live()) setPullStat("err", errText(e.message)); })
     .then(function() { btn.disabled = false; });
 }
 
-// showPullButton reveals the button only for maps mirrored by wayfinder-pull.
+// showPullButton reveals the button (and the gh account it pulls as) only for
+// maps mirrored by wayfinder-pull.
 function showPullButton(eff) {
-  var btn = document.getElementById("pullbtn"); btn.hidden = true;
+  var btn = document.getElementById("pullbtn"), acct = document.getElementById("pullacct");
+  btn.hidden = true; acct.hidden = true; setPullStat("", "");
   fetch("/api/source?effort=" + encodeURIComponent(eff)).then(function(r) { return r.json(); }).then(function(s) {
     if (S.currentEffort !== eff || !s.pullable) return;
     btn.hidden = false;
     btn.title = "Re-pull " + s.repo + "#" + s.map + (s.account ? " as " + s.account : "");
+    if (s.account) { acct.hidden = false; acct.textContent = "@" + s.account; acct.title = "gh account used to pull " + s.repo + "#" + s.map; }
   }).catch(function() {});
 }
 
@@ -138,9 +176,8 @@ function unmountMap() {
 export function leaveMap(next) {
   S.currentEffort = null; // stop the poller applying mid-dissolve
   document.getElementById("hud").style.display = "none";
-  document.getElementById("topleft").style.display = "none";
+  document.getElementById("topbar").style.display = "none";
   document.getElementById("compass").style.display = "none";
-  document.getElementById("hint").style.display = "none";
   closePanel();
   if (S.screen !== "map" || !S.nodes.length) { unmountMap(); next(); return; }
   next();                                  // destination appears at once
@@ -152,9 +189,8 @@ function setScreen(s) {
   document.getElementById("splash").style.display = s === "splash" ? "flex" : "none";
   document.getElementById("maplist").style.display = s === "maplist" ? "flex" : "none";
   document.getElementById("hud").style.display = s === "map" ? "flex" : "none";
-  document.getElementById("topleft").style.display = s === "map" ? "flex" : "none";
+  document.getElementById("topbar").style.display = s === "map" ? "flex" : "none";
   document.getElementById("compass").style.display = s === "map" ? "grid" : "none";
-  document.getElementById("hint").style.display = s === "map" ? "block" : "none";
   if (s !== "map") closePanel();
 }
 
@@ -226,6 +262,6 @@ export function loadMap(effort) {
   document.getElementById("projtag").textContent = projectName(effort);
   showPullButton(effort);
   fetch("/api/graph?effort=" + encodeURIComponent(effort)).then(function(r) { return r.json(); }).then(function(g) {
-    applyGraph(g); setScreen("map"); startFade(0, 1, 2.2); // dissolve the constellation in
+    setScreen("map"); applyGraph(g); startFade(0, 1, 2.2); // dissolve the constellation in
   });
 }

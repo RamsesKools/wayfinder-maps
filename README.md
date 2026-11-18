@@ -17,7 +17,7 @@ this fork extends both so a map carries on into implementation.
 - **`wayfinder-maps lint <dir>`** — does the map still tell the truth?
 - **`wayfinder-maps serve` / `app`** — the map as a star-map, in a browser or a native window
   ([design notes](docs/starmap-design.md)).
-- **[`scripts/wayfinder-pull`](scripts/wayfinder-pull)** — a map kept as GitHub issues,
+- **`wayfinder-maps pull`** — a map kept as GitHub issues,
   mirrored into `.plan/` so the three commands above read it unchanged.
 
 ```
@@ -83,8 +83,8 @@ What this fork adds:
   implementation separately, lists in-flight and shipped implement tickets (with their PR, when they have one),
   and marks every frontier row AFK or HITL.
 - **Lint and graph JSON** know about all of the above.
-- **`wayfinder-pull`** imports the `wayfinder:implement` and `wayfinder:afk` labels and
-  the linked PRs, and runs on macOS's stock `sed`.
+- **`pull`** imports the `wayfinder:implement` and `wayfinder:afk` labels and
+  the linked PRs.
 - **Viewer.** Implement tickets are hexagonal stations in an outer belt, frontier tickets
   carry an agent or person badge, and a ticket panel links its PR when it has one.
 - **Flow direction.** A small compass in the bottom left corner points the map any of 8 ways, and
@@ -108,6 +108,12 @@ What this fork adds:
   The small arrow tab on the bar's top edge folds it down to just the title, and back out.
 
   <img src="docs/images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
+
+- **One top bar.** The Maps and Pull buttons, the project name and the hint share a single bar that wraps onto extra rows instead of overlapping, and it gives way to the detail panel when that opens.
+
+  <img src="docs/images/topbar-narrow.png" alt="The top bar at 360px wide: overlapping before, wrapped after">
+
+  <img src="docs/images/topbar-medium.png" alt="The top bar at 720px wide: before and after">
 
 The [design record](docs/implement-phase-design.md) has the full plan.
 
@@ -148,6 +154,34 @@ You may include any of the extras under [`skills/.optional/`](skills/.optional/)
 [`skills/README.md`](skills/README.md) describes the full set.
 
 ### The binary
+
+One-liner for macOS and Linux (amd64 and arm64):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/RamsesKools/wayfinder-maps/main/scripts/install.sh | bash
+# or a pinned release
+curl -fsSL https://raw.githubusercontent.com/RamsesKools/wayfinder-maps/main/scripts/install.sh | bash -s -- --version v0.5.1
+```
+
+It resolves the release, verifies the archive against `checksums.txt`, extracts it to
+`~/.local/share/wayfinder-maps/` (honours `XDG_DATA_HOME`) and symlinks the binary into
+`~/.local/bin/`, so the double-clickable launchers stay next to the real binary.
+Flags: `--version <tag>`, `--prefix <dir>`, `--bin-dir <dir>`, `--force`. Rerunning with
+the same version is a no-op. `<prefix>/.install.json` records what was installed
+(`version`, `commit`, `installed_at`, `asset`, `sha256`).
+
+```
+~/.local/bin/
+  wayfinder-maps          -> ~/.local/share/wayfinder-maps/wayfinder-maps
+  wayfinder-maps-webview  -> ~/.local/share/wayfinder-maps/wayfinder-maps-webview  (Linux only)
+~/.local/share/wayfinder-maps/
+  wayfinder-maps
+  wayfinder-maps-webview          (Linux only)
+  wayfinder-app, wayfinder-web    (.command on macOS)
+  .install.json                   receipt: version, commit, installed_at, asset, sha256
+```
+
+Or install by hand:
 
 - Download from [Releases](https://github.com/RamsesKools/wayfinder-maps/releases) — no Go
   toolchain needed, native window and folder dialog on all three platforms. macOS uses
@@ -309,24 +343,116 @@ Two older shapes still parse, each lints as a warning, and neither is written an
 ## Maps kept as GitHub issues
 
 The wayfinder skill is tracker-agnostic: the same method can leave its map in an issue
-tracker rather than in `.plan/`. [`scripts/wayfinder-pull`](scripts/wayfinder-pull) mirrors
+tracker rather than in `.plan/`. `wayfinder-maps pull` mirrors
 such a map back into the local layout, so `status`, `lint` and the viewer read it with no
 change to the reader — the tool still only knows about files.
 
 ```
-scripts/wayfinder-pull <owner/repo> <map-issue-number> [out-dir]
+wayfinder-maps pull [--account <gh-user>] [-q] <owner/repo> <map-issue-number> [out-dir]
+wayfinder-maps pull [--account <gh-user>] [-q] --refresh <out-dir>
 ```
 
-It needs [`gh`](https://cli.github.com) (already logged in) and `jq`; there is no token to
-configure. The default out-dir is `.plan/<slug of the map's title>`, wiped and rewritten on
-each run — a cache, not a source, so nothing in it should be hand-edited and the directory
-belongs in the host repo's `.gitignore`.
+It is built into the binary, so a [release install](#install) can pull right away. The default
+out-dir is `.plan/<slug of the map's title>`, wiped and rewritten on each run (a cache, not a
+source, so nothing in it should be hand-edited and the directory belongs in the host repo's
+`.gitignore`). A pull that fails part way leaves the previous mirror untouched.
 
-Each pull also writes `<out-dir>/.source.json` (repo, map issue, `gh` auth kind and account).
-`scripts/wayfinder-pull --refresh <out-dir>` re-pulls from it, using that account's token
-(`gh auth token --user`) even if the active `gh` account has changed since. The viewer shows a
-"Pull from GitHub" button for any map with a `.source.json`, running exactly that; the script is
-embedded in the binary. Maps pulled before this need one manual pull to get the file.
+### Prerequisites
+
+`pull` needs the [GitHub CLI](https://cli.github.com) (`gh`) installed and logged in. There is no
+token to configure and no `jq` or `bash`. The rest of wayfinder-maps works without `gh`.
+
+```
+gh auth login      # once
+gh auth status     # which account is active, and whether it is logged in
+```
+
+The account must be able to read the repo and its issues. If not, `pull` stops before touching
+anything and says what to do:
+
+```
+$ wayfinder-maps pull acme/widgets 10      # gh not installed
+wayfinder-maps pull: gh is not installed or not on PATH. Install it from https://cli.github.com, then run: gh auth login
+$ wayfinder-maps pull acme/widgets 10      # gh not logged in
+wayfinder-maps pull: gh is not logged in. Run: gh auth login (or set GH_TOKEN)
+$ wayfinder-maps pull acme/secret 10       # no access to the repo or issue
+wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'alice' (HTTP 404). Check the repo name and issue number, and that this account can see the repo; check with: gh auth status
+```
+
+These exit with code 2. In the viewer the same message shows when a Pull fails.
+
+```
+$ wayfinder-maps pull acme/widgets 10
+  #11  grilling  closed
+  #12  research  open  @alice
+  #13  prototype  closed
+  #14  task  open
+wayfinder-maps pull: #15 links more than one PR; using https://github.com/acme/widgets/pull/51
+  #15  implement  closed
+  #16  implement  open  @bob
+  #17  grilling  closed
+  #18  implement  closed
+  #19  grilling  open
+  #20  implement  closed
+wayfinder-maps pull: acme/widgets#10 -> .plan/billing-rewrite-phase-1 (10 tickets)
+$ cat .plan/billing-rewrite-phase-1/.source.json
+{
+  "repo": "acme/widgets",
+  "map": 10,
+  "auth": "gh",
+  "account": "alice"
+}
+$ wayfinder-maps pull --refresh .plan/billing-rewrite-phase-1 | tail -1
+wayfinder-maps pull: acme/widgets#10 -> .plan/billing-rewrite-phase-1 (10 tickets)
+```
+
+### Choosing the gh account
+
+By default a pull runs as the active `gh` account. `--account <gh-user>` (or `WAYFINDER_GH_ACCOUNT`)
+pulls as another logged-in account, using that account's token (`gh auth token --user`), even if
+the active one has no access to the repo. An account that is not logged in stops the pull before
+it touches GitHub or the mirror (exit 2).
+
+Each pull writes `<out-dir>/.source.json` (repo, map issue, `gh` auth kind and account).
+`wayfinder-maps pull --refresh <out-dir>` re-pulls from it with the stored account, even if the
+active `gh` account has changed since; `--account` on a refresh switches the stored account.
+An explicit `--account` beats the stored one, which beats `WAYFINDER_GH_ACCOUNT`.
+Maps pulled before this need one manual pull to get the file.
+
+```
+$ gh auth status | grep -E "account|Active"      # bob is active, alice has access
+$ wayfinder-maps pull acme/secret 10
+wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'bob' (HTTP 404). ...
+$ wayfinder-maps pull --account ghost acme/secret 10
+wayfinder-maps pull: gh account 'ghost' is not logged in. Run: gh auth login
+$ wayfinder-maps pull --account alice acme/secret 10
+```
+
+### Progress
+
+On a terminal, `pull` draws a progress bar with `N/M items` below the per-ticket log. Off a
+terminal (CI, pipes), it prints plain `pulled N/M items` lines instead. The total moves: it is
+1 until the sub-issues are listed, then the ticket count plus the map issue. `-q`/`--quiet`
+silences the bar and the lines (the per-ticket log stays).
+
+![The progress bar on a terminal](docs/images/pull-cli-tty.png)
+
+```
+$ wayfinder-maps pull --account alice acme/secret 10 | cat
+  #11  grilling  closed
+pulled 1/6 items
+...
+pulled 6/6 items
+```
+
+The viewer shows the same progress: the Pull button streams it from the server (server-sent
+events) as a spinner and `N/M items`, then a done or error state with the message. The account
+in use is shown next to the button.
+
+![The pull button with the gh account it pulls as](docs/images/pull-account.png)
+![Pull in progress: spinner and 5/13 items](docs/images/pull-progress.png)
+![Pull finished](docs/images/pull-done.png)
+![Pull failed: account not logged in](docs/images/pull-error.png)
 
 The mapping follows the GitHub adapter in the skill's setup notes. 
 Two adjustments make the round trip parse. Headings inside a resolve comment are demoted one
@@ -337,11 +463,11 @@ Decisions-so-far is scanned for; `## Decisions so far`, `## Implemented so far` 
 `## Out of scope` are generated only when the map body carries no section of that name.
 
 The label `wayfinder:implement` makes a ticket `type: implement`, and `wayfinder:afk` writes
-`afk: true` (meaningful on a task only). For an implement issue the script reads its linked
+`afk: true` (meaningful on a task only). For an implement issue `pull` reads its linked
 pull requests and writes `pr: <url>`, preferring a merged one; more than one linked PR prints
 a warning, since an implement ticket usually ships one PR. A closed implement issue with no comment
 gets the answer `Shipped in <PR url>.` when a PR was found, else `_Closed on GitHub with no answer comment._`;
-either way it is listed under Implemented so far rather than Decisions so far. The script runs on macOS's stock `sed`.
+either way it is listed under Implemented so far rather than Decisions so far.
 
 The mirror is one-directional and is a snapshot: claiming or resolving in the viewer changes
 nothing in the tracker, and a change made there shows up on the next pull. `undermined_by`

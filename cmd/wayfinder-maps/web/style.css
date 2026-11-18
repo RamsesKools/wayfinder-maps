@@ -101,16 +101,30 @@ a.c.pr:hover{background:rgba(95,209,192,.12);border-color:#5fd1c0}
 #panel .md em{color:#d3b98a;font-style:italic}
 #panel .md hr{border:none;border-top:1px solid #262b36;margin:14px 0}
 #panel .md blockquote{border-left:3px solid #3a4150;margin:9px 0;padding:2px 0 2px 12px;color:#9aa2b1}
-#hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:5;font-size:11px;color:#4b5261}
-/* Top-left chrome in map view: the way back, then which project this map
-   belongs to — the HUD names the map, this names its home. */
-#topleft{position:fixed;top:16px;left:16px;z-index:7;display:none;align-items:center;gap:10px}
+/* Top bar: back, pull, project tag and the hint in one wrapping row, so items
+   never overlap each other. Clicks fall through gaps to the canvas. */
+#topbar{position:fixed;top:16px;left:16px;right:16px;z-index:5;display:none;flex-wrap:wrap;align-items:center;gap:8px 10px;
+  pointer-events:none;transition:opacity .24s}
+#topbar>*{pointer-events:auto}
+body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
+@media (max-width:700px){body.panelopen #topbar{opacity:0;pointer-events:none}body.panelopen #topbar>*{pointer-events:none}}
+#hint{font-size:11px;color:#4b5261;margin-left:auto;pointer-events:none}
 #backbtn,#pullbtn{display:flex;align-items:center;
   background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:999px;color:#b7bdc9;
   padding:7px 14px;font-size:12px;cursor:pointer;backdrop-filter:blur(8px)}
 #backbtn:hover,#pullbtn:hover{color:#e6e9ef;border-color:#3a4356}
 #pullbtn[hidden]{display:none}
 #pullbtn:disabled{opacity:.5;cursor:default}
+#pullacct,#pullstat{font-size:12px;color:#8a92a3;white-space:nowrap}
+#pullacct[hidden],#pullstat[hidden]{display:none}
+#pullstat{display:flex;align-items:center;gap:7px;max-width:42vw}
+#pullstat .txt{overflow:hidden;text-overflow:ellipsis}
+#pullstat .spin{display:none;width:11px;height:11px;border:2px solid #3a4356;border-top-color:#9db4ff;border-radius:50%;animation:pullspin .8s linear infinite}
+#pullstat.run .spin{display:block}
+#pullstat.run{color:#b7bdc9}
+#pullstat.done{color:#7fd6a0}
+#pullstat.err{color:#ff8a8a}
+@keyframes pullspin{to{transform:rotate(360deg)}}
 /* Compass: a small round dial in the bottom-left corner, sitting on top of the HUD
    bar (main.js keeps --hudh at the bar's height). Eight arrows on a ring, a dot in
    the middle; dim until chosen, then glowing. compass.js places the buttons. */
@@ -123,7 +137,7 @@ a.c.pr:hover{background:rgba(95,209,192,.12);border-color:#5fd1c0}
 .cbtn.cnone .cglyph{fill:currentColor;stroke:none}
 .cbtn.on{color:#ffe29a}
 .cbtn.on .cglyph{filter:drop-shadow(0 0 2px #ffd36e) drop-shadow(0 0 4px rgba(255,211,110,.6))}
-#projtag{font-size:12px;color:#8b93a3;max-width:32vw;
+#projtag{font-size:12px;color:#8b93a3;max-width:100%;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* splash + map list overlays, floating over the live starfield */
 #splash,#maplist{position:fixed;inset:0;z-index:10;display:none;
