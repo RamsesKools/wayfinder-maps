@@ -37,6 +37,7 @@ again() { out=$(bash "$script" --prefix "$P" --bin-dir "$B" "$@" 2>&1); rc=$?; }
 run --version v1.0.0
 check "install exits 0" test $rc -eq 0
 check "reports checksum OK" grep -q "Checksum OK" <<<"$out"
+check "hints at install-skill" grep -q "wayfinder-maps install-skill" <<<"$out"
 check "binary runs through symlink" test "$("$B/wayfinder-maps")" = "wayfinder-maps v1.0.0"
 check "receipt has version" grep -q '"version": "v1.0.0"' "$P/.install.json"
 check "receipt has asset" grep -q "\"asset\": \"wayfinder-maps_1.0.0_${os}_${arch}.tar.gz\"" "$P/.install.json"

@@ -28,6 +28,8 @@ usage:
   wayfinder-maps app    [path]         open in a native window
   wayfinder-maps self-update           upgrade a release install in place
                  [--version vX.Y.Z] [--check] [--force]
+  wayfinder-maps install-skill         write the matching skills into your agent skills dirs
+                 [--dir <path>]... [--only a,b] [--with-optional] [--dry-run] [--force] [--yes]
   wayfinder-maps --version             print the version
 
 <effort-dir> holds map.md and tickets/; status/lint default to the working dir.
@@ -38,6 +40,10 @@ with an Open Folder button and recent projects.
 
 serve listens on :7777 (override with PORT) and re-reads the map on each request.
 app wraps the same server in a native window (requires a cgo build).
+
+install-skill proposes ~/.claude/skills, ~/.copilot/skills and ~/.agents/skills (Claude Code, GitHub
+Copilot, Codex) and asks per dir; --yes (or --dir) skips the questions, for automation. Skills install
+as wayfinder-<name> and are tracked in .wayfinder-maps-skills.lock.json in each dir.
 
 exit: 0 clean, 1 lint errors found, 2 could not read the map`
 
@@ -59,6 +65,10 @@ func main() {
 
 	if args[0] == "self-update" {
 		os.Exit(selfUpdate(args[1:], os.Stdout, os.Stderr))
+	}
+
+	if args[0] == "install-skill" {
+		os.Exit(installSkillCmd(args[1:], os.Stdout, os.Stderr))
 	}
 
 	cmd := args[0]
