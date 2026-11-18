@@ -2,6 +2,7 @@ package ghpull
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 	"testing"
@@ -134,20 +135,52 @@ func TestStatusFallsBackToTheAPIUserWhenGHLacksJSONStatus(t *testing.T) {
 	}
 }
 
-func TestListReposReturnsTheTenMostRecentlyPushed(t *testing.T) {
-	var got []string
+func TestListReposReturnsReposTheAccountWasActiveIn(t *testing.T) {
+	var calls []string
 	gh := func(token string, args ...string) ([]byte, error) {
-		got = args
-		return []byte(`[{"full_name":"acme/widgets"},{"full_name":"acme/gadgets"}]`), nil
+		calls = append(calls, token+"|"+strings.Join(args, " "))
+		if args[1] == "user" {
+			return []byte("alice\n"), nil
+		}
+		return []byte(`[
+		 {"type":"PushEvent","repo":{"name":"acme/widgets"}},
+		 {"type":"WatchEvent","repo":{"name":"other/starred"}},
+		 {"type":"IssueCommentEvent","repo":{"name":"acme/gadgets"}},
+		 {"type":"PullRequestEvent","repo":{"name":"acme/widgets"}}]`), nil
 	}
 
 	repos, err := ListRepos(gh, "tok")
 
-	if err != nil || len(repos) != 2 || repos[0] != "acme/widgets" || repos[1] != "acme/gadgets" {
-		t.Errorf("repos = %v, err = %v", repos, err)
+	if err != nil || strings.Join(repos, ",") != "acme/widgets,acme/gadgets" {
+		t.Errorf("repos = %v, err = %v; want the repos of her events, newest first, no stars, no duplicates", repos, err)
 	}
-	if strings.Join(got, " ") != "api user/repos?sort=pushed&per_page=10" {
-		t.Errorf("args = %v", got)
+	want := []string{"tok|api user --jq .login", "tok|api users/alice/events?per_page=100"}
+	if strings.Join(calls, "\n") != strings.Join(want, "\n") {
+		t.Errorf("calls = %q, want %q", calls, want)
+	}
+}
+
+func TestListReposStopsAtTen(t *testing.T) {
+	gh := func(token string, args ...string) ([]byte, error) {
+		if args[1] == "user" {
+			return []byte("alice"), nil
+		}
+		var evs []string
+		for i := 0; i < 15; i++ {
+			evs = append(evs, fmt.Sprintf(`{"type":"PushEvent","repo":{"name":"acme/r%d"}}`, i))
+		}
+		return []byte("[" + strings.Join(evs, ",") + "]"), nil
+	}
+
+	if repos, err := ListRepos(gh, ""); err != nil || len(repos) != 10 {
+		t.Errorf("len = %d, err = %v", len(repos), err)
+	}
+}
+
+func TestListReposSurfacesGHFailure(t *testing.T) {
+	gh := func(string, ...string) ([]byte, error) { return nil, errors.New("boom") }
+	if _, err := ListRepos(gh, ""); err == nil {
+		t.Error("want an error")
 	}
 }
 

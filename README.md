@@ -77,13 +77,15 @@ The `x` only forgets an entry and never touches files.
 A map kept as [GitHub issues](#maps-kept-as-github-issues) opens straight from the splash, with no `pull` first.
 It needs the [GitHub CLI](https://cli.github.com), logged in.
 
-1. The splash shows the `gh` account in use, with a dropdown to switch when several are logged in.
+1. The splash shows the `gh` account in use, with a dropdown (the viewer's own, so it looks the same everywhere) to switch when several are logged in.
    Without `gh`, or without a login, it shows a hint (install it, or run `gh auth login`) and dims and disables the button.
-2. Paste `owner/repo` or a GitHub URL into the repo box, or pick from its dropdown: the 10 repos you pushed to most recently, plus repos you opened from GitHub before.
+2. Paste `owner/repo` or a GitHub URL into the repo box, or pick from its dropdown: the 10 repos you were most recently active in (pushes, PRs, issues, comments; stars do not count), plus repos you opened from GitHub before.
 3. The repo is scanned for maps, which are issues with sub-issues where a child carries a `wayfinder:<type>` label.
    Each map shows its percent completed, and closed maps are dimmed.
    The scan reads the 100 most recently updated issues of the repo.
 4. `Open from GitHub` pulls the map with the usual progress into `<user cache dir>/wayfinder-maps/github/<owner>-<repo>/<slug>`, then opens it and lists it under Recent.
+
+<img src="docs/images/github-open-repos.png" alt="The repo box with its list of recently active repos open, and a chevron on the right of the box" width="420">
 
 <img src="docs/images/github-open-pick-map.png" alt="The splash with the gh account, a pasted repo URL and the map dropdown showing three maps with their percent completed, the closed one dimmed" width="420">
 

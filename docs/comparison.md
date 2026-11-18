@@ -99,9 +99,11 @@ The [design record](implement-phase-design.md) has the full plan.
 
   <img src="images/recent-maps-splash.png" alt="The splash screen listing a map served from the CLI under Recent">
 
-- **Open a map from GitHub.** The splash shows the `gh` account (and switches between logged-in ones), takes a pasted repo or lists your 10 most recently pushed repos, scans the repo for maps with their percent completed, and opens the chosen one into the user cache dir, see [Open a map from GitHub](../README.md#open-a-map-from-github).
+- **Open a map from GitHub.** The splash shows the `gh` account (and switches between logged-in ones), takes a pasted repo or picks from the 10 repos you were most recently active in, scans the repo for maps with their percent completed, and opens the chosen one into the user cache dir, see [Open a map from GitHub](../README.md#open-a-map-from-github).
   Without `gh` or a login the button is dimmed, with a hint.
   The Recent list scrolls, and a cached map has a `clean up` button that deletes its mirror, apart from the `x` that only forgets the entry.
+
+  <img src="images/github-open-repos.png" alt="The repo box with its list of recently active repos open, and a chevron on the right of the box" width="420">
 
   <img src="images/github-open-pick-map.png" alt="The splash with the gh account, a pasted repo and the map dropdown with percent completed, the closed map dimmed" width="420">
 

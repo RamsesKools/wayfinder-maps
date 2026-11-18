@@ -179,19 +179,35 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 #ghstatus b{color:#b7bdc9;font-weight:600}
 #ghstatus.hint{color:#d9a45b;line-height:1.5}
 #ghstatus a{color:#8ab4ff;cursor:pointer;text-decoration:underline}
-#ghstatus select{background:rgba(23,26,33,.9);color:#e6e9ef;border:1px solid #262b36;border-radius:6px;padding:2px 6px;font-size:12px}
+#ghacctbox{position:relative;display:inline-block}
+#ghacct{background:rgba(23,26,33,.9);color:#e6e9ef;border:1px solid #262b36;border-radius:6px;padding:2px 24px 2px 8px;font-size:12px;font-family:inherit;cursor:pointer;position:relative}
+#ghacctlist{min-width:100%;right:auto;white-space:nowrap}
+#ghrepobox{position:relative}
+#ghrepo{padding-right:36px}
+#ghrepobtn{position:absolute;right:0;top:0;bottom:0;width:36px;background:none;border:none;cursor:pointer;padding:0}
+#ghrepobtn:disabled{cursor:default}
 #ghrepo,#ghmapbtn{width:100%;box-sizing:border-box;background:rgba(23,26,33,.8);border:1px solid #262b36;border-radius:10px;
   padding:10px 14px;color:#e6e9ef;font-size:13px;text-align:left;font-family:inherit}
 #ghrepo:focus,#ghmapbtn:focus{outline:none;border-color:#4f8cff}
 #ghmap{position:relative;margin-top:8px}
-#ghmapbtn{cursor:pointer;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ghmapbtn{cursor:pointer;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:36px;position:relative}
+#ghmapbtn::after,#ghrepobtn::after,#ghacct::after{content:"";position:absolute;right:15px;top:50%;width:6px;height:6px;margin-top:-5px;
+  border:solid #8b93a3;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .12s}
+#ghacct::after{right:9px;width:5px;height:5px;margin-top:-4px;border-width:0 1.5px 1.5px 0}
+#ghrepobtn::after{right:15px}
+#ghmapbtn[aria-expanded=true]::after,#ghrepobtn[aria-expanded=true]::after,#ghacct[aria-expanded=true]::after{transform:rotate(225deg);margin-top:-2px}
+#ghmapbtn:hover:not(:disabled)::after,#ghrepobtn:hover:not(:disabled)::after,#ghacct:hover::after{border-color:#e6e9ef}
 #ghmapbtn.closed{color:#8b93a3}
-#ghmaplist{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:3;max-height:min(220px,30vh);overflow-y:auto;
+.ghlist{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:3;max-height:min(220px,30vh);overflow-y:auto;
   background:rgba(16,19,27,.98);border:1px solid #3a4356;border-radius:10px;padding:4px}
-#ghmaplist[hidden]{display:none}
-.ghm{position:relative;display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;background:none;border:none;border-radius:7px;
+.ghlist[hidden]{display:none}
+.ghm,.ghopt{position:relative;display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;background:none;border:none;border-radius:7px;
   padding:8px 10px 11px;color:#e6e9ef;font-size:13px;text-align:left;cursor:pointer;font-family:inherit}
-.ghm:hover{background:rgba(255,255,255,.06)}
+.ghm:hover,.ghopt:hover,.ghopt.on{background:rgba(255,255,255,.06)}
+.ghopt{padding:7px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.ghopt.cur{color:#9db4ff}
+.ghopt.none{color:#8b93a3;cursor:default}
+.ghopt.none:hover{background:none}
 .ghm.closed{opacity:.45}
 .ghmn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghmp{font-size:11px;color:#8b93a3;white-space:nowrap}
@@ -200,8 +216,8 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 .ghrow{display:flex;align-items:center;gap:12px;margin-top:10px}
 #ghopen{background:#2b62d6;border:none;color:#fff;font-size:13px;padding:9px 18px;border-radius:10px;cursor:pointer;white-space:nowrap}
 #ghopen:hover:not(:disabled){background:#356fe6}
-#ghopen:disabled,#ghmapbtn:disabled,#ghrepo:disabled{opacity:.4;cursor:default}
-#gh.off #ghrepo,#gh.off #ghmap,#gh.off #ghopen{opacity:.35}
+#ghopen:disabled,#ghmapbtn:disabled,#ghrepo:disabled,#ghrepobtn:disabled{opacity:.4;cursor:default}
+#gh.off #ghrepobox,#gh.off #ghmap,#gh.off #ghopen{opacity:.35}
 #ghstat{display:flex;align-items:center;gap:7px;font-size:12px;color:#8a92a3;min-width:0}
 #ghstat[hidden]{display:none}
 #ghstat .txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

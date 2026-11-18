@@ -136,7 +136,7 @@ func registerGitHub(mux *http.ServeMux, writeJSON func(http.ResponseWriter, any)
 		writeJSON(w, ghpull.GetStatus(ghRunner))
 	})
 
-	// Remembered repos first, then the account's most recently pushed ones.
+	// Remembered repos first, then the ones the account was recently active in.
 	// Failing to reach GitHub still yields the remembered ones.
 	mux.HandleFunc("/api/github/repos", func(w http.ResponseWriter, r *http.Request) {
 		if !needsHeader(w, r, http.MethodGet) {

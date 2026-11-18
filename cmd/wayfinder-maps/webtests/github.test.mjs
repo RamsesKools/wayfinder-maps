@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {gateFor, mapLabel, GH_INSTALL_URL} from "../web/js/github.js";
+import {gateFor, mapLabel, filterRepos, stepIndex, GH_INSTALL_URL} from "../web/js/github.js";
 import {readEvents} from "../web/js/sse.js";
 
 test("gateFor enables the button only for an installed, logged-in gh", () => {
@@ -43,4 +43,20 @@ test("readEvents feeds events split across chunks and resolves at the end", asyn
     {event: "progress", data: {done: 1, total: 2}},
     {event: "done", data: {path: "/x"}},
   ]);
+});
+
+test("filterRepos keeps repos containing the typed text, ignoring case, and all when nothing is typed", () => {
+  const repos = ["acme/Widgets", "acme/gadgets", "alice/notes"];
+  assert.deepEqual(filterRepos(repos, "WID"), ["acme/Widgets"]);
+  assert.deepEqual(filterRepos(repos, "acme/"), ["acme/Widgets", "acme/gadgets"]);
+  assert.deepEqual(filterRepos(repos, "  "), repos);
+  assert.deepEqual(filterRepos(repos, "zzz"), []);
+});
+
+test("stepIndex walks the rows and wraps around", () => {
+  assert.equal(stepIndex(-1, 3, 1), 0);
+  assert.equal(stepIndex(-1, 3, -1), 2);
+  assert.equal(stepIndex(2, 3, 1), 0);
+  assert.equal(stepIndex(0, 3, -1), 2);
+  assert.equal(stepIndex(-1, 0, 1), -1);
 });

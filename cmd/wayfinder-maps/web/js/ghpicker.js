@@ -1,12 +1,14 @@
 // The splash's "Open from GitHub" section: gh account, repo combo box, map
 // dropdown and the pull that mirrors the chosen map into the user cache dir.
 import {el} from "./util.js";
-import {gateFor, mapLabel} from "./github.js";
+import {gateFor, mapLabel, filterRepos, stepIndex} from "./github.js";
+import {menu} from "./menu.js";
 import {readEvents, progressText} from "./sse.js";
 
 var H = {headers: {"X-Wayfinder": "1"}};
-var st = {gate: gateFor(null), account: "", maps: [], pick: null, scan: 0, busy: false, repo: "", typed: null};
+var st = {gate: gateFor(null), account: "", maps: [], repos: [], hi: -1, pick: null, scan: 0, busy: false, repo: "", typed: null};
 var openMap = function() {};
+var repoMenu, mapMenu;
 var $ = function(id) { return document.getElementById(id); };
 
 function getJSON(url) {
@@ -28,6 +30,7 @@ function sync() {
   $("ghmapbtn").disabled = !ok || st.busy || !st.maps.length;
   $("ghopen").disabled = !ok || st.busy || !st.pick;
   var b = $("ghmapbtn");
+  $("ghrepobtn").disabled = !ok || st.busy;
   b.textContent = st.pick ? mapLabel(st.pick) : (st.maps.length ? "Choose a map…" : "No map to choose yet");
   b.classList.toggle("closed", !!(st.pick && st.pick.closed));
 }
@@ -49,22 +52,57 @@ function renderStatus(s) {
   box.className = "";
   box.appendChild(document.createTextNode("Signed in as "));
   if (s.accounts.length > 1) {
-    var sel = el("select", null); sel.id = "ghacct"; sel.title = "Switch gh account";
-    s.accounts.forEach(function(a) { var o = el("option", null, a); o.value = a; sel.appendChild(o); });
-    sel.value = st.account;
-    sel.onchange = function() { st.account = sel.value; clearMaps(); loadRepos(); if ($("ghrepo").value.trim()) scan(true); };
-    box.appendChild(sel);
+    var wrap = el("span", null); wrap.id = "ghacctbox";
+    var btn = el("button", null, "@" + st.account); btn.id = "ghacct"; btn.type = "button"; btn.title = "Switch gh account";
+    btn.setAttribute("aria-haspopup", "listbox"); btn.setAttribute("aria-expanded", "false");
+    var list = el("div", "ghlist"); list.id = "ghacctlist"; list.setAttribute("role", "listbox"); list.hidden = true;
+    var m = menu(wrap, btn, list);
+    s.accounts.forEach(function(a) {
+      var row = el("button", "ghopt" + (a === st.account ? " cur" : ""), "@" + a); row.type = "button"; row.setAttribute("role", "option");
+      row.onclick = function() {
+        m.close();
+        if (a === st.account) return;
+        st.account = a; btn.textContent = "@" + a;
+        list.querySelectorAll(".ghopt").forEach(function(r) { r.classList.toggle("cur", r === row); });
+        clearMaps(); loadRepos(); if ($("ghrepo").value.trim()) scan(true);
+      };
+      list.appendChild(row);
+    });
+    btn.onclick = m.toggle;
+    wrap.appendChild(btn); wrap.appendChild(list); box.appendChild(wrap);
   } else box.appendChild(el("b", null, "@" + s.account));
 }
 
-function clearMaps() { st.maps = []; st.pick = null; st.scan++; closeList(); renderList(); setStat("", ""); sync(); }
+function clearMaps() { st.maps = []; st.pick = null; st.scan++; mapMenu.close(); renderList(); setStat("", ""); sync(); }
 
 function loadRepos() {
-  var dl = $("ghrepos"); dl.innerHTML = "";
+  st.repos = []; renderRepos("");
   if (!st.gate.ok) return;
   getJSON("/api/github/repos?account=" + encodeURIComponent(st.account)).then(function(repos) {
-    repos.forEach(function(r) { var o = document.createElement("option"); o.value = r; dl.appendChild(o); });
+    st.repos = repos; if (repoMenu.isOpen()) renderRepos($("ghrepo").value);
   }).catch(function() {});
+}
+
+// renderRepos fills the repo list with the suggestions matching filter.
+function renderRepos(filter) {
+  var l = $("ghrepolist"); l.innerHTML = ""; st.hi = -1;
+  var rows = filterRepos(st.repos, filter);
+  rows.forEach(function(r) {
+    var row = el("button", "ghopt", r); row.type = "button"; row.setAttribute("role", "option");
+    row.onclick = function() { pickRepo(r); };
+    l.appendChild(row);
+  });
+  if (!rows.length && !filter.trim()) { var none = el("span", "ghopt none", "No recent repos yet. Paste one above."); l.appendChild(none); }
+  return rows.length;
+}
+
+function pickRepo(r) { var inp = $("ghrepo"); inp.value = r; repoMenu.close(); scan(); }
+
+function highlight(dir) {
+  var rows = $("ghrepolist").querySelectorAll("button.ghopt");
+  st.hi = stepIndex(st.hi, rows.length, dir);
+  rows.forEach(function(r, i) { r.classList.toggle("on", i === st.hi); });
+  if (rows[st.hi]) rows[st.hi].scrollIntoView({block: "nearest"});
 }
 
 // scan lists the maps of the typed repo; a counter drops answers from a repo
@@ -74,7 +112,7 @@ function scan(force) {
   if (force !== true && typed === st.typed) return; // blur and Enter re-fire for text already scanned
   st.typed = typed;
   var n = ++st.scan;
-  st.maps = []; st.pick = null; closeList(); renderList(); sync();
+  st.maps = []; st.pick = null; mapMenu.close(); renderList(); sync();
   if (!typed || !st.gate.ok) { setStat("", ""); return; }
   setStat("run", "Scanning for maps…");
   getJSON("/api/github/maps?repo=" + encodeURIComponent(typed) + "&account=" + encodeURIComponent(st.account)).then(function(res) {
@@ -93,12 +131,10 @@ function renderList() {
     row.appendChild(el("span", "ghmn", m.title));
     row.appendChild(el("span", "ghmp", m.percent + "%" + (m.closed ? " closed" : "")));
     var bar = el("span", "ghmb"), fill = document.createElement("i"); fill.style.width = m.percent + "%"; bar.appendChild(fill); row.appendChild(bar);
-    row.onclick = function() { st.pick = m; closeList(); sync(); };
+    row.onclick = function() { st.pick = m; mapMenu.close(); sync(); };
     l.appendChild(row);
   });
 }
-
-function closeList() { $("ghmaplist").hidden = true; $("ghmapbtn").setAttribute("aria-expanded", "false"); }
 
 function open() {
   var m = st.pick; if (!m || st.busy) return;
@@ -124,9 +160,8 @@ function open() {
 export function refreshGithub() {
   setStat("", "");
   getJSON("/api/github/status").catch(function() { return null; }).then(function(s) {
-    renderStatus(s);
     if (s && s.loggedIn && !s.accounts.includes(st.account)) st.account = s.account;
-    if (s && s.loggedIn) { var sel = $("ghacct"); if (sel) sel.value = st.account; }
+    renderStatus(s);
     sync(); loadRepos();
     if (st.gate.ok && $("ghrepo").value.trim() && !st.maps.length) scan(true);
   });
@@ -135,13 +170,34 @@ export function refreshGithub() {
 export function mountGithub(onOpen) {
   openMap = onOpen;
   var repo = $("ghrepo"), timer = null;
-  // A datalist pick or a blur fires "change"; typing or pasting a full repo
-  // scans after a short pause, so no explicit submit is needed.
+  repoMenu = menu($("ghrepobox"), $("ghrepobtn"), $("ghrepolist"));
+  mapMenu = menu($("ghmap"), $("ghmapbtn"), $("ghmaplist"));
+  $("ghrepobtn").onclick = function() {
+    if (repoMenu.isOpen()) return repoMenu.close();
+    renderRepos(""); repoMenu.open(); repo.focus();
+  };
+  $("ghrepolist").onmousedown = function(ev) { ev.preventDefault(); }; // keep focus in the input
+  repo.onclick = function() { if (!repo.value.trim() && !repoMenu.isOpen()) { renderRepos(""); repoMenu.open(); } };
+  // Blur fires "change"; typing or pasting a full repo scans after a short
+  // pause, so no explicit submit is needed.
   repo.onchange = function() { scan(); };
-  repo.oninput = function() { clearTimeout(timer); timer = setTimeout(function() { if (/^\S+\/\S+$|github\.com/.test(repo.value.trim())) scan(); }, 500); };
-  repo.onkeydown = function(ev) { if (ev.key === "Enter") { clearTimeout(timer); scan(true); } };
-  $("ghmapbtn").onclick = function() { var l = $("ghmaplist"); l.hidden = !l.hidden; this.setAttribute("aria-expanded", String(!l.hidden)); };
-  document.addEventListener("click", function(ev) { if (!$("ghmap").contains(ev.target)) closeList(); });
+  repo.oninput = function() {
+    clearTimeout(timer);
+    if (renderRepos(repo.value)) repoMenu.open(); else repoMenu.close();
+    timer = setTimeout(function() { if (/^\S+\/\S+$|github\.com/.test(repo.value.trim())) scan(); }, 500);
+  };
+  repo.onkeydown = function(ev) {
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+      ev.preventDefault();
+      if (!repoMenu.isOpen()) { renderRepos(repo.value); repoMenu.open(); }
+      highlight(ev.key === "ArrowDown" ? 1 : -1);
+    } else if (ev.key === "Enter") {
+      clearTimeout(timer);
+      var on = $("ghrepolist").querySelector(".ghopt.on");
+      if (repoMenu.isOpen() && on) pickRepo(on.textContent); else { repoMenu.close(); scan(true); }
+    }
+  };
+  $("ghmapbtn").onclick = mapMenu.toggle;
   $("ghopen").onclick = open;
   sync();
 }

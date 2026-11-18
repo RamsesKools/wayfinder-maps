@@ -89,7 +89,10 @@ func TestGitHubReposListsRememberedReposFirstThenRecentOnesWithoutDuplicates(t *
 			return []byte("tok-bob\n"), nil
 		}
 		gotToken = token
-		return []byte(`[{"full_name":"acme/widgets"},{"full_name":"acme/gadgets"}]`), nil
+		if args[1] == "user" {
+			return []byte("bob\n"), nil
+		}
+		return []byte(`[{"type":"PushEvent","repo":{"name":"acme/widgets"}},{"type":"PushEvent","repo":{"name":"acme/gadgets"}}]`), nil
 	})
 	rememberRepo("zed/old")
 	rememberRepo("acme/gadgets")

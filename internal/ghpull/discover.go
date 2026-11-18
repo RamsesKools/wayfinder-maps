@@ -193,21 +193,36 @@ func GetStatus(gh Runner) Status {
 	return st
 }
 
-// ListRepos returns the 10 repos most recently pushed to by the account.
+// ListRepos returns the 10 repos the account was most recently active in
+// (pushes, pull requests, issues, comments), from its event feed. Stars do not
+// count.
 func ListRepos(gh Runner, token string) ([]string, error) {
-	b, err := gh(token, "api", "user/repos?sort=pushed&per_page=10")
+	b, err := gh(token, "api", "user", "--jq", ".login")
 	if err != nil {
 		return nil, err
 	}
-	var rs []struct {
-		FullName string `json:"full_name"`
+	b, err = gh(token, "api", "users/"+strings.TrimSpace(string(b))+"/events?per_page=100")
+	if err != nil {
+		return nil, err
 	}
-	if err := json.Unmarshal(b, &rs); err != nil {
-		return nil, fmt.Errorf("gh user/repos: bad JSON: %v", err)
+	var evs []struct {
+		Type string `json:"type"`
+		Repo struct {
+			Name string `json:"name"`
+		} `json:"repo"`
 	}
-	names := []string{}
-	for _, r := range rs {
-		names = append(names, r.FullName)
+	if err := json.Unmarshal(b, &evs); err != nil {
+		return nil, fmt.Errorf("gh events: bad JSON: %v", err)
+	}
+	names, seen := []string{}, map[string]bool{}
+	for _, e := range evs {
+		if e.Type == "WatchEvent" || e.Repo.Name == "" || seen[e.Repo.Name] {
+			continue
+		}
+		seen[e.Repo.Name] = true
+		if names = append(names, e.Repo.Name); len(names) == 10 {
+			break
+		}
 	}
 	return names, nil
 }
