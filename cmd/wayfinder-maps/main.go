@@ -26,6 +26,8 @@ usage:
       -q, --quiet                      no progress bar or "pulled N/M items" lines
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window
+  wayfinder-maps self-update           upgrade a release install in place
+                 [--version vX.Y.Z] [--check] [--force]
   wayfinder-maps --version             print the version
 
 <effort-dir> holds map.md and tickets/; status/lint default to the working dir.
@@ -53,6 +55,10 @@ func main() {
 
 	if args[0] == "pull" {
 		os.Exit(pullCmd(args[1:], ghpull.GH, os.Stdout, os.Stderr))
+	}
+
+	if args[0] == "self-update" {
+		os.Exit(selfUpdate(args[1:], os.Stdout, os.Stderr))
 	}
 
 	cmd := args[0]
