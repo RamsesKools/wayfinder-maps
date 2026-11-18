@@ -5,7 +5,7 @@ decisions stop: a map is done when the way is clear, and the build happens somew
 This fork lets a map carry on into the implementation, so the whole journey lives in one
 graph. A map with no implement tickets reads exactly as it does upstream.
 
-<img src="images/compare.png" alt="The same map in the upstream viewer (v0.2.3) and in this fork (v0.4.0), with callouts for implement stations, frontier badges, the start and goal, the split HUD and the ticket panel with its PR chip">
+<img src="images/compare.png" alt="The same map in the upstream viewer (v0.2.3) and in this fork (v0.12.0), with callouts for implement stations, frontier badges, the start and goal, the split HUD, the ticket panel with its PR chip, the compass and the Pull from GitHub refresh button">
 
 ## What this fork adds
 

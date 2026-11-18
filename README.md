@@ -104,7 +104,7 @@ Cached maps carry a `clean up` button in Recent, next to the `x` that only forge
 This fork lets a map carry on into implementation, so the whole journey lives in one graph.
 A map with no implement tickets reads exactly as it does upstream.
 
-<img src="docs/images/compare.png" alt="The same map in the upstream viewer and in this fork, with callouts for implement stations, frontier badges, the start and goal, the split HUD and the ticket panel with its PR chip">
+<img src="docs/images/compare.png" alt="The same map in the upstream viewer and in this fork, with callouts for implement stations, frontier badges, the start and goal, the split HUD, the ticket panel with its PR chip, the compass and the Pull from GitHub refresh button">
 
 | Addition | What it gives you |
 | --- | --- |
