@@ -311,3 +311,96 @@ func TestSlugify(t *testing.T) {
 		t.Error("slug not capped")
 	}
 }
+
+func TestAccountFlagEnvAndStorage(t *testing.T) {
+	read := func(t *testing.T, out string) Source {
+		t.Helper()
+		src, ok := ReadSource(out)
+		if !ok {
+			t.Fatal("no .source.json")
+		}
+		return src
+	}
+	t.Run("flag", func(t *testing.T) {
+		f := newFakeGH(t, "full")
+		p, _, _ := f.puller(nil)
+		out := filepath.Join(t.TempDir(), "out")
+		if err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Account: "alice"}); err != nil {
+			t.Fatal(err)
+		}
+		if src := read(t, out); src.Auth != "gh" || src.Account != "alice" {
+			t.Errorf("source = %+v", src)
+		}
+		if strings.Join(f.calls[0].args, " ") != "auth token --user alice" {
+			t.Errorf("token lookup first: %v", f.calls[0])
+		}
+		for _, c := range f.calls[1:] {
+			if c.token != "tok-alice" {
+				t.Errorf("call without alice's token: %v", c)
+			}
+		}
+		f.calls = nil
+		if err := p.Pull(Options{Out: out, Refresh: true}); err != nil {
+			t.Fatal(err)
+		}
+		if strings.Join(f.calls[0].args, " ") != "auth token --user alice" {
+			t.Errorf("refresh reuses the stored account: %v", f.calls[0])
+		}
+	})
+	t.Run("env", func(t *testing.T) {
+		f := newFakeGH(t, "full")
+		p, _, _ := f.puller(map[string]string{"WAYFINDER_GH_ACCOUNT": "alice", "GH_TOKEN": "ambient"})
+		out := filepath.Join(t.TempDir(), "out")
+		if err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out}); err != nil {
+			t.Fatal(err)
+		}
+		if src := read(t, out); src.Auth != "gh" || src.Account != "alice" {
+			t.Errorf("env var should win over an ambient token: %+v", src)
+		}
+	})
+	t.Run("flag switches a stored account", func(t *testing.T) {
+		f := newFakeGH(t, "full")
+		f.accounts["bob"] = true
+		p, _, _ := f.puller(nil)
+		out := filepath.Join(t.TempDir(), "out")
+		if err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Account: "alice"}); err != nil {
+			t.Fatal(err)
+		}
+		if err := p.Pull(Options{Out: out, Refresh: true, Account: "bob"}); err != nil {
+			t.Fatal(err)
+		}
+		if src := read(t, out); src.Account != "bob" {
+			t.Errorf("source = %+v", src)
+		}
+	})
+	t.Run("not logged in", func(t *testing.T) {
+		f := newFakeGH(t, "full")
+		p, _, _ := f.puller(nil)
+		out := filepath.Join(t.TempDir(), "out")
+		err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Account: "ghost"})
+		var pe *Error
+		if !errors.As(err, &pe) || pe.Code != 2 || pe.Msg != "gh account 'ghost' is not logged in. Run: gh auth login" {
+			t.Fatalf("got %v", err)
+		}
+		if len(f.calls) != 1 {
+			t.Errorf("should stop before touching GitHub: %v", f.calls)
+		}
+	})
+}
+
+func TestProgressMovingTotal(t *testing.T) {
+	f := newFakeGH(t, "full")
+	p, _, _ := f.puller(nil)
+	var got [][2]int
+	out := filepath.Join(t.TempDir(), "out")
+	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Progress: func(d, n int) { got = append(got, [2]int{d, n}) }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) < 4 || got[0] != [2]int{0, 1} || got[1] != [2]int{1, 11} {
+		t.Fatalf("progress = %v", got)
+	}
+	if last := got[len(got)-1]; last != [2]int{11, 11} {
+		t.Errorf("last = %v", last)
+	}
+}

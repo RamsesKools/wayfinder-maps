@@ -18,16 +18,18 @@ const usage = `wayfinder-maps — inspect a wayfinder map
 usage:
   wayfinder-maps status <effort-dir>   print the frontier and the state of the map
   wayfinder-maps lint   <effort-dir>   check the map's format invariants
-  wayfinder-maps pull <owner/repo> <map-issue> [out-dir]
+  wayfinder-maps pull [flags] <owner/repo> <map-issue> [out-dir]
                                        mirror a map kept as GitHub issues into .plan/
-  wayfinder-maps pull --refresh <out-dir>
+  wayfinder-maps pull [flags] --refresh <out-dir>
                                        re-pull a mirrored map from its .source.json
+      --account <gh-user>              pull as this gh account (or WAYFINDER_GH_ACCOUNT)
+      -q, --quiet                      no progress bar or "pulled N/M items" lines
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window
   wayfinder-maps --version             print the version
 
 <effort-dir> holds map.md and tickets/; status/lint default to the working dir.
-pull needs gh (logged in); out-dir defaults to .plan/<slug of the map title>.
+pull needs gh (logged in); the account is stored in .source.json; out-dir defaults to .plan/<slug of the map title>.
 For serve/app, [path] is optional: an effort opens straight into its map, a
 project (a folder with a .plan/) into its map list, and no path shows a splash
 with an Open Folder button and recent projects.

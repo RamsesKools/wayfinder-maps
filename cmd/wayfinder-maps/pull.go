@@ -27,21 +27,34 @@ func newPuller(gh ghpull.Runner, stdout, stderr io.Writer) *ghpull.Puller {
 }
 
 // runPull re-pulls the effort from GitHub in-process, reusing the gh account
-// recorded at the first pull.
-var runPull = func(effort string) error {
+// recorded in .source.json. progress gets (done, total) as the pull advances.
+var runPull = func(effort string, progress func(done, total int)) error {
 	pullMu.Lock()
 	defer pullMu.Unlock()
-	return newPuller(ghpull.GH, io.Discard, io.Discard).Pull(ghpull.Options{Out: effort, Refresh: true})
+	return newPuller(ghpull.GH, io.Discard, io.Discard).Pull(ghpull.Options{Out: effort, Refresh: true, Progress: progress})
 }
 
 // pullCmd is `wayfinder-maps pull`; it returns the exit code.
 func pullCmd(args []string, gh ghpull.Runner, stdout, stderr io.Writer) int {
 	var o ghpull.Options
 	var pos []string
-	for _, a := range args {
+	quiet := false
+	for i := 0; i < len(args); i++ {
+		a := args[i]
 		switch {
 		case a == "--refresh":
 			o.Refresh = true
+		case a == "--quiet" || a == "-q":
+			quiet = true
+		case a == "--account":
+			if i+1 >= len(args) || args[i+1] == "" {
+				fmt.Fprintln(stderr, "wayfinder-maps pull: --account needs a gh user name")
+				return 2
+			}
+			i++
+			o.Account = args[i]
+		case strings.HasPrefix(a, "--account="):
+			o.Account = strings.TrimPrefix(a, "--account=")
 		case strings.HasPrefix(a, "-") && a != "-":
 			fmt.Fprintf(stderr, "wayfinder-maps pull: unknown option %s\n", a)
 			return 2
@@ -69,7 +82,19 @@ func pullCmd(args []string, gh ghpull.Runner, stdout, stderr io.Writer) int {
 			o.Out = pos[2]
 		}
 	}
-	if err := newPuller(gh, stdout, stderr).Pull(o); err != nil {
+	out := stdout
+	if !quiet {
+		pr := ghpull.NewProgress(stdout, ghpull.IsTerminal(stdout))
+		defer pr.Close()
+		o.Progress = pr.Update
+		if ghpull.IsTerminal(stdout) {
+			out = pr
+		}
+	}
+	if err := newPuller(gh, out, stderr).Pull(o); err != nil {
+		if p, ok := out.(*ghpull.Progress); ok {
+			p.Close()
+		}
 		fmt.Fprintf(stderr, "wayfinder-maps pull: %v\n", err)
 		var pe *ghpull.Error
 		if errors.As(err, &pe) {

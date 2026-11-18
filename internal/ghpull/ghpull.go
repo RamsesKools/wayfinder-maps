@@ -76,6 +76,12 @@ type Options struct {
 	Map     int
 	Out     string
 	Refresh bool
+	// Account pulls as this gh account and records it in .source.json. Empty
+	// keeps the recorded account, then $WAYFINDER_GH_ACCOUNT, then the active one.
+	Account string
+	// Progress, if set, gets (done, total) items as the pull advances. The
+	// total moves: it is 1 until the sub-issues are listed.
+	Progress func(done, total int)
 }
 
 // Puller holds the injectable pieces: the gh runner, the environment, and the
@@ -142,22 +148,32 @@ func explainWith(err error, who *string) error {
 func (p *Puller) pull(o Options, who *string) error {
 	repo, mapNum, out := o.Repo, o.Map, o.Out
 	var auth, account, token string
+	progress := o.Progress
+	if progress == nil {
+		progress = func(int, int) {}
+	}
 	if o.Refresh {
 		src, ok := ReadSource(out)
 		if !ok {
 			return userErr("--refresh needs a pulled map dir containing .source.json")
 		}
 		repo, mapNum, auth, account = src.Repo, src.Map, src.Auth, src.Account
-		if auth == "gh" && account != "" {
-			*who = fmt.Sprintf("gh account '%s'", account)
-			var err error
-			if token, err = p.accountToken(account); err != nil {
-				return err
-			}
-		}
 	}
 	if repo == "" || mapNum == 0 {
-		return userErr("usage: wayfinder-maps pull <owner/repo> <map-issue-number> [out-dir]\n       wayfinder-maps pull --refresh <out-dir>")
+		return userErr("usage: wayfinder-maps pull [--account <gh-user>] <owner/repo> <map-issue-number> [out-dir]\n       wayfinder-maps pull [--account <gh-user>] --refresh <out-dir>")
+	}
+	switch {
+	case o.Account != "":
+		auth, account = "gh", o.Account
+	case account == "" && p.Getenv("WAYFINDER_GH_ACCOUNT") != "":
+		auth, account = "gh", p.Getenv("WAYFINDER_GH_ACCOUNT")
+	}
+	if auth == "gh" && account != "" {
+		*who = fmt.Sprintf("gh account '%s'", account)
+		var err error
+		if token, err = p.accountToken(account); err != nil {
+			return err
+		}
 	}
 
 	if auth == "" {
@@ -178,6 +194,7 @@ func (p *Puller) pull(o Options, who *string) error {
 		*who = fmt.Sprintf("gh account '%s'", account)
 	}
 
+	progress(0, 1)
 	var m issue
 	if err := p.getJSON(token, &m, "api", fmt.Sprintf("repos/%s/issues/%d", repo, mapNum)); err != nil {
 		return err
@@ -193,6 +210,8 @@ func (p *Puller) pull(o Options, who *string) error {
 	if len(subs) == 0 {
 		return userErr("issue #%d has no sub-issues", mapNum)
 	}
+	total := len(subs) + 1
+	progress(1, total)
 
 	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
 		return err
@@ -212,7 +231,7 @@ func (p *Puller) pull(o Options, who *string) error {
 	var decisions, implemented, outOfScope strings.Builder
 	var rewrites []*regexp.Regexp
 	var rewriteTo []string
-	for _, t := range subs {
+	for i, t := range subs {
 		link, err := p.pullTicket(token, repo, stage, t, &decisions, &implemented, &outOfScope)
 		if err != nil {
 			return err
@@ -220,6 +239,7 @@ func (p *Puller) pull(o Options, who *string) error {
 		re := regexp.MustCompile(fmt.Sprintf(`(?m)https://github\.com/%s/issues/%d([^0-9]|$)`, regexp.QuoteMeta(repo), t.Number))
 		rewrites = append(rewrites, re)
 		rewriteTo = append(rewriteTo, link+"${1}")
+		progress(i+2, total)
 	}
 
 	// The map body is already a wayfinder map; point its issue URLs at the

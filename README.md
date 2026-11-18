@@ -330,8 +330,8 @@ such a map back into the local layout, so `status`, `lint` and the viewer read i
 change to the reader — the tool still only knows about files.
 
 ```
-wayfinder-maps pull <owner/repo> <map-issue-number> [out-dir]
-wayfinder-maps pull --refresh <out-dir>
+wayfinder-maps pull [--account <gh-user>] [-q] <owner/repo> <map-issue-number> [out-dir]
+wayfinder-maps pull [--account <gh-user>] [-q] --refresh <out-dir>
 ```
 
 It is built into the binary, so a [release install](#install) can pull right away. The default
@@ -388,13 +388,53 @@ $ wayfinder-maps pull --refresh .plan/billing-rewrite-phase-1 | tail -1
 wayfinder-maps pull: acme/widgets#10 -> .plan/billing-rewrite-phase-1 (10 tickets)
 ```
 
-Each pull also writes `<out-dir>/.source.json` (repo, map issue, `gh` auth kind and account).
-`wayfinder-maps pull --refresh <out-dir>` re-pulls from it, using that account's token
-(`gh auth token --user`) even if the active `gh` account has changed since. The viewer shows a
-"Pull from GitHub" button for any map with a `.source.json`, running exactly that in-process.
+### Choosing the gh account
+
+By default a pull runs as the active `gh` account. `--account <gh-user>` (or `WAYFINDER_GH_ACCOUNT`)
+pulls as another logged-in account, using that account's token (`gh auth token --user`), even if
+the active one has no access to the repo. An account that is not logged in stops the pull before
+it touches GitHub or the mirror (exit 2).
+
+Each pull writes `<out-dir>/.source.json` (repo, map issue, `gh` auth kind and account).
+`wayfinder-maps pull --refresh <out-dir>` re-pulls from it with the stored account, even if the
+active `gh` account has changed since; `--account` on a refresh switches the stored account.
+An explicit `--account` beats the stored one, which beats `WAYFINDER_GH_ACCOUNT`.
 Maps pulled before this need one manual pull to get the file.
 
-![The Pull from GitHub button in the viewer](docs/images/pull-button.png)
+```
+$ gh auth status | grep -E "account|Active"      # bob is active, alice has access
+$ wayfinder-maps pull acme/secret 10
+wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'bob' (HTTP 404). ...
+$ wayfinder-maps pull --account ghost acme/secret 10
+wayfinder-maps pull: gh account 'ghost' is not logged in. Run: gh auth login
+$ wayfinder-maps pull --account alice acme/secret 10
+```
+
+### Progress
+
+On a terminal, `pull` draws a progress bar with `N/M items` below the per-ticket log. Off a
+terminal (CI, pipes), it prints plain `pulled N/M items` lines instead. The total moves: it is
+1 until the sub-issues are listed, then the ticket count plus the map issue. `-q`/`--quiet`
+silences the bar and the lines (the per-ticket log stays).
+
+![The progress bar on a terminal](docs/images/pull-cli-tty.png)
+
+```
+$ wayfinder-maps pull --account alice acme/secret 10 | cat
+  #11  grilling  closed
+pulled 1/6 items
+...
+pulled 6/6 items
+```
+
+The viewer shows the same progress: the Pull button streams it from the server (server-sent
+events) as a spinner and `N/M items`, then a done or error state with the message. The account
+in use is shown next to the button.
+
+![The pull button with the gh account it pulls as](docs/images/pull-account.png)
+![Pull in progress: spinner and 5/13 items](docs/images/pull-progress.png)
+![Pull finished](docs/images/pull-done.png)
+![Pull failed: account not logged in](docs/images/pull-error.png)
 
 The mapping follows the GitHub adapter in the skill's setup notes. 
 Two adjustments make the round trip parse. Headings inside a resolve comment are demoted one
