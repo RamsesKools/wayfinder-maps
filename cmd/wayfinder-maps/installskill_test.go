@@ -189,3 +189,30 @@ func TestDryRunDefaultsNeedNeitherPromptNorYes(t *testing.T) {
 		t.Fatalf("rc %d:\n%s%s", r.rc, r.out, r.err)
 	}
 }
+
+func TestNewerBinaryUpdatesCleanSkillsAndKeepsLockOwnership(t *testing.T) {
+	dir := t.TempDir()
+	do(t, t.TempDir(), "", false, "--dir", dir)
+
+	newer := fstest.MapFS{}
+	for k, v := range testFS {
+		newer[k] = v
+	}
+	newer["research/SKILL.md"] = &fstest.MapFile{Data: []byte("---\nname: research\n---\nnew upstream\n")}
+
+	var out, errb bytes.Buffer
+	d := installDeps{FS: newer, Home: t.TempDir(), Stdin: strings.NewReader(""), Version: "v0.9.1", Now: time.Now}
+	if rc := installSkill([]string{"--dir", dir}, d, &out, &errb); rc != 0 {
+		t.Fatalf("rc %d: %s", rc, errb.String())
+	}
+	if !strings.Contains(out.String(), "update    wayfinder-research") || !strings.Contains(out.String(), "unchanged wayfinder-maps") {
+		t.Fatalf("out:\n%s", out.String())
+	}
+	b, _ := os.ReadFile(filepath.Join(dir, "wayfinder-research", "SKILL.md"))
+	if !strings.Contains(string(b), "new upstream") {
+		t.Fatal("skill not updated")
+	}
+	if lock, _ := skillinstall.ReadLock(dir); lock.Version != "v0.9.1" {
+		t.Fatalf("lock version %s", lock.Version)
+	}
+}

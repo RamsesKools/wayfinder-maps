@@ -236,7 +236,23 @@ wayfinder-maps install-skill --force                # replace wayfinder dirs tha
 - Rerunning at the same version is a no-op.
 - Each skill dir also carries the upstream MIT `LICENSE`.
 
-### Updating
+### Updating the skills
+
+A new release carries new embedded skills, so updating is the same two steps as installing:
+
+```sh
+wayfinder-maps self-update       # new binary, new embedded skills
+wayfinder-maps install-skill     # skills dirs that follow the lock are upgraded in place
+```
+
+![install-skill upgrading one skill and refusing a locally edited one](docs/images/install-skill-update.png)
+
+- Only skills whose content changed are shown as `update`; the rest stay `unchanged`, and a dir with no changes is not rewritten.
+- An upgrade replaces the whole skill dir, so files removed upstream disappear, and the lock records the new `version`.
+- A skill you edited locally (or a stray file in a managed skill dir) blocks the run with exit 2 and no changes in any dir. Re-run with `--force` to take upstream's version, or move your edits elsewhere first.
+- Use `--dry-run` first to see which skills would change.
+
+### Updating the binary
 
 A binary installed from a release by `install.sh` upgrades itself in place:
 
