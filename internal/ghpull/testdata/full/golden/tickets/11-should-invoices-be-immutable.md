@@ -1,6 +1,7 @@
 ---
 type: grilling
 blocked_by: []
+created: 2026-04-01T09:00:00Z
 ---
 
 # Should invoices be immutable?

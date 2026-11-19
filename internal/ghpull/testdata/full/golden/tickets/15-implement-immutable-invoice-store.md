@@ -1,6 +1,7 @@
 ---
 type: implement
 blocked_by: []
+created: 2026-04-05T09:00:00Z
 pr: https://github.com/acme/widgets/pull/51
 ---
 

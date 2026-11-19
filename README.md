@@ -103,6 +103,20 @@ Cached maps carry a `clean up` button in Recent, next to the `x` that only forge
 
 <img src="docs/images/github-open-map.png" alt="The map opened from GitHub, with the repo name in the top bar and the pull button next to the account">
 
+## Tickets placed by age
+
+In a flow direction a ticket's column is its dependency depth, so every ticket without blockers used to sit next to the start.
+Now creation order nudges tickets toward the goal, without making the map any longer:
+
+- Tickets created within an hour of each other form one wave; only the order of waves counts, not the gaps.
+- A ticket moves forward only within its slack, the room it has before something it unblocks would have to move.
+  The longest chain of dependencies sets the length and stays put.
+- Arrows still only point forward, and a new ticket that arrives while the map is open lands near the frontier.
+
+<img src="docs/images/age-layout.png" alt="The same map before and after: before, every ticket without blockers sits in the first column; after, tickets created in later sessions sit further toward the goal while the start-to-goal length is unchanged">
+
+The creation time comes from the issue for a map pulled from GitHub (saved as `created:` in the mirrored ticket), else the commit that first added the ticket file, else the file's creation time.
+
 ## Fork vs upstream
 
 [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) stops where the decisions stop.
@@ -118,6 +132,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | Split `status`, lint, graph JSON | Decisions and implementation counted apart |
 | Start and goal in the viewer | A virtual start and a goal cloud holding the fog |
 | Compass | The map flows in any of 8 directions or radially |
+| Tickets placed by age | Later tickets drift toward the goal without stretching the map |
 | Narrow-screen layout | Wrapping top bar and foldable status bar |
 | `pull` in the binary | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
 | Refresh button | The same pull from the viewer |

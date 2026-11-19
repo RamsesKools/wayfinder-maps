@@ -281,6 +281,7 @@ type nodeDoc struct {
 	AFK        bool   `json:"afk"`
 	Status     string `json:"status"` // resolved|claimed|frontier|blocked|out_of_scope
 	Rank       int    `json:"rank"`
+	Created    int64  `json:"created,omitempty"` // unix seconds
 	Undermined bool   `json:"undermined"`
 	ClaimedBy  string `json:"claimedBy,omitempty"`
 	Blockers   []int  `json:"blockers"`
@@ -382,7 +383,12 @@ func buildGraph(e *wayfinder.Effort) graphDoc {
 		}
 	}
 
+	created := e.CreatedTimes()
 	for _, t := range e.Tickets {
+		var at int64
+		if c, ok := created[t.Num]; ok {
+			at = c.Unix()
+		}
 		g.Nodes = append(g.Nodes, nodeDoc{
 			Num:        t.Num,
 			Title:      t.Title,
@@ -392,6 +398,7 @@ func buildGraph(e *wayfinder.Effort) graphDoc {
 			AFK:        t.AFK(),
 			Status:     displayStatus(t, frontier),
 			Rank:       rank[t.Num],
+			Created:    at,
 			Undermined: len(t.UnderminedBy) > 0,
 			ClaimedBy:  t.ClaimedBy,
 			Blockers:   t.BlockedBy,

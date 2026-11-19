@@ -98,6 +98,7 @@ type issue struct {
 	Body        string `json:"body"`
 	State       string `json:"state"`
 	StateReason string `json:"state_reason"`
+	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 	Assignees   []struct {
 		Login string `json:"login"`
@@ -350,6 +351,9 @@ func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, impleme
 
 	var f strings.Builder
 	fmt.Fprintf(&f, "---\ntype: %s\nblocked_by: %s\n", typ, blockedJSON)
+	if t.CreatedAt != "" {
+		fmt.Fprintf(&f, "created: %s\n", t.CreatedAt)
+	}
 	if pr != "" {
 		fmt.Fprintf(&f, "pr: %s\n", pr)
 	}
