@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Status is derived from what a ticket already says — never read from a
@@ -46,8 +47,9 @@ type Ticket struct {
 	ClaimedAt    string
 	Assets       []string
 	PR           string
-	AFKSet       bool // an `afk` key is present, whatever its value
-	AFKFlag      bool // `afk: true`; only a task reads it
+	Created      time.Time // a `created:` key, which pull writes from the issue; zero when absent
+	AFKSet       bool      // an `afk` key is present, whatever its value
+	AFKFlag      bool      // `afk: true`; only a task reads it
 
 	// HasAnswer and HasRuledOut mean a closing section with prose under it. A
 	// bare heading is not an answer, so the *Heading fields track it separately:
@@ -362,6 +364,7 @@ func ParseTicket(path, filename, src string) (*Ticket, error) {
 	t.ClaimedAt = kv["claimed_at"]
 	t.Assets = splitList(kv["assets"])
 	t.PR = kv["pr"]
+	t.Created, _ = time.Parse(time.RFC3339, kv["created"])
 	_, t.AFKSet = kv["afk"]
 	t.AFKFlag = strings.EqualFold(kv["afk"], "true")
 

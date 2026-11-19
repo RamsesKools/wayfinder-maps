@@ -5,10 +5,11 @@
 import {S} from "./state.js";
 import {clamp, mulberry32} from "./util.js";
 import {NONE, toWorld, toLocal} from "./direction.js";
+import {waves, columns} from "./columns.js";
 
 function radial() { return S.dir === NONE; }
 
-// A ticket sits in the column of its dependency depth.
+// A ticket sits in its column from columns.js: dependency depth, nudged forward by age.
 export function colX(rank) { return rank * 190; }
 export function ringR(rank) { return 130 + rank * 165; }
 
@@ -18,24 +19,17 @@ export function ringR(rank) { return 130 + rank * 165; }
 var BELT_GAP = 190, BELT_FRAC = 0.3, BELT_STEP = 40;
 var BELT_PULL = 0.2;
 var belt = false, decDepth = 0, beltR = 0;
-// With a belt, depth is counted within each kind: a decision that waits on an
-// implement ticket would otherwise be ranked past the belt it feeds.
+// rankSpan sets each node's column (_col). With a belt, columns are counted
+// within each kind: a decision that waits on an implement ticket would
+// otherwise be ranked past the belt it feeds.
 function rankSpan() {
   belt = S.nodes.some(function(n) { return n.kind === "implement"; });
   decDepth = 0;
+  var w = waves(S.nodes);
+  var groups = belt ? [S.nodes.filter(function(n) { return n.kind !== "implement"; }), S.nodes.filter(function(n) { return n.kind === "implement"; })] : [S.nodes];
+  groups.forEach(function(g) { var c = columns(g, w); g.forEach(function(n) { n._col = c[n.num]; }); });
   if (!belt) return;
-  var memo = {};
-  function depth(n) {
-    if (memo[n.num] != null) return memo[n.num];
-    memo[n.num] = 0;
-    var d = 0, k = n.kind === "implement";
-    (n.blockers || []).forEach(function(b) {
-      var o = S.byNum[b];
-      if (o && (o.kind === "implement") === k) d = Math.max(d, depth(o) + 1);
-    });
-    return (memo[n.num] = d);
-  }
-  S.nodes.forEach(function(n) { n._depth = depth(n); if (n.kind !== "implement") decDepth = Math.max(decDepth, n._depth); });
+  S.nodes.forEach(function(n) { if (n.kind !== "implement") decDepth = Math.max(decDepth, n._col); });
   beltR = radial() ? ringR(decDepth) : colX(decDepth);
 }
 // The belt is a hard floor. In a flow direction an implement ticket short of
@@ -70,14 +64,12 @@ function recentre() {
   if (S.nodes.length) S.nodes.forEach(function(n) { n.y -= my / S.nodes.length; });
 }
 export function targetX(n) {
-  if (!belt) return colX(n.rank);
-  if (n.kind !== "implement") return colX(n._depth);
-  return beltR + BELT_GAP + n._depth * BELT_STEP;
+  if (!belt || n.kind !== "implement") return colX(n._col);
+  return beltR + BELT_GAP + n._col * BELT_STEP;
 }
 function targetR(n) {
-  if (!belt) return ringR(n.rank);
-  if (n.kind !== "implement") return ringR(n._depth);
-  return beltR + Math.max(BELT_GAP, beltR * BELT_FRAC) + n._depth * BELT_STEP;
+  if (!belt || n.kind !== "implement") return ringR(n._col);
+  return beltR + Math.max(BELT_GAP, beltR * BELT_FRAC) + n._col * BELT_STEP;
 }
 
 // The mode-specific bits of the sim: where a node starts, how it is drawn

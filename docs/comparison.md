@@ -80,6 +80,10 @@ The [design record](implement-phase-design.md) has the full plan.
 
   <img src="images/install-skill.png" alt="install-skill dry run, install, no-op rerun and a refused overwrite">
 
+- **Tickets placed by age.** Tickets created in later sessions drift toward the goal within their slack, so the map does not grow longer, see [Tickets placed by age](../README.md#tickets-placed-by-age).
+
+  <img src="images/age-layout.png" alt="The same map before and after: later tickets sit further toward the goal at the same length">
+
 - **`--version`.** On `wayfinder-maps` and the Linux webview helper.
 - **Favicon.** The viewer tab, the splash logo and the top left corner of the map show a small glowing constellation climbing from a lone start light to a finish light.
   Blue is the default, red and green ship as spare variants for a future status signal.
