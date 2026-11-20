@@ -8,7 +8,7 @@ wayfinder-maps export .plan/my-effort site
 python3 -m http.server -d site
 ```
 
-The docs site uses it for the [live demo](../try.md): the `docs` job in `ci.yml` and `release.yml` exports the test fixture `internal/wayfinder/testdata/implement-demo` into `site/demo/` after `mkdocs build`.
+The docs site uses it for the [live demo](../try.md): every `mkdocs build` (and `mkdocs serve`) exports the test fixture `internal/wayfinder/testdata/implement-demo` into `site/demo/` through `docs_hooks.py`, so the demo always matches the viewer in the checkout.
 
 ![The demo page on the docs site, with the viewer embedded and a link to open it full screen](../images/demo-page.png)
 
@@ -31,4 +31,4 @@ The `serve` and `app` viewer is unchanged.
 - It includes every ticket's text, so only export maps you are happy to publish.
 - `<out-dir>` is created if needed and files in it are overwritten.
   It cannot sit inside the map directory.
-- Running `mkdocs serve` locally does not include the demo, only the full docs build does: `uv run mkdocs build --strict`, then `wayfinder-maps export internal/wayfinder/testdata/implement-demo site/demo`.
+- The docs build needs Go on the PATH to export the demo. Without it a plain build only skips the demo with a warning, and `--strict` fails.

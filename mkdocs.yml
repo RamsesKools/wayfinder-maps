@@ -28,6 +28,8 @@ hooks:
 watch:
   - README.md
   - docs_hooks.py
+  - cmd/wayfinder-maps/web
+  - internal/wayfinder/testdata/implement-demo
 
 exclude_docs: |
   starmap-design.md
