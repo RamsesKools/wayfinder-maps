@@ -63,7 +63,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: stable
-      # The build also exports the demo map into site/demo/ (docs_hooks.py), which needs Go.
+      # The build also exports the demo map into site/demo-fullscreen/ (docs_hooks.py), which needs Go.
       - run: uv run mkdocs build --strict
 
   install-script:

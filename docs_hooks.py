@@ -10,9 +10,10 @@ from mkdocs.exceptions import PluginError
 
 log = logging.getLogger("mkdocs.hooks.docs_hooks")
 
-# The live demo at /demo/: the fixture map exported as a static site on every build,
-# so it always matches the viewer and the map in this checkout.
+# The full-screen demo viewer at /demo-fullscreen/ (embedded by docs/demo.md): the fixture
+# map exported as a static site on every build, so it always matches the viewer and the map.
 DEMO_MAP = "internal/wayfinder/testdata/implement-demo"
+DEMO_DIR = "demo-fullscreen"
 
 # README.md links from the repo root (docs/images/x.png); docs/index.md pulls it in
 # via snippets, so the same links must resolve from inside docs/.
@@ -39,9 +40,9 @@ def on_post_build(config):
     root = os.path.dirname(config.config_file_path)
     if not shutil.which("go"):
         # A warning, so strict builds (CI, release) fail while a plain local build still works.
-        log.warning("go not found: /demo/ was not generated")
+        log.warning("go not found: /%s/ was not generated", DEMO_DIR)
         return
-    out = os.path.join(config.site_dir, "demo")
+    out = os.path.join(config.site_dir, DEMO_DIR)
     result = subprocess.run(
         ["go", "run", "./cmd/wayfinder-maps", "export", DEMO_MAP, out],
         cwd=root,

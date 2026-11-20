@@ -8,7 +8,7 @@ wayfinder-maps export .plan/my-effort site
 python3 -m http.server -d site
 ```
 
-The docs site uses it for the [live demo](../try.md): every `mkdocs build` (and `mkdocs serve`) exports the test fixture `internal/wayfinder/testdata/implement-demo` into `site/demo/` through `docs_hooks.py`, so the demo always matches the viewer in the checkout.
+The docs site uses it for the [live demo](../demo.md): every `mkdocs build` (and `mkdocs serve`) exports the test fixture `internal/wayfinder/testdata/implement-demo` into `site/demo-fullscreen/` through `docs_hooks.py`, so the demo always matches the viewer in the checkout.
 
 ![The demo page on the docs site, with the viewer embedded and a link to open it full screen](../images/demo-page.png)
 
