@@ -26,6 +26,8 @@ body.hudfolded #hud{right:auto;max-width:min(340px,calc(100vw - 24px));min-heigh
   background:rgba(9,12,19,.82)}
 body.hudfolded #hud .htitle{flex:0 1 auto;min-width:0}
 body.hudfolded #hud .dest{display:none}
+#hud .tshort,body.hudfolded #hud .tfull{display:none}
+body.hudfolded #hud .tshort{display:inline}
 body.hudfolded #hud .hudfold{position:static;transform:none;flex:none;width:24px;height:24px;border:1px solid #1b212e;border-radius:50%}
 body.hudfolded #compass{bottom:8px}
 #hud .htitle{min-width:110px;flex:1 1 180px}

@@ -3,10 +3,16 @@ import {S} from "./state.js";
 import {el, glyphSvg} from "./util.js";
 import {COL, GLYPH, AFKCOL, HITLCOL, STATION} from "./theme.js";
 
+const SHORT_TITLE = 24;
+
 export function buildHud() {
   var hud = document.getElementById("hud"); hud.innerHTML = "";
   var title = el("div", "htitle");
-  title.appendChild(el("h1", null, S.graph.name));
+  var h1 = el("h1"), name = S.graph.name;
+  h1.title = name;
+  h1.appendChild(el("span", "tfull", name));
+  h1.appendChild(el("span", "tshort", name.length > SHORT_TITLE ? name.slice(0, SHORT_TITLE).trimEnd() + "..." : name));
+  title.appendChild(h1);
   if (S.graph.destination) title.appendChild(el("div", "dest", S.graph.destination));
   hud.appendChild(title);
   var c = S.graph.counts, impl = c.implement && c.implement.total > 0;

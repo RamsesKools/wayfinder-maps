@@ -105,7 +105,7 @@ Cached maps carry a `clean up` button in Recent, next to the `x` that only forge
 
 ## Collapsing the status bar
 
-The arrow on the status bar collapses it into a small bottom-left corner holding the map title and the compass, so the map gets the full width back.
+The arrow on the status bar collapses it into a small bottom-left corner holding the map title (cut off with "..." after 24 characters) and the compass, so the map gets the full width back.
 The arrow in the corner expands it again, and the choice is remembered.
 
 <img src="docs/images/hud-expanded.png" alt="The status bar expanded: title, counts, progress bar and legend along the bottom, with the compass above it">
