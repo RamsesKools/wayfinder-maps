@@ -142,7 +142,7 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 @starting-style{#setpop{clip-path:var(--gear);opacity:0}}
 @media (prefers-reduced-motion:reduce){#setpop,#setbtn svg,.tip{transition:none}}
 /* The open clip reaches past the panel so a row's tip can hang below it. */
-.setrow{position:relative;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;color:#e6e9ef;font-size:13px}
+.setrow{position:relative;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;color:#e6e9ef;font-size:13px;line-height:18px}
 .setrow:hover{background:rgba(255,255,255,.06)}
 .setname{cursor:pointer}
 .help{flex:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border-radius:50%;cursor:help;
