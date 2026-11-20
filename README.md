@@ -52,7 +52,10 @@ Silence it by setting `"updateCheck": false` in `settings.json`, or turn off Upd
 wayfinder-maps status .plan/<effort>   # resolved, in flight, and ready to claim
 wayfinder-maps lint .plan/<effort>     # does the map still tell the truth?
 wayfinder-maps app .plan/<effort>      # the star-map in a native window (serve for a browser)
+wayfinder-maps export .plan/<effort> site   # a static site of the map, for any file server
 ```
+
+Try the star-map first in the [live demo](https://wayfinder.ramseskools.nl/demo/), a static export of a sample map.
 
 The [guide](docs/guide/usage.md) covers every command, the map format and maps kept as GitHub issues.
 

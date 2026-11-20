@@ -169,6 +169,10 @@ jobs:
         with:
           ref: ${{ needs.prepare.outputs.tag }}
       - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      # The build also exports the demo map into site/demo-fullscreen/ (docs_hooks.py), which needs Go.
       - run: uv run mkdocs build --strict
       - uses: actions/upload-pages-artifact@v5
         with:

@@ -28,6 +28,8 @@ hooks:
 watch:
   - README.md
   - docs_hooks.py
+  - cmd/wayfinder-maps/web
+  - internal/wayfinder/testdata/implement-demo
 
 exclude_docs: |
   starmap-design.md
@@ -54,6 +56,7 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Demo: demo.md
   - Install: install.md
   - Configuration: configuration.md
   - Guide:
@@ -68,6 +71,7 @@ nav:
       - Compass: features/compass.md
       - Tickets placed by age: features/age-layout.md
       - Settings menu: features/settings.md
+      - Static demo and export: features/static-demo.md
       - Narrow screens: features/narrow-screens.md
       - Pull from GitHub: features/pull.md
       - Open a map from GitHub: features/open-from-github.md
