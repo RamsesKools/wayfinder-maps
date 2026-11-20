@@ -73,6 +73,7 @@ nav:
       - Open a map from GitHub: features/open-from-github.md
       - Recent maps: features/recent-maps.md
       - install-skill: features/install-skill.md
+      - Homebrew: features/homebrew.md
       - self-update: features/self-update.md
       - Outdated notice: features/update-notice.md
       - Logo: features/logo.md

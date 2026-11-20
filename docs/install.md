@@ -27,6 +27,21 @@ Or let the binary write them for you, see [Installing the skills](#installing-th
 
 ## The binary
 
+### Homebrew
+
+On macOS (Apple silicon and Intel), through a [tap](https://github.com/RamsesKools/homebrew-tap):
+
+```sh
+brew install RamsesKools/tap/wayfinder-maps
+```
+
+- It installs a cask, so the binary and the two `.command` launchers land in the Caskroom and `wayfinder-maps` is linked into your Homebrew `bin`.
+- The binary is not signed or notarized yet, so the cask strips the quarantine flag after install, the same as `install.sh` does.
+- Upgrade with `brew upgrade wayfinder-maps`, see [Updating the binary](#updating-the-binary).
+- Then install the skills with [`wayfinder-maps install-skill`](#installing-the-skills).
+
+![Installing with Homebrew: --version names the install, self-update is hidden from --help and refused with the brew hint](images/homebrew-install.png)
+
 ### Install script
 
 One-liner for macOS and Linux (amd64 and arm64):
@@ -79,7 +94,13 @@ go install github.com/RamsesKools/wayfinder-maps/cmd/wayfinder-maps@latest
 
 ### Check the version
 
-`wayfinder-maps --version` prints the release version, and `dev` for a local build.
+`wayfinder-maps --version` prints the release version (`dev` for a local build), how the binary was installed and where it lives:
+
+```
+wayfinder-maps 0.17.0 (homebrew, /opt/homebrew/Caskroom/wayfinder-maps/0.17.0/wayfinder-maps)
+```
+
+The method is one of `install.sh`, `homebrew`, `go install`, `manual` or `dev`.
 The Linux helper answers `wayfinder-maps-webview --version` the same way.
 
 ## Installing the skills
@@ -125,7 +146,7 @@ wayfinder-maps install-skill --force                # replace wayfinder dirs tha
 A new release carries new embedded skills, so updating is the same two steps as installing:
 
 ```sh
-wayfinder-maps self-update       # new binary, new embedded skills
+wayfinder-maps self-update       # new binary, new embedded skills (brew upgrade wayfinder-maps on Homebrew)
 wayfinder-maps install-skill     # skills dirs that follow the lock are upgraded in place
 ```
 
@@ -137,6 +158,15 @@ wayfinder-maps install-skill     # skills dirs that follow the lock are upgraded
 - Use `--dry-run` first to see which skills would change.
 
 ## Updating the binary
+
+A Homebrew install is upgraded by Homebrew:
+
+```sh
+brew upgrade wayfinder-maps
+```
+
+`self-update` is hidden from `--help` on a Homebrew install, and running it anyway refuses with exit 2 and that hint, without touching any file.
+Run `wayfinder-maps install-skill` afterwards to bring the skills along, see [Updating the skills](#updating-the-skills).
 
 A binary installed from a release by `install.sh` upgrades itself in place:
 

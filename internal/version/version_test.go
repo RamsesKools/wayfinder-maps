@@ -36,9 +36,9 @@ func TestBinariesReportVersion(t *testing.T) {
 		"wayfinder-maps-webview": "../../cmd/wayfinder-maps-webview",
 	}
 	for name, pkg := range tools {
-		for _, tc := range []struct{ ldflags, want string }{
-			{"", name + " dev"},
-			{"-X github.com/RamsesKools/wayfinder-maps/internal/version.Version=1.2.3", name + " 1.2.3"},
+		for _, tc := range []struct{ ldflags, want, method string }{
+			{"", name + " dev", "dev"},
+			{"-X github.com/RamsesKools/wayfinder-maps/internal/version.Version=1.2.3", name + " 1.2.3", "manual"},
 		} {
 			bin := filepath.Join(t.TempDir(), name)
 			build := exec.Command("go", "build", "-ldflags", tc.ldflags, "-o", bin, pkg)
@@ -49,7 +49,13 @@ func TestBinariesReportVersion(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%s --version: %v", name, err)
 			}
-			if got := strings.TrimSpace(string(out)); got != tc.want {
+			got := strings.TrimSpace(string(out))
+			if name == "wayfinder-maps" {
+				// the CLI appends how it was installed and where it lives
+				if !strings.HasPrefix(got, tc.want+" ("+tc.method+", ") || !strings.HasSuffix(got, "wayfinder-maps)") {
+					t.Errorf("%s --version = %q, want %q plus (%s, <path>)", name, got, tc.want, tc.method)
+				}
+			} else if got != tc.want {
 				t.Errorf("%s --version = %q, want %q", name, got, tc.want)
 			}
 		}

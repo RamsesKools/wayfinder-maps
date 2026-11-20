@@ -33,8 +33,21 @@ type Env struct {
 	Home   string
 }
 
-// Current detects the method for the running binary; ok is false when its path is unknown.
-func Current() (m Method, ok bool) {
+// Install is the detected method and the binary path it came from; Exe is empty when unknown.
+type Install struct {
+	Method Method
+	Exe    string
+}
+
+func (i Install) String() string {
+	if i.Exe == "" {
+		return string(i.Method)
+	}
+	return string(i.Method) + ", " + i.Exe
+}
+
+// Current detects how the running binary was installed.
+func Current() Install {
 	exe, err := os.Executable()
 	if err == nil {
 		exe, err = filepath.EvalSymlinks(exe)
@@ -43,11 +56,11 @@ func Current() (m Method, ok bool) {
 	env := Env{Version: version.Get(), Exe: exe, GOBIN: os.Getenv("GOBIN"), GOPATH: os.Getenv("GOPATH"), Home: home}
 	if err != nil {
 		if env.Version == "dev" {
-			return Dev, true
+			return Install{Method: Dev}
 		}
-		return Manual, false
+		return Install{Method: Manual}
 	}
-	return Detect(env), true
+	return Install{Method: Detect(env), Exe: exe}
 }
 
 // Detect classifies the install. The receipt wins over the path, because install.sh may write anywhere.

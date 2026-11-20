@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/RamsesKools/wayfinder-maps/internal/installmethod"
 	"github.com/RamsesKools/wayfinder-maps/internal/selfupdate"
 	"github.com/RamsesKools/wayfinder-maps/internal/version"
 )
@@ -19,6 +20,15 @@ const (
 	releasesURLEnv = "WAYFINDER_RELEASES_URL"
 	apiURLEnv      = "WAYFINDER_API_URL"
 )
+
+// selfUpdateFor refuses on a Homebrew install before touching anything, since brew owns those files.
+func selfUpdateFor(m installmethod.Method, args []string, stdout, stderr io.Writer) int {
+	if m == installmethod.Homebrew {
+		fmt.Fprintf(stderr, "wayfinder-maps: self-update refused: this install is managed by Homebrew; run %s\n", installmethod.Hint(m))
+		return 2
+	}
+	return selfUpdate(args, stdout, stderr)
+}
 
 func selfUpdate(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("self-update", flag.ContinueOnError)
