@@ -14,21 +14,21 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05070d;
   transition:transform .24s cubic-bezier(.2,.7,.2,1),opacity .24s}
 body.panelopen #hud{transform:translateY(105%);opacity:0;pointer-events:none}
 #hud.folded>:not(.htitle):not(.hudfold){display:none}
-#hud .hudfold{position:absolute;right:16px;top:0;transform:translateY(-100%);width:34px;height:18px;padding:0;
+#hud .hudfold{position:absolute;left:66px;top:-45px;width:24px;height:24px;padding:0;
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8b93a3;
-  background:rgba(11,14,21,.85);border:1px solid #1b212e;border-bottom:0;border-radius:8px 8px 0 0}
+  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;backdrop-filter:blur(8px)}
 #hud .hudfold:hover{color:#e6e9ef}
 #hud .hudfold svg{width:10px;height:6px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
 #hud.folded .hudfold svg{transform:rotate(180deg)}
-/* Folded: the bar becomes a bottom-left corner holding the compass, the title and the toggle. */
+/* The toggle sits right of the compass, centred on it, in both states. Folded: the bar becomes a bottom-left corner holding the compass, the toggle and the title. */
 body.hudfolded #hud{right:auto;max-width:min(340px,calc(100vw - 24px));min-height:62px;flex-wrap:nowrap;gap:10px;
-  padding:8px 12px 8px 70px;border-right:1px solid #1b212e;border-radius:0 14px 0 0;
+  padding:8px 12px 8px 66px;border-right:1px solid #1b212e;border-radius:0 14px 0 0;
   background:rgba(9,12,19,.82)}
 body.hudfolded #hud .htitle{flex:0 1 auto;min-width:0}
 body.hudfolded #hud .dest{display:none}
 #hud .tshort,body.hudfolded #hud .tfull{display:none}
 body.hudfolded #hud .tshort{display:inline}
-body.hudfolded #hud .hudfold{position:static;transform:none;flex:none;width:24px;height:24px;border:1px solid #1b212e;border-radius:50%}
+body.hudfolded #hud .hudfold{position:static;order:-1;flex:none}
 body.hudfolded #compass{bottom:8px}
 #hud .htitle{min-width:110px;flex:1 1 180px}
 #hud h1{font-size:14px;font-weight:600;margin:0;line-height:1.25;
