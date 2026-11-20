@@ -7,6 +7,8 @@
 #
 # ubuntu-22.04 on purpose: binaries link the oldest glibc we can, and jammy's
 # libwebkit2gtk-4.1 matches what current distros ship at runtime.
+#
+# Once the release is out, the docs job deploys the site from the same tag to GitHub Pages.
 name: release
 
 on:
@@ -125,3 +127,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GORELEASER_CURRENT_TAG: ${{ needs.prepare.outputs.tag }}
+
+  docs:
+    needs: [prepare, goreleaser]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - uses: astral-sh/setup-uv@v7
+      - run: uv run mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/
+      - id: deploy
+        uses: actions/deploy-pages@v5

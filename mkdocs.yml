@@ -1,0 +1,75 @@
+site_name: wayfinder-maps
+site_url: https://ramseskools.github.io/wayfinder-maps/
+site_description: A CLI and star-map viewer for wayfinder maps, carried on into implementation.
+repo_url: https://github.com/RamsesKools/wayfinder-maps
+repo_name: RamsesKools/wayfinder-maps
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  custom_dir: overrides
+  font: false
+  logo: assets/favicon.svg
+  favicon: assets/favicon.svg
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    scheme: default
+    primary: custom
+    accent: custom
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - content.code.copy
+
+hooks:
+  - docs_hooks.py
+
+watch:
+  - README.md
+  - docs_hooks.py
+
+exclude_docs: |
+  starmap-design.md
+  implement-phase-design.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.superfences
+
+extra_css:
+  - assets/custom.css
+
+extra_javascript:
+  - assets/image-zoom.js
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Guide:
+      - Usage: guide/usage.md
+      - Map format: guide/map-format.md
+      - Maps kept as GitHub issues: guide/github-issues.md
+  - Features:
+      - features/index.md
+      - Implement tickets: features/implement-tickets.md
+      - AFK or HITL frontier: features/afk-hitl.md
+      - Start and goal: features/start-and-goal.md
+      - Compass: features/compass.md
+      - Tickets placed by age: features/age-layout.md
+      - Narrow screens: features/narrow-screens.md
+      - Pull from GitHub: features/pull.md
+      - Open a map from GitHub: features/open-from-github.md
+      - Recent maps: features/recent-maps.md
+      - install-skill: features/install-skill.md
+      - self-update: features/self-update.md
+      - Favicon: features/favicon.md

@@ -4,3 +4,6 @@
 
 helpers/
 dist/
+site/
+.venv/
+__pycache__/

@@ -1,0 +1,371 @@
+/* Derived from the my-blog stylesheet (github.com/RamsesKools/my-blog), blog-only components removed. */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+
+/* Design tokens */
+:root {
+    --c-bg: #F8F7F6;
+    /* Stone-white: page background */
+    --c-surface: #FFFFFF;
+    /* White: card and component backgrounds */
+    --c-dark: #1B2629;
+    /* Dark Teal: primary text, dark surfaces */
+    --c-mid: #2E3D45;
+    /* Slate: secondary dark, headers on dark surfaces */
+    --c-blue: #3E77DC;
+    /* ACD Blue: primary accent, interactive, links, CTA */
+    --c-blue-light: #D6E4FA;
+    /* ACD Blue tint: tag/badge backgrounds */
+    --c-blue-muted: #A8C3F0;
+    /* ACD Blue mid: borders, subtle accents */
+    --c-blue-hover: #2F66CC;
+    /* ACD Blue dark: hover state on blue buttons */
+    --c-blue-text: #1E4A9C;
+    /* ACD Blue deep: text on blue-light backgrounds */
+    --c-green: #70AE6E;
+    /* Sage Green: secondary accent, success */
+    --c-green-light: #DFF0DE;
+    /* Sage tint: tag/badge backgrounds */
+    --c-green-border: #A8D9A6;
+    /* Sage mid: border on green tags */
+    --c-green-text: #2D6B2B;
+    /* Sage deep: text on green-light backgrounds */
+    --c-text: #1B2629;
+    /* Dark Teal: primary text */
+    --c-text-secondary: #4A6169;
+    /* Secondary body text */
+    --c-text-muted: #7A9099;
+    /* Muted labels and metadata */
+    --c-border: rgba(27, 38, 41, 0.12);
+    /* Default component borders */
+    --c-border-strong: rgba(27, 38, 41, 0.22);
+    /* Stronger borders, outline buttons */
+    --c-neutral: #ECEAE8;
+    /* Warm grey: neutral badge backgrounds */
+    --font: 'Geist', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+    --r: 3px;
+}
+
+/* Map design tokens to Material's light scheme */
+[data-md-color-scheme="default"] {
+    --md-primary-fg-color: var(--c-blue);
+    /* ACD Blue */
+    --md-primary-fg-color--light: var(--c-blue-muted);
+    /* ACD Blue mid */
+    --md-primary-fg-color--dark: var(--c-blue-hover);
+    /* ACD Blue dark */
+    --md-primary-bg-color: var(--c-surface);
+    /* White */
+    --md-accent-fg-color: var(--c-blue);
+    /* ACD Blue */
+
+    --md-default-bg-color: var(--c-bg);
+    /* Stone-white */
+    --md-default-fg-color: var(--c-text);
+    /* Dark Teal */
+    --md-default-fg-color--light: var(--c-text-secondary);
+    /* Secondary text */
+    --md-default-fg-color--lighter: var(--c-text-muted);
+    /* Muted text */
+
+    --md-code-bg-color: var(--c-surface);
+    /* White */
+    --md-code-fg-color: var(--c-mid);
+    /* Slate */
+
+    --md-typeset-a-color: var(--c-blue);
+    /* ACD Blue */
+}
+
+/* Typography */
+body,
+.md-typeset {
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--c-text);
+}
+
+.md-typeset code,
+.md-typeset pre,
+.md-typeset kbd {
+    font-family: var(--font-mono);
+}
+
+/* Page background */
+.md-main {
+    background: var(--c-bg);
+    /* Stone-white */
+}
+
+/* Header/nav */
+.md-header,
+.md-header[hidden],
+.md-header--shadow {
+    background: var(--c-surface);
+    /* White */
+    border-bottom: none;
+    box-shadow: none !important;
+    color: var(--c-text);
+}
+
+.md-header__title {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--c-text);
+    /* Dark Teal */
+    letter-spacing: -0.01em;
+}
+
+.md-tabs {
+    background: var(--c-neutral);
+    /* Warm grey */
+    border-top: 0.5px solid var(--c-border);
+    border-bottom: 0.5px solid var(--c-border);
+}
+
+.md-tabs__link {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--c-text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.md-tabs__item--active .md-tabs__link {
+    color: var(--c-blue);
+    /* ACD Blue */
+    opacity: 1;
+    border-bottom: 2px solid var(--c-blue);
+}
+
+.md-tabs__link:hover {
+    color: var(--c-blue);
+    /* ACD Blue */
+    opacity: 1;
+}
+
+/* Sidebar */
+.md-nav__title {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--c-text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.md-nav__link {
+    font-size: 14px;
+    color: var(--c-text-secondary);
+}
+
+.md-nav__link--active,
+.md-nav__link:hover {
+    color: var(--c-blue);
+    /* ACD Blue */
+}
+
+/* Repository widget: show repo name + version tag, hide popularity counts */
+.md-source__fact--stars,
+.md-source__fact--forks {
+    display: none;
+}
+
+/* Content area */
+.md-grid {
+    max-width: min(92vw, 1400px);
+}
+
+.md-content {
+    width: 100%;
+}
+
+.md-content__inner {
+    max-width: clamp(44rem, 76vw, 86rem);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* When only one sidebar shows, add one sidebar's width on the other side so content stays centered. */
+@media screen and (min-width: 76.25em) {
+    .md-sidebar--primary:not([hidden])~.md-sidebar--secondary[hidden]~.md-content {
+        margin-right: 12.1rem;
+    }
+
+    .md-sidebar--primary[hidden]~.md-sidebar--secondary:not([hidden])~.md-content {
+        margin-left: 12.1rem;
+    }
+}
+
+/* Headings */
+.md-typeset h1 {
+    font-size: 2rem;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--c-dark);
+    /* Dark Teal */
+    border-bottom: 0.5px solid var(--c-border);
+    padding-bottom: 0.5rem;
+}
+
+.md-typeset h2 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--c-dark);
+    /* Dark Teal */
+    border-bottom: none;
+}
+
+/* Heading links inherit heading color */
+.md-typeset h1 a,
+.md-typeset h2 a,
+.md-typeset h3 a {
+    color: inherit;
+}
+
+.md-typeset h1 a:hover,
+.md-typeset h2 a:hover,
+.md-typeset h3 a:hover {
+    color: var(--c-blue-hover);
+}
+
+/* Links */
+.md-typeset a {
+    color: var(--c-blue);
+    /* ACD Blue */
+    text-decoration: none;
+    transition: color 150ms ease;
+}
+
+.md-typeset a:hover {
+    color: var(--c-blue-hover);
+    /* ACD Blue dark */
+}
+
+/* Footer */
+.md-footer {
+    background: var(--c-dark);
+    /* Dark Teal */
+    color: var(--c-bg);
+}
+
+.md-footer-meta {
+    background: var(--c-mid);
+    /* Slate */
+}
+
+/* Search box styling */
+.md-search__input::placeholder {
+    color: var(--c-text-secondary);
+    /* Darker placeholder text for better readability */
+    opacity: 0.7;
+}
+
+.md-search__input {
+    background-color: var(--c-blue-light) !important;
+    /* Light blue background */
+    border: 0.5px solid var(--c-blue-muted) !important;
+    /* Blue outline for definition */
+}
+
+.md-search__input:hover {
+    background-color: var(--c-blue-muted) !important;
+    /* Darker blue on hover */
+    border-color: var(--c-blue) !important;
+    /* Darker blue outline for visual feedback */
+    box-shadow: 2px 2px 6px rgba(62, 119, 220, 0.15) !important;
+    /* Blue shadow on bottom-right */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
+
+/* Click-to-zoom screenshots (docs/assets/image-zoom.js) */
+.md-typeset img.zoomable {
+    cursor: zoom-in;
+}
+
+.image-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(27, 38, 41, 0.85);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 150ms ease, visibility 150ms ease;
+}
+
+.image-zoom-overlay--visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.image-zoom-full {
+    max-width: 98vw;
+    max-height: 98vh;
+    cursor: zoom-out;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+}
+
+.image-zoom-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.image-zoom-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.image-zoom-open-tab {
+    position: absolute;
+    top: 4.75rem;
+    right: 1.5rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: var(--c-blue);
+    color: #fff;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.image-zoom-open-tab:hover {
+    background: var(--c-blue-hover);
+    color: #fff;
+}
+
+body.image-zoom-lock {
+    overflow: hidden;
+}
+
+/* Screenshots */
+.md-typeset img {
+    border-radius: var(--r);
+}
