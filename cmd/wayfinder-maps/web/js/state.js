@@ -21,6 +21,9 @@ export const S = {
   // Flow direction of the map: a compass point, or "none" for the radial layout.
   dir: "E",
 
+  // Freeze nodes: no idle bob; layout, tweens and every other effect keep moving.
+  freeze: false,
+
   clock: 0,
   lastClock: 0,
 

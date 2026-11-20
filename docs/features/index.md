@@ -16,6 +16,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Start and goal in the viewer](start-and-goal.md) | A virtual start and a goal cloud holding the fog |
 | [Compass](compass.md) | The map flows in any of 8 directions or radially |
 | [Tickets placed by age](age-layout.md) | Later tickets drift toward the goal without stretching the map |
+| [Freeze nodes](freeze-nodes.md) | A gear popover switch stops the idle drift of the stars |
 | [Narrow-screen layout](narrow-screens.md) | Wrapping top bar and a status bar that collapses to a corner with the title and compass |
 | [`pull` in the binary](pull.md) | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
 | [Refresh button](pull.md#refresh-from-the-viewer) | The same pull from the viewer |

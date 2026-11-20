@@ -9,7 +9,31 @@ import (
 // settings are the viewer preferences kept across restarts. They live in a file
 // rather than localStorage, which is per origin and app mode picks a random port.
 type settings struct {
-	Direction string `json:"direction"`
+	Direction   string `json:"direction"`
+	FreezeNodes bool   `json:"freezeNodes"`
+}
+
+// settingsPatch is a partial update: absent fields keep their stored value.
+type settingsPatch struct {
+	Direction   *string `json:"direction"`
+	FreezeNodes *bool   `json:"freezeNodes"`
+}
+
+// apply merges the patch into s, reporting false for an empty or invalid one.
+func (p settingsPatch) apply(s *settings) bool {
+	if p.Direction == nil && p.FreezeNodes == nil {
+		return false
+	}
+	if p.Direction != nil {
+		if !validDirection(*p.Direction) {
+			return false
+		}
+		s.Direction = *p.Direction
+	}
+	if p.FreezeNodes != nil {
+		s.FreezeNodes = *p.FreezeNodes
+	}
+	return true
 }
 
 const defaultDirection = "E"
@@ -46,6 +70,7 @@ func loadSettings() settings {
 	var got settings
 	if json.Unmarshal(b, &got) == nil && validDirection(got.Direction) {
 		s.Direction = got.Direction
+		s.FreezeNodes = got.FreezeNodes
 	}
 	return s
 }

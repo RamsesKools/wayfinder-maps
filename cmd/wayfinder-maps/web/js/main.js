@@ -7,6 +7,7 @@ import "./panel.js"; // wires the panel close button and cross-ticket links
 import {startPolling, showSplash, openProject, loadMap, leaveMap, pullFromGithub, setDirection} from "./screens.js";
 import {mountGithub} from "./ghpicker.js";
 import {mountCompass} from "./compass.js";
+import {mountSettings} from "./settings.js";
 import {DEFAULT, isDir} from "./direction.js";
 
 function resize() {
@@ -32,11 +33,13 @@ new ResizeObserver(function() { document.documentElement.style.setProperty("--hu
 
 var setCompass = mountCompass(document.getElementById("compass"), function(d) { setDirection(d); setCompass(S.dir); });
 setCompass(S.dir);
+var syncSettings = mountSettings();
 
 resize(); initStars(); render(); startPolling();
-// The saved direction has to be known before the first layout runs.
+// The saved settings have to be known before the first layout runs.
 fetch("/api/settings").then(function(r) { return r.json(); }).then(function(st) {
   S.dir = isDir(st.direction) ? st.direction : DEFAULT; setCompass(S.dir);
+  S.freeze = st.freezeNodes === true; syncSettings();
 }).catch(function() {}).then(function() { return fetch("/api/initial"); }).then(function(r) { return r.json(); }).then(function(init) {
   if (init.effort) loadMap(init.effort);
   else if (init.project) openProject(init.project);

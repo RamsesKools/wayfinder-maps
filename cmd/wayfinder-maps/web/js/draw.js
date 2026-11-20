@@ -214,7 +214,8 @@ export function render() {
     var n = S.nodes[i], ph = n.num * 1.7;
     if (n.px == null) { n.px = n.x; n.py = n.y; }
     n.px += (n.x - n.px) * POSEASE; n.py += (n.y - n.py) * POSEASE;
-    n._x = n.px + Math.sin(S.clock * 0.7 + ph) * 2.4; n._y = n.py + Math.cos(S.clock * 0.55 + ph) * 2.4;
+    n._x = n.px + (S.freeze ? 0 : Math.sin(S.clock * 0.7 + ph) * 2.4);
+    n._y = n.py + (S.freeze ? 0 : Math.cos(S.clock * 0.55 + ph) * 2.4);
     if (n.flare > 0) n.flare = Math.max(0, n.flare - dt / 1.1);
     if (n.enter != null && n.enter < 1) n.enter = Math.min(1, n.enter + dt / 0.55);
   }
