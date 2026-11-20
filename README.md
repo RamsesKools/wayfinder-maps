@@ -25,6 +25,15 @@ curl -fsSL https://raw.githubusercontent.com/RamsesKools/wayfinder-maps/main/scr
 wayfinder-maps install-skill
 ```
 
+Or on macOS with Homebrew, which then also does the upgrading:
+
+```sh
+brew install RamsesKools/tap/wayfinder-maps
+brew upgrade wayfinder-maps
+```
+
+![Installing with Homebrew: --version names the install, self-update is hidden from --help and refused with the brew hint](docs/images/homebrew-install.png)
+
 Windows, pinned releases, drop-in skills, updates and building from source are on the [install page](docs/install.md).
 
 When a newer release exists, commands end with a short notice on stderr with the update command for your install (terminal only, never in CI):

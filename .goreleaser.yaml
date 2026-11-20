@@ -92,3 +92,29 @@ checksum:
 
 changelog:
   use: github
+
+# The tap's cask is committed through the GitHub API with an app token (minted in
+# release.yml), so the commits show up as the app and Verified. macOS only: the
+# archives are unsigned, so postflight strips the quarantine flag like install.sh.
+homebrew_casks:
+  - name: wayfinder-maps
+    ids: [darwin]
+    binaries: [wayfinder-maps]
+    homepage: https://github.com/RamsesKools/wayfinder-maps
+    description: CLI and star-map viewer for wayfinder maps
+    license: MIT
+    repository:
+      owner: RamsesKools
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    commit_author:
+      name: wayfinder-maps-release[bot]
+      email: wayfinder-maps-release[bot]@users.noreply.github.com
+      use_github_app_token: true
+    hooks:
+      post:
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/wayfinder-maps"]
+          end

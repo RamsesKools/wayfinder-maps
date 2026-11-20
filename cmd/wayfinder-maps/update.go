@@ -16,8 +16,7 @@ import (
 
 // updateChecker is a seam for tests; production builds it for the running binary.
 var updateChecker = func() *updatecheck.Checker {
-	m, _ := installmethod.Current()
-	return updatecheck.New(version.Get(), m)
+	return updatecheck.New(version.Get(), installmethod.Current().Method)
 }
 
 // notifier prints the outdated notice after a command, off the command's critical path.

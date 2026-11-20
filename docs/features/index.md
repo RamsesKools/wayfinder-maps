@@ -23,10 +23,11 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Open from GitHub](open-from-github.md) | Find a map in a repo and open it from the splash, with account choice, no `pull` first |
 | [Recent maps](recent-maps.md) | Maps opened from the CLI or the viewer are listed on the splash |
 | [`install-skill`](install-skill.md) | Skills embedded in the binary, installed per harness |
-| [`self-update`](self-update.md) | The binary upgrades itself |
+| [Homebrew](../install.md#homebrew) | `brew install` and `brew upgrade` from a tap, with the binary aware of it |
+| [`self-update`](self-update.md) | The binary upgrades itself, except under Homebrew, which hides and refuses it |
 | [Outdated notice](update-notice.md) | A short stderr notice with the right update command when a newer release exists, and the latest version in the settings menu; cached for a day and easy to silence |
 | [Logo](logo.md) | A small constellation as the favicon, the splash logo and the mark on the map |
-| [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper |
+| [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper; the CLI adds how it was installed and where |
 
 The [design record](https://github.com/RamsesKools/wayfinder-maps/blob/main/docs/implement-phase-design.md) has the full plan for the implement phase.
 

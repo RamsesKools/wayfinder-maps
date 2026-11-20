@@ -53,3 +53,19 @@ func TestHint(t *testing.T) {
 		t.Error("manual hint must link the releases page")
 	}
 }
+
+func TestInstallString(t *testing.T) {
+	tests := []struct {
+		in   Install
+		want string
+	}{
+		{Install{Homebrew, "/opt/homebrew/Caskroom/wayfinder-maps/1.0.0/wayfinder-maps"}, "homebrew, /opt/homebrew/Caskroom/wayfinder-maps/1.0.0/wayfinder-maps"},
+		{Install{Dev, "/src/wayfinder-maps"}, "dev, /src/wayfinder-maps"},
+		{Install{Manual, ""}, "manual"},
+	}
+	for _, tt := range tests {
+		if got := tt.in.String(); got != tt.want {
+			t.Errorf("String() = %q, want %q", got, tt.want)
+		}
+	}
+}

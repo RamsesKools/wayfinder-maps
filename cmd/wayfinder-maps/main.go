@@ -9,11 +9,12 @@ import (
 	"strings"
 
 	"github.com/RamsesKools/wayfinder-maps/internal/ghpull"
+	"github.com/RamsesKools/wayfinder-maps/internal/installmethod"
 	"github.com/RamsesKools/wayfinder-maps/internal/version"
 	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
 )
 
-const usage = `wayfinder-maps — inspect a wayfinder map
+const usageText = `wayfinder-maps — inspect a wayfinder map
 
 usage:
   wayfinder-maps status <effort-dir>   print the frontier and the state of the map
@@ -47,6 +48,27 @@ as wayfinder-<name> and are tracked in .wayfinder-maps-skills.lock.json in each 
 
 exit: 0 clean, 1 lint errors found, 2 could not read the map`
 
+// helpText hides self-update for Homebrew installs, which brew owns.
+func helpText(m installmethod.Method) string {
+	if m != installmethod.Homebrew {
+		return usageText
+	}
+	var keep []string
+	lines := strings.Split(usageText, "\n")
+	for i := 0; i < len(lines); i++ {
+		if strings.HasPrefix(lines[i], "  wayfinder-maps self-update") {
+			i++
+			continue
+		}
+		keep = append(keep, lines[i])
+	}
+	return strings.Join(keep, "\n")
+}
+
+func versionLine(i installmethod.Install) string {
+	return fmt.Sprintf("%s (%s)", version.String("wayfinder-maps"), i)
+}
+
 func main() {
 	args := os.Args[1:]
 	wait := func() {}
@@ -66,12 +88,12 @@ func main() {
 
 func dispatch(args []string) int {
 	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
-		fmt.Println(usage)
+		fmt.Println(helpText(installmethod.Current().Method))
 		return 0
 	}
 
 	if args[0] == "--version" {
-		fmt.Println(version.String("wayfinder-maps"))
+		fmt.Println(versionLine(installmethod.Current()))
 		return 0
 	}
 
@@ -80,7 +102,7 @@ func dispatch(args []string) int {
 	}
 
 	if args[0] == "self-update" {
-		return selfUpdate(args[1:], os.Stdout, os.Stderr)
+		return selfUpdateFor(installmethod.Current().Method, args[1:], os.Stdout, os.Stderr)
 	}
 
 	if args[0] == "install-skill" {
@@ -114,7 +136,7 @@ func dispatch(args []string) int {
 	case "app":
 		return app(dir)
 	default:
-		fmt.Fprintf(os.Stderr, "wayfinder-maps: unknown command %q\n\n%s\n", cmd, usage)
+		fmt.Fprintf(os.Stderr, "wayfinder-maps: unknown command %q\n\n%s\n", cmd, helpText(installmethod.Current().Method))
 		return 2
 	}
 }

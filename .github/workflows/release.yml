@@ -8,6 +8,9 @@
 # ubuntu-22.04 on purpose: binaries link the oldest glibc we can, and jammy's
 # libwebkit2gtk-4.1 matches what current distros ship at runtime.
 #
+# The same goreleaser run commits the Homebrew cask to RamsesKools/homebrew-tap with a
+# short-lived GitHub App token (minted just before the Release step, revoked at job end).
+#
 # Once the release is out, the docs job deploys the site from the same tag to GitHub Pages.
 name: release
 
@@ -120,7 +123,9 @@ jobs:
     needs: [prepare, linux-helper]
     runs-on: ubuntu-latest
     # osxcross + macOS SDK let this Linux job build the darwin cgo targets.
-    container: ghcr.io/goreleaser/goreleaser-cross:v1.26.10
+    container: ghcr.io/goreleaser/goreleaser-cross:v1.27.3-4
+    # Holds the tap app's credentials; only main and v* tags may deploy to it.
+    environment: release
     steps:
       - uses: actions/checkout@v4
         with:
@@ -131,12 +136,22 @@ jobs:
           path: helpers
       - name: Restore helper exec bits # artifacts drop file modes
         run: chmod +x helpers/*/wayfinder-maps-webview
+      - name: Mint tap token
+        id: tap-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.HOMEBREW_TAP_APP_ID }}
+          private-key: ${{ secrets.HOMEBREW_TAP_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: homebrew-tap
+          permission-contents: write
       - name: Release
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           goreleaser release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ steps.tap-token.outputs.token }}
           GORELEASER_CURRENT_TAG: ${{ needs.prepare.outputs.tag }}
 
   docs:
