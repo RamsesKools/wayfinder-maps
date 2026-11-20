@@ -103,6 +103,15 @@ Cached maps carry a `clean up` button in Recent, next to the `x` that only forge
 
 <img src="docs/images/github-open-map.png" alt="The map opened from GitHub, with the repo name in the top bar and the pull button next to the account">
 
+## Collapsing the status bar
+
+The arrow on the status bar collapses it into a small bottom-left corner holding the map title and the compass, so the map gets the full width back.
+The arrow in the corner expands it again, and the choice is remembered.
+
+<img src="docs/images/hud-expanded.png" alt="The status bar expanded: title, counts, progress bar and legend along the bottom, with the compass above it">
+
+<img src="docs/images/hud-collapsed.png" alt="The status bar collapsed: a bottom-left corner with the map title, the compass beside it and an expand arrow">
+
 ## Tickets placed by age
 
 In a flow direction a ticket's column is its dependency depth, so every ticket without blockers used to sit next to the start.
@@ -133,7 +142,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | Start and goal in the viewer | A virtual start and a goal cloud holding the fog |
 | Compass | The map flows in any of 8 directions or radially |
 | Tickets placed by age | Later tickets drift toward the goal without stretching the map |
-| Narrow-screen layout | Wrapping top bar and foldable status bar |
+| Narrow-screen layout | Wrapping top bar and a status bar that collapses to a corner with the title and compass |
 | `pull` in the binary | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
 | Refresh button | The same pull from the viewer |
 | `self-update` | The binary upgrades itself |

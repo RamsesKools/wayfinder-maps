@@ -12,6 +12,7 @@ export function buildHud() {
   var c = S.graph.counts, impl = c.implement && c.implement.total > 0;
   hud.classList.toggle("hasimpl", !!impl);
   if (!hud.dataset.foldInit) { hud.dataset.foldInit = "1"; try { hud.classList.toggle("folded", localStorage.getItem("hudFolded") === "1"); } catch (e) {} }
+  document.body.classList.toggle("hudfolded", hud.classList.contains("folded"));
   var counts = el("div", "counts"), f = frontierSplit();
   if (impl) {
     var front = el("div", "cfront");
@@ -48,11 +49,12 @@ function foldButton(hud) {
   function sync() {
     var folded = hud.classList.contains("folded");
     b.setAttribute("aria-expanded", String(!folded));
-    b.setAttribute("aria-label", folded ? "Unfold status bar" : "Fold status bar");
+    b.setAttribute("aria-label", folded ? "Expand status bar" : "Collapse status bar");
     b.title = b.getAttribute("aria-label");
   }
   b.onclick = function() {
     var folded = hud.classList.toggle("folded");
+    document.body.classList.toggle("hudfolded", folded);
     try { localStorage.setItem("hudFolded", folded ? "1" : "0"); } catch (e) {}
     sync();
   };

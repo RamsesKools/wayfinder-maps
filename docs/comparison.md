@@ -45,9 +45,11 @@ graph. A map with no implement tickets reads exactly as it does upstream.
 
   <img src="images/hud-narrow.png" alt="The status bar at 360px wide: clipped before, wrapped onto several rows after">
 
-  The small arrow tab on the bar's top edge folds it down to just the title, and back out.
+  The small arrow on the bar collapses it into a bottom-left corner holding the title and the compass, which gives the map the full width back, and expands it again.
 
-  <img src="images/hud-fold.png" alt="The status bar at 360px wide, unfolded and folded down to the title">
+  <img src="images/hud-fold.png" alt="The status bar at 360px wide, expanded and collapsed into a corner with the title and compass">
+
+  <img src="images/hud-collapsed.png" alt="The collapsed status bar on a wide screen: a bottom-left corner with the map title, the compass and an expand arrow">
 
 - **One top bar.** The Maps and Refresh buttons, the project name and the hint share a single bar that wraps onto extra rows instead of overlapping, and it gives way to the detail panel when that opens.
 
