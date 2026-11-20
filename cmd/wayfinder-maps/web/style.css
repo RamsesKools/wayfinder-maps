@@ -125,8 +125,10 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
   padding:7px 14px;font-size:12px;cursor:pointer;backdrop-filter:blur(8px)}
 #settings{position:relative;flex:none;margin-left:auto}
 #setbtn{position:relative;z-index:4;display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;cursor:pointer;
-  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;color:#b7bdc9;backdrop-filter:blur(8px);transition:border-color .15s,color .15s}
-#setbtn:hover,#setbtn[aria-expanded=true]{color:#e6e9ef;border-color:#3a4356}
+  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;color:#b7bdc9;backdrop-filter:blur(8px);transition:border-color .15s,color .15s,background .15s}
+#setbtn:hover{color:#e6e9ef;border-color:#3a4356}
+/* Open, the panel takes over the gear's circle. */
+#setbtn[aria-expanded=true]{color:#e6e9ef;background:transparent;border-color:transparent;backdrop-filter:none}
 #setbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;transition:transform .3s ease}
 #setbtn[aria-expanded=true] svg{transform:rotate(60deg)}
 /* The popover grows out of the gear: it sits behind it, top right, and reveals from a gear-sized circle. */
