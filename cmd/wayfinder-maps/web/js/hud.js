@@ -3,15 +3,22 @@ import {S} from "./state.js";
 import {el, glyphSvg} from "./util.js";
 import {COL, GLYPH, AFKCOL, HITLCOL, STATION} from "./theme.js";
 
+const SHORT_TITLE = 24;
+
 export function buildHud() {
   var hud = document.getElementById("hud"); hud.innerHTML = "";
   var title = el("div", "htitle");
-  title.appendChild(el("h1", null, S.graph.name));
+  var h1 = el("h1"), name = S.graph.name;
+  h1.title = name;
+  h1.appendChild(el("span", "tfull", name));
+  h1.appendChild(el("span", "tshort", name.length > SHORT_TITLE ? name.slice(0, SHORT_TITLE).trimEnd() + "..." : name));
+  title.appendChild(h1);
   if (S.graph.destination) title.appendChild(el("div", "dest", S.graph.destination));
   hud.appendChild(title);
   var c = S.graph.counts, impl = c.implement && c.implement.total > 0;
   hud.classList.toggle("hasimpl", !!impl);
   if (!hud.dataset.foldInit) { hud.dataset.foldInit = "1"; try { hud.classList.toggle("folded", localStorage.getItem("hudFolded") === "1"); } catch (e) {} }
+  document.body.classList.toggle("hudfolded", hud.classList.contains("folded"));
   var counts = el("div", "counts"), f = frontierSplit();
   if (impl) {
     var front = el("div", "cfront");
@@ -48,11 +55,12 @@ function foldButton(hud) {
   function sync() {
     var folded = hud.classList.contains("folded");
     b.setAttribute("aria-expanded", String(!folded));
-    b.setAttribute("aria-label", folded ? "Unfold status bar" : "Fold status bar");
+    b.setAttribute("aria-label", folded ? "Expand status bar" : "Collapse status bar");
     b.title = b.getAttribute("aria-label");
   }
   b.onclick = function() {
     var folded = hud.classList.toggle("folded");
+    document.body.classList.toggle("hudfolded", folded);
     try { localStorage.setItem("hudFolded", folded ? "1" : "0"); } catch (e) {}
     sync();
   };

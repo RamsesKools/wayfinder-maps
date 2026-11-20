@@ -9,3 +9,5 @@ The choice is saved in `settings.json` next to `recents.json` in your user confi
 South (top to bottom) suits a tall, narrow column: it fills the width and opens on the start.
 
 ![The same map docked in a narrow column: east is small and sparse, south fills the column and starts at the top](../images/compass-column.png)
+
+When the [status bar is collapsed](narrow-screens.md#collapsing-the-status-bar), the compass moves into the corner beside the map title.

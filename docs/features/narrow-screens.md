@@ -8,9 +8,16 @@ The bottom status bar wraps onto extra rows instead of running off the edge, so 
 
 ![The status bar at 360px wide: clipped before, wrapped onto several rows after](../images/hud-narrow.png)
 
-The small arrow tab on the bar's top edge folds it down to just the title, and back out.
+## Collapsing the status bar
 
-![The status bar at 360px wide, unfolded and folded down to the title](../images/hud-fold.png)
+The small arrow on the bar collapses it into a bottom-left corner holding the map title (cut off with "..." after 24 characters) and the compass, so the map gets the full width back.
+The arrow in the corner expands it again, and the choice is remembered.
+
+![The status bar at 360px wide, expanded and collapsed into a corner with the title and compass](../images/hud-fold.png)
+
+![The status bar expanded on a wide screen: title, counts, progress bar and legend along the bottom, with the compass above it](../images/hud-expanded.png)
+
+![The status bar collapsed on a wide screen: a bottom-left corner with the map title, the compass beside it and an expand arrow](../images/hud-collapsed.png)
 
 ## Top bar
 
