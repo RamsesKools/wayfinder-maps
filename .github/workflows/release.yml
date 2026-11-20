@@ -1,5 +1,5 @@
 # Release binaries on every push to main (tag derived from plugin.json), from a
-# manual run on main, or from a pushed/selected vX.Y.Z tag. The Linux webkit helper must be built on Linux
+# manual run on main, or from a pushed/selected vX.Y.Z tag whose commit is on main. The Linux webkit helper must be built on Linux
 # (cgo against webkit2gtk), so two runner jobs build it per-arch first; the
 # GoReleaser job (Linux, goreleaser-cross) then builds everything else, darwin
 # with cgo via osxcross for the native window, windows and linux mains as pure Go — and packs the
@@ -32,6 +32,16 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require a tagged commit that is on main
+        if: github.ref_type == 'tag'
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points at $GITHUB_SHA, which is not on main. Releases only come from main."
+            exit 1
+          fi
 
       - name: Resolve tag
         id: resolve
