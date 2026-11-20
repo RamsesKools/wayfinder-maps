@@ -27,6 +27,12 @@ wayfinder-maps install-skill
 
 Windows, pinned releases, drop-in skills, updates and building from source are on the [install page](docs/install.md).
 
+When a newer release exists, commands end with a short notice on stderr with the update command for your install (terminal only, never in CI):
+
+![The outdated notice after a status run](docs/images/update-notice.png)
+
+Silence it by setting `"updateCheck": false` in `settings.json`, or turn off Update check in the viewer's settings, see [Outdated notice](docs/features/update-notice.md).
+
 ## Usage
 
 1. Ask your agent to run `/wayfinder-maps` on a big, foggy effort. It charts the map under `.plan/<effort>/`.

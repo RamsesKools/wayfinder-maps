@@ -211,14 +211,14 @@ func TestSettingsEndpoint(t *testing.T) {
 		return rec.Code
 	}
 
-	if c, b := get(); c != http.StatusOK || b != `{"direction":"E","freezeNodes":false}` {
+	if c, b := get(); c != http.StatusOK || b != `{"direction":"E","freezeNodes":false,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("default = %d %s", c, b)
 	}
 	for _, d := range []string{"N", "NE", "E", "SE", "S", "SW", "W", "NW", "none"} {
 		if c := post(`{"direction":"`+d+`"}`, true); c != http.StatusNoContent {
 			t.Errorf("post %s = %d", d, c)
 		}
-		if _, b := get(); b != `{"direction":"`+d+`","freezeNodes":false}` {
+		if _, b := get(); b != `{"direction":"`+d+`","freezeNodes":false,"updateCheck":true,"ghAccount":""}` {
 			t.Errorf("after post %s: %s", d, b)
 		}
 	}
@@ -228,7 +228,7 @@ func TestSettingsEndpoint(t *testing.T) {
 		rec := httptest.NewRecorder()
 		newServer("").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/settings", nil))
 		return rec.Code, strings.TrimSpace(rec.Body.String())
-	}(); b != `{"direction":"none","freezeNodes":false}` {
+	}(); b != `{"direction":"none","freezeNodes":false,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("after restart: %s", b)
 	}
 
@@ -246,7 +246,7 @@ func TestSettingsEndpoint(t *testing.T) {
 			t.Errorf("%s = %d, want 400", name, c)
 		}
 	}
-	if _, b := get(); b != `{"direction":"none","freezeNodes":false}` {
+	if _, b := get(); b != `{"direction":"none","freezeNodes":false,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("rejected posts changed the setting: %s", b)
 	}
 
@@ -254,28 +254,70 @@ func TestSettingsEndpoint(t *testing.T) {
 	if c := post(`{"freezeNodes":true}`, true); c != http.StatusNoContent {
 		t.Errorf("post freezeNodes = %d", c)
 	}
-	if _, b := get(); b != `{"direction":"none","freezeNodes":true}` {
+	if _, b := get(); b != `{"direction":"none","freezeNodes":true,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("freezeNodes kept no direction: %s", b)
 	}
 	if c := post(`{"direction":"W"}`, true); c != http.StatusNoContent {
 		t.Errorf("post direction = %d", c)
 	}
-	if _, b := get(); b != `{"direction":"W","freezeNodes":true}` {
+	if _, b := get(); b != `{"direction":"W","freezeNodes":true,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("direction dropped freezeNodes: %s", b)
 	}
 	rec := httptest.NewRecorder()
 	newServer("").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/settings", nil))
-	if b := strings.TrimSpace(rec.Body.String()); b != `{"direction":"W","freezeNodes":true}` {
+	if b := strings.TrimSpace(rec.Body.String()); b != `{"direction":"W","freezeNodes":true,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("freezeNodes after restart: %s", b)
 	}
 	if c := post(`{"freezeNodes":false}`, true); c != http.StatusNoContent {
 		t.Errorf("post freezeNodes false = %d", c)
 	}
 
+	// updateCheck merges too, and an old file without it keeps the default on.
+	if c := post(`{"updateCheck":false}`, true); c != http.StatusNoContent {
+		t.Errorf("post updateCheck = %d", c)
+	}
+	if _, b := get(); b != `{"direction":"W","freezeNodes":false,"updateCheck":false,"ghAccount":""}` {
+		t.Errorf("updateCheck off: %s", b)
+	}
+	rec = httptest.NewRecorder()
+	newServer("").ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/settings", nil))
+	if b := strings.TrimSpace(rec.Body.String()); b != `{"direction":"W","freezeNodes":false,"updateCheck":false,"ghAccount":""}` {
+		t.Errorf("updateCheck after restart: %s", b)
+	}
+	f0, _ := settingsFile()
+	os.WriteFile(f0, []byte(`{"direction":"S","freezeNodes":true}`), 0o644)
+	if _, b := get(); b != `{"direction":"S","freezeNodes":true,"updateCheck":true,"ghAccount":""}` {
+		t.Errorf("old file without updateCheck: %s", b)
+	}
+
+	// The default gh account merges, trims, and can be cleared.
+	if c := post(`{"ghAccount":" alice "}`, true); c != http.StatusNoContent {
+		t.Errorf("post ghAccount = %d", c)
+	}
+	if _, b := get(); b != `{"direction":"S","freezeNodes":true,"updateCheck":true,"ghAccount":"alice"}` {
+		t.Errorf("ghAccount set: %s", b)
+	}
+	if c := post(`{"ghAccount":""}`, true); c != http.StatusNoContent {
+		t.Errorf("clear ghAccount = %d", c)
+	}
+	if _, b := get(); b != `{"direction":"S","freezeNodes":true,"updateCheck":true,"ghAccount":""}` {
+		t.Errorf("ghAccount cleared: %s", b)
+	}
+	os.WriteFile(f0, []byte(`{"ghAccount":"not a login"}`), 0o644)
+	if _, b := get(); !strings.Contains(b, `"ghAccount":""`) {
+		t.Errorf("invalid account in file: %s", b)
+	}
+
+	// A hand-written file may hold just one key.
+	os.WriteFile(f0, []byte(`{"updateCheck":false}`), 0o644)
+	if _, b := get(); b != `{"direction":"E","freezeNodes":false,"updateCheck":false,"ghAccount":""}` {
+		t.Errorf("minimal file: %s", b)
+	}
+
 	// A corrupt or invalid file falls back to the default.
 	f, _ := settingsFile()
 	os.WriteFile(f, []byte(`{"direction":"sideways","freezeNodes":true}`), 0o644)
-	if _, b := get(); b != `{"direction":"E","freezeNodes":false}` {
+	if _, b := get(); b != `{"direction":"E","freezeNodes":false,"updateCheck":true,"ghAccount":""}` {
 		t.Errorf("invalid file: %s", b)
 	}
 }

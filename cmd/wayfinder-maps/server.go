@@ -131,7 +131,7 @@ func newServer(initial string) http.Handler {
 		writeJSON(w, loadRecents())
 	})
 
-	// Viewer preferences (map flow direction, frozen nodes); POSTs merge into the stored ones. POST with a custom header, like
+	// Viewer preferences (map flow direction, frozen nodes, update check); POSTs merge into the stored ones. POST with a custom header, like
 	// the other writes, so a foreign page cannot change them.
 	mux.HandleFunc("/api/settings", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
@@ -145,7 +145,7 @@ func newServer(initial string) http.Handler {
 		var p settingsPatch
 		s := loadSettings()
 		if err := json.NewDecoder(io.LimitReader(r.Body, 2048)).Decode(&p); err != nil || !p.apply(&s) {
-			http.Error(w, "a valid direction (N, NE, E, SE, S, SW, W, NW or none) or freezeNodes is required", http.StatusBadRequest)
+			http.Error(w, "a valid direction (N, NE, E, SE, S, SW, W, NW or none), freezeNodes, updateCheck or ghAccount is required", http.StatusBadRequest)
 			return
 		}
 		if err := saveSettings(s); err != nil {
@@ -153,6 +153,11 @@ func newServer(initial string) http.Handler {
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
+	})
+
+	// The running version and the latest release, from the cache shared with the CLI.
+	mux.HandleFunc("/api/update", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, currentUpdateInfo())
 	})
 
 	// Maps in a chosen project; opening one records it in recents.

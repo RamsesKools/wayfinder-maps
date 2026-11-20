@@ -112,6 +112,14 @@ func (u *Updater) Update(ctx context.Context, pin string, force bool) (Status, e
 	return st, nil
 }
 
+// Latest is the newest release tag, looked up the same way as Check but without the install preflight.
+func (u *Updater) Latest(ctx context.Context) (string, error) {
+	return u.resolveTarget(ctx, "")
+}
+
+// Newer reports whether tag latest is a later release than tag current (both v-prefixed).
+func Newer(latest, current string) bool { return compare(current, latest) < 0 }
+
 func (u *Updater) plan(ctx context.Context, pin string) (Status, error) {
 	target, err := u.resolveTarget(ctx, pin)
 	if err != nil {

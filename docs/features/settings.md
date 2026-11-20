@@ -23,6 +23,31 @@ This switch stops that drift.
 Freezing only removes the idle drift.
 The layout is unchanged, and everything else keeps moving: flow particles on edges, the frontier pulse, claimed rings, the undermined halo, status flares, grow-in and the glide to new positions after a live update.
 
+## gh account
+
+The default `gh` account for [`pull`](pull.md) and [Open from GitHub](open-from-github.md).
+Leave it empty to use the active `gh` account.
+
+![The gh account field filled in](../images/settings-account.png)
+
+It is saved when you leave the field or press Enter, and a name that is not a GitHub login turns the field red and is not saved.
+`--account`, the account stored in a pulled map and the `WAYFINDER_GH_ACCOUNT` environment variable all beat it, see [Configuration](../configuration.md).
+
+## Update check
+
+The switch turns the [outdated notice](update-notice.md) on or off, for the CLI and the viewer alike.
+Below it the menu shows the running version and the latest release, plus the update command when you are behind.
+
+![The settings menu on an outdated install, with the latest version and the update command](../images/update-outdated.png)
+
+![The same menu when up to date](../images/update-current.png)
+
+With the check off, the menu shows only the running version.
+
+![The Update check switch off](../images/update-off.png)
+
+The latest version comes from the server's cached lookup, so opening the menu, flipping the switch or reloading the page makes no new request to GitHub.
+
 ## Where settings are saved
 
 Settings live in `settings.json` in the `wayfinder-maps` folder of your user config directory (on macOS, `~/Library/Application Support/wayfinder-maps/`), next to `recents.json`.
@@ -33,6 +58,10 @@ The [compass](compass.md) direction is saved there too, but is set from the comp
 ```json
 {
   "direction": "E",
-  "freezeNodes": false
+  "freezeNodes": false,
+  "updateCheck": true,
+  "ghAccount": ""
 }
 ```
+
+The [Configuration](../configuration.md) page lists every key and environment variable.

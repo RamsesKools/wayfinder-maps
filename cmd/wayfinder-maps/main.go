@@ -22,7 +22,7 @@ usage:
                                        mirror a map kept as GitHub issues into .plan/
   wayfinder-maps pull [flags] --refresh <out-dir>
                                        re-pull a mirrored map from its .source.json
-      --account <gh-user>              pull as this gh account (or WAYFINDER_GH_ACCOUNT)
+      --account <gh-user>              pull as this gh account (default: WAYFINDER_GH_ACCOUNT, or ghAccount in settings.json)
       -q, --quiet                      no progress bar or "pulled N/M items" lines
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window
@@ -49,26 +49,42 @@ exit: 0 clean, 1 lint errors found, 2 could not read the map`
 
 func main() {
 	args := os.Args[1:]
+	wait := func() {}
+	// --version and self-update cover the version themselves; the rest end with the outdated notice.
+	if len(args) > 0 && args[0] != "self-update" && args[0] != "--version" && args[0] != "-h" && args[0] != "--help" {
+		wait = startUpdateNotice()
+		// serve and app block until interrupted, so their notice cannot wait for the end.
+		if args[0] == "serve" || args[0] == "app" {
+			go wait()
+			wait = func() {}
+		}
+	}
+	code := dispatch(args)
+	wait()
+	os.Exit(code)
+}
+
+func dispatch(args []string) int {
 	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
 		fmt.Println(usage)
-		return
+		return 0
 	}
 
 	if args[0] == "--version" {
 		fmt.Println(version.String("wayfinder-maps"))
-		return
+		return 0
 	}
 
 	if args[0] == "pull" {
-		os.Exit(pullCmd(args[1:], ghpull.GH, os.Stdout, os.Stderr))
+		return pullCmd(args[1:], ghpull.GH, os.Stdout, os.Stderr)
 	}
 
 	if args[0] == "self-update" {
-		os.Exit(selfUpdate(args[1:], os.Stdout, os.Stderr))
+		return selfUpdate(args[1:], os.Stdout, os.Stderr)
 	}
 
 	if args[0] == "install-skill" {
-		os.Exit(installSkillCmd(args[1:], os.Stdout, os.Stderr))
+		return installSkillCmd(args[1:], os.Stdout, os.Stderr)
 	}
 
 	cmd := args[0]
@@ -87,19 +103,19 @@ func main() {
 		e, err := wayfinder.Load(d)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "wayfinder-maps: %v\n", err)
-			os.Exit(2)
+			return 2
 		}
 		if cmd == "status" {
-			os.Exit(status(os.Stdout, e))
+			return status(os.Stdout, e)
 		}
-		os.Exit(lint(e))
+		return lint(e)
 	case "serve":
-		os.Exit(serve(dir))
+		return serve(dir)
 	case "app":
-		os.Exit(app(dir))
+		return app(dir)
 	default:
 		fmt.Fprintf(os.Stderr, "wayfinder-maps: unknown command %q\n\n%s\n", cmd, usage)
-		os.Exit(2)
+		return 2
 	}
 }
 

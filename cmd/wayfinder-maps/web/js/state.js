@@ -24,6 +24,12 @@ export const S = {
   // Freeze nodes: no idle bob; layout, tweens and every other effect keep moving.
   freeze: false,
 
+  // Update check: the opt-out switch (the stored setting).
+  updateCheck: true,
+
+  // Default gh account for pull and Open from GitHub; "" means the active one.
+  ghAccount: "",
+
   clock: 0,
   lastClock: 0,
 

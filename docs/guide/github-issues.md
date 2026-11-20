@@ -68,12 +68,13 @@ wayfinder-maps pull: acme/widgets#10 -> .plan/billing-rewrite-phase-1 (10 ticket
 ## Choosing the gh account
 
 By default a pull runs as the active `gh` account.
-`--account <gh-user>` (or `WAYFINDER_GH_ACCOUNT`) pulls as another logged-in account, using that account's token (`gh auth token --user`), even if the active one has no access to the repo.
+`--account <gh-user>` pulls as another logged-in account, using that account's token (`gh auth token --user`), even if the active one has no access to the repo.
+To make an account the default, set `WAYFINDER_GH_ACCOUNT` or `ghAccount` in `settings.json`, or fill in gh account in the viewer's [settings menu](../features/settings.md#gh-account).
 An account that is not logged in stops the pull before it touches GitHub or the mirror (exit 2).
 
 Each pull writes `<out-dir>/.source.json` (repo, map issue, `gh` auth kind and account).
 `wayfinder-maps pull --refresh <out-dir>` re-pulls from it with the stored account, even if the active `gh` account has changed since; `--account` on a refresh switches the stored account.
-An explicit `--account` beats the stored one, which beats `WAYFINDER_GH_ACCOUNT`.
+An explicit `--account` beats the stored one, which beats `WAYFINDER_GH_ACCOUNT`, which beats the `ghAccount` [setting](../configuration.md), the default for everything you pull.
 Maps pulled before `.source.json` existed need one manual pull to get the file.
 
 ```

@@ -10,4 +10,6 @@ wayfinder-maps self-update --check            # report only, exit 1 if behind
 
 ![self-update --check, update, pin and refusal](../images/self-update.png)
 
+Behind a release, other commands point here with an [outdated notice](update-notice.md).
+
 [Install](../install.md#updating-the-binary) has the details, including which builds it refuses.
