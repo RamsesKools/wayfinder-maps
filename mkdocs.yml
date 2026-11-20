@@ -67,7 +67,6 @@ nav:
       - Compass: features/compass.md
       - Tickets placed by age: features/age-layout.md
       - Settings menu: features/settings.md
-      - Freeze nodes: features/freeze-nodes.md
       - Narrow screens: features/narrow-screens.md
       - Pull from GitHub: features/pull.md
       - Open a map from GitHub: features/open-from-github.md

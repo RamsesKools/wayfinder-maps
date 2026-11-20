@@ -15,7 +15,7 @@ To add a setting to the gear popover:
 - `server_test.go`: extend `TestSettingsEndpoint` (default, round-trip, restart, partial update, invalid body).
 - `index.html`: copy the `.setrow` in `#setpop` (name, `?` button, `.tip` note, switch) with new ids.
 - `js/state.js`, `js/settings.js`, `js/main.js`: add the `S` field, save it with a partial `POST /api/settings`, and apply it from the boot read.
-- Docs: add a row to the table in `docs/features/settings.md` and, if it needs more than a line, its own page.
+- Docs: add a section for it to `docs/features/settings.md`.
 
 ## Git and PRs
 
