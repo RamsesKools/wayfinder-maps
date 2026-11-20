@@ -35,5 +35,5 @@ The docs site is MkDocs Material (`mkdocs.yml`, pages in `docs/`, images in `doc
 ## Releases
 
 - Bump the version in `.claude-plugin/plugin.json` in every PR, the only version source; the `version-bump` CI job fails PRs that do not raise it.
-- After merging, run the `release` workflow from `main` (Actions tab or `gh workflow run release --ref main`); it tags `v<version>` and publishes the GitHub release.
+- Every push to `main` runs the `release` workflow, which tags `v<version>` and publishes the GitHub release; it fails on a push whose version is already tagged on another commit, so bump it. Run it by hand with `gh workflow run release --ref main`.
 - Re-run a failed release from its existing `vX.Y.Z` tag: `gh workflow run release --ref vX.Y.Z`.
