@@ -124,13 +124,19 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
   background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:999px;color:#b7bdc9;
   padding:7px 14px;font-size:12px;cursor:pointer;backdrop-filter:blur(8px)}
 #settings{position:relative;flex:none}
-#setbtn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;cursor:pointer;
-  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;color:#b7bdc9;backdrop-filter:blur(8px)}
+#setbtn{position:relative;z-index:4;display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;cursor:pointer;
+  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;color:#b7bdc9;backdrop-filter:blur(8px);transition:border-color .15s,color .15s}
 #setbtn:hover,#setbtn[aria-expanded=true]{color:#e6e9ef;border-color:#3a4356}
-#setbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
-#setpop{position:absolute;right:0;top:calc(100% + 6px);z-index:3;min-width:190px;box-sizing:border-box;
-  background:rgba(16,19,27,.98);border:1px solid #3a4356;border-radius:10px;padding:4px}
-#setpop[hidden]{display:none}
+#setbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;transition:transform .3s ease}
+#setbtn[aria-expanded=true] svg{transform:rotate(60deg)}
+/* The popover grows out of the gear: it sits behind it, top right, and reveals from a gear-sized circle. */
+#setpop{--gear:inset(0 0 calc(100% - 32px) calc(100% - 32px) round 16px);position:absolute;right:0;top:0;z-index:3;min-width:190px;box-sizing:border-box;
+  padding:40px 4px 4px;background:#10131b;border:1px solid #3a4356;border-radius:10px;
+  clip-path:inset(0 round 10px);opacity:1;
+  transition:clip-path .28s cubic-bezier(.2,.8,.2,1),opacity .2s,display .28s allow-discrete}
+#setpop[hidden]{display:none;clip-path:var(--gear);opacity:0}
+@starting-style{#setpop{clip-path:var(--gear);opacity:0}}
+@media (prefers-reduced-motion:reduce){#setpop,#setbtn svg{transition:none}}
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 10px;border-radius:7px;color:#e6e9ef;font-size:13px;cursor:pointer}
 .setrow:hover{background:rgba(255,255,255,.06)}
 .setrow input{position:absolute;opacity:0;pointer-events:none}

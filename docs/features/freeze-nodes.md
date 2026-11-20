@@ -2,6 +2,7 @@
 
 Stars drift by a couple of pixels so the map feels alive, which some people find distracting.
 The gear button at the right end of the top bar opens a small settings popover with one switch, Freeze nodes.
+The popover unfolds out of the gear, and folds back into it when closed.
 
 ![The gear button at the right end of the top bar](../images/freeze-gear.png)
 
