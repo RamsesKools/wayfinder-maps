@@ -1,8 +1,10 @@
 // The gear popover in the top bar: home for viewer toggles.
 import {S} from "./state.js";
 import {menu} from "./menu.js";
+import {savePrefs, localStore} from "./static.js";
 
 function save(patch) {
+  if (S.static) { savePrefs(localStore(), patch); return Promise.resolve({ok: true}); }
   return fetch("/api/settings", {method: "POST", headers: {"X-Wayfinder": "1"}, body: JSON.stringify(patch)}).catch(function() {});
 }
 
@@ -21,11 +23,13 @@ export function mountSettings() {
       if (r && r.ok) { S.ghAccount = v; acct.value = v; } else { acct.classList.add("bad"); }
     });
   };
+  if (S.static) ["ghaccount", "updatecheck"].forEach(function(id) { document.getElementById(id).closest(".setrow").hidden = true; });
   return function() { freeze.checked = S.freeze; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate(); };
 }
 
 // The version line comes from the server's cached lookup, so this never costs a GitHub request.
 function showUpdate() {
+  if (S.static) return;
   fetch("/api/update").then(function(r) { return r.json(); }).then(function(u) { renderUpdate(u); }).catch(function() {});
 }
 

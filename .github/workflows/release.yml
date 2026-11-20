@@ -169,7 +169,14 @@ jobs:
         with:
           ref: ${{ needs.prepare.outputs.tag }}
       - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
       - run: uv run mkdocs build --strict
+      # The live demo: a static export of the fixture map, served at /demo/.
+      - run: go run ./cmd/wayfinder-maps export internal/wayfinder/testdata/implement-demo site/demo
+        env:
+          CGO_ENABLED: "0"
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site/

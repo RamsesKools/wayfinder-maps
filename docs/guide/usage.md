@@ -19,6 +19,7 @@ wayfinder-maps lint   <effort-dir>   check the map's format invariants
 wayfinder-maps serve  [path]         open in a browser (local web server)
 wayfinder-maps app    [path]         open in a native window
 wayfinder-maps pull [flags] <owner/repo> <map-issue> [out-dir]
+wayfinder-maps export <map-dir> <out-dir>   write a static site of a map
 wayfinder-maps self-update           upgrade a release install in place
 wayfinder-maps install-skill         write the matching skills into your agent skills dirs
 wayfinder-maps --version             print the version
@@ -96,6 +97,11 @@ The map as a star-map, in a browser (`serve`) or a native window (`app`).
 
 Mirrors a map kept as GitHub issues into `.plan/`, so the commands above read it unchanged.
 See [Maps kept as GitHub issues](github-issues.md).
+
+### export
+
+Writes a map as a static site, the viewer plus a `graph.json` snapshot, that any file server can host.
+See [Static demo and export](../features/static-demo.md), and the [live demo](../try.md) built this way.
 
 ### self-update and install-skill
 

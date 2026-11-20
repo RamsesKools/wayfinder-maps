@@ -32,9 +32,13 @@ func webContent() fs.FS {
 		}
 		return os.DirFS(dir)
 	}
-	sub, err := fs.Sub(webFS, "web")
+	sub, err := embeddedWeb()
 	if err != nil {
 		panic(err) // unreachable: web/ is embedded at build time
 	}
 	return sub
 }
+
+// embeddedWeb is the baked-in copy, ignoring WAYFINDER_DEV: exports must not
+// depend on the environment.
+func embeddedWeb() (fs.FS, error) { return fs.Sub(webFS, "web") }
