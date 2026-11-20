@@ -3,13 +3,13 @@
 The logo is a tiny constellation: a few glowing stars joined by thin lines, climbing from the bottom left to the top right.
 It is the browser tab favicon, the logo on the splash screen and the mark in the top left corner of the map.
 
-![The viewer in a light browser tab strip with the logo as favicon](images/favicon-tab-light.png)
+![The viewer in a light browser tab strip with the logo as favicon](../images/favicon-tab-light.png)
 
-![The viewer in a dark browser tab strip with the logo as favicon](images/favicon-tab-dark.png)
+![The viewer in a dark browser tab strip with the logo as favicon](../images/favicon-tab-dark.png)
 
-![The splash screen with the logo above the Open Folder button](images/favicon-splash.png)
+![The splash screen with the logo above the Open Folder button](../images/favicon-splash.png)
 
-![The viewer with the logo in the top left corner, left of the Maps button](images/favicon-brand.png)
+![The viewer with the logo in the top left corner, left of the Maps button](../images/favicon-brand.png)
 
 ## The idea
 
@@ -27,6 +27,6 @@ It is drawn the way the viewer draws its own stars, so it looks at home next to 
 Blue is the default.
 Red and green ship as spare variants, in case the logo should signal a status later, such as an error or an all-resolved map.
 
-![The logo in blue (default), red and green at 16, 32 and 64 px on light and dark tabs](images/favicon-colors.png)
+![The logo in blue (default), red and green at 16, 32 and 64 px on light and dark tabs](../images/favicon-colors.png)
 
 The files live in `cmd/wayfinder-maps/web/`: `favicon.svg` is the source, `favicon-32.png` and `favicon.ico` are the fallbacks, and `favicon-red.svg` and `favicon-green.svg` are the spares.
