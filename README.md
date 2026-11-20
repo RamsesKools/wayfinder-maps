@@ -31,7 +31,7 @@ When a newer release exists, commands end with a short notice on stderr with the
 
 ![The outdated notice after a status run](docs/images/update-notice.png)
 
-Silence it with `export WAYFINDER_NO_UPDATE_CHECK=1`, or turn off Update check in the viewer's settings, see [Outdated notice](docs/features/update-notice.md).
+Silence it by setting `"updateCheck": false` in `settings.json`, or turn off Update check in the viewer's settings, see [Outdated notice](docs/features/update-notice.md).
 
 ## Usage
 

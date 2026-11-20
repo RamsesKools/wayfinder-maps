@@ -134,11 +134,11 @@ func TestDevBuildNeverChecks(t *testing.T) {
 
 func TestNotice(t *testing.T) {
 	r := Result{Current: "0.13.0", Latest: "v0.14.0", Outdated: true, Hint: "brew upgrade wayfinder-maps"}
-	want := "wayfinder-maps v0.13.0 is outdated, v0.14.0 is available.\nUpdate: brew upgrade wayfinder-maps\nSilence: export WAYFINDER_NO_UPDATE_CHECK=1\n"
-	if got := r.Notice(); got != want {
+	want := "wayfinder-maps v0.13.0 is outdated, v0.14.0 is available.\nUpdate: brew upgrade wayfinder-maps\nSilence: set \"updateCheck\": false in /cfg/settings.json\n"
+	if got := r.Notice("/cfg/settings.json"); got != want {
 		t.Errorf("Notice = %q", got)
 	}
-	if (Result{Current: "0.14.0", Latest: "v0.14.0"}).Notice() != "" {
+	if (Result{Current: "0.14.0", Latest: "v0.14.0"}).Notice("/cfg/settings.json") != "" {
 		t.Error("up to date result has a notice")
 	}
 }
@@ -154,7 +154,6 @@ func TestShouldNotify(t *testing.T) {
 		{"terminal", nil, true, true},
 		{"piped", nil, false, false},
 		{"ci", map[string]string{"CI": "true"}, true, false},
-		{"silenced", map[string]string{"WAYFINDER_NO_UPDATE_CHECK": "1"}, true, false},
 	}
 	for _, tt := range tests {
 		if got := ShouldNotify(env(tt.env), tt.tty); got != tt.want {

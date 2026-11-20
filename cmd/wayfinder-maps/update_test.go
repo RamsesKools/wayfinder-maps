@@ -49,18 +49,17 @@ func TestNotice(t *testing.T) {
 		{"offline or rate limited", nil, true, on, "", false, 1},
 		{"stderr piped", nil, false, on, "v0.14.0", false, 0},
 		{"CI", map[string]string{"CI": "true"}, true, on, "v0.14.0", false, 0},
-		{"env silenced", map[string]string{"WAYFINDER_NO_UPDATE_CHECK": "1"}, true, on, "v0.14.0", false, 0},
 		{"settings opt-out", nil, true, settings{}, "v0.14.0", false, 0},
 	}
 	for _, tt := range tests {
 		var hits atomic.Int32
 		var out bytes.Buffer
-		n := notifier{getenv: env(tt.getenv), tty: tt.tty, settings: tt.set, checker: testChecker(t, releaseServer(t, tt.latest, &hits)), out: &out}
+		n := notifier{getenv: env(tt.getenv), tty: tt.tty, settings: tt.set, checker: testChecker(t, releaseServer(t, tt.latest, &hits)), out: &out, settingsFile: "/cfg/settings.json"}
 		n.start()()
 		if got := strings.Contains(out.String(), "is outdated, v0.14.0 is available."); got != tt.want {
 			t.Errorf("%s: printed %q", tt.name, out.String())
 		}
-		if tt.want && !strings.Contains(out.String(), "Update: brew upgrade wayfinder-maps\nSilence: export WAYFINDER_NO_UPDATE_CHECK=1\n") {
+		if tt.want && !strings.Contains(out.String(), "Update: brew upgrade wayfinder-maps\nSilence: set \"updateCheck\": false in /cfg/settings.json\n") {
 			t.Errorf("%s: notice lacks hint lines: %q", tt.name, out.String())
 		}
 		if hits.Load() != tt.hits {
@@ -89,7 +88,6 @@ func TestUpdateEndpoint(t *testing.T) {
 	t.Setenv("HOME", cfg)
 	t.Setenv("XDG_CONFIG_HOME", cfg)
 	t.Setenv("AppData", cfg)
-	t.Setenv("WAYFINDER_NO_UPDATE_CHECK", "")
 
 	var hits atomic.Int32
 	c := testChecker(t, releaseServer(t, "v0.14.0", &hits))
@@ -103,7 +101,7 @@ func TestUpdateEndpoint(t *testing.T) {
 		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/update", nil))
 		return strings.TrimSpace(rec.Body.String())
 	}
-	want := `{"enabled":true,"envOff":false,"current":"0.13.0","latest":"v0.14.0","outdated":true,"hint":"brew upgrade wayfinder-maps"}`
+	want := `{"enabled":true,"current":"0.13.0","latest":"v0.14.0","outdated":true,"hint":"brew upgrade wayfinder-maps"}`
 	for i := 0; i < 3; i++ {
 		if b := get(); b != want {
 			t.Fatalf("get %d = %s", i, b)
@@ -116,14 +114,8 @@ func TestUpdateEndpoint(t *testing.T) {
 	s := loadSettings()
 	s.UpdateCheck = false
 	saveSettings(s)
-	if b := get(); b != `{"enabled":false,"envOff":false,"current":"0.13.0"}` {
+	if b := get(); b != `{"enabled":false,"current":"0.13.0"}` {
 		t.Errorf("opted out = %s", b)
-	}
-	s.UpdateCheck = true
-	saveSettings(s)
-	t.Setenv("WAYFINDER_NO_UPDATE_CHECK", "1")
-	if b := get(); b != `{"enabled":false,"envOff":true,"current":"0.13.0"}` {
-		t.Errorf("env silenced = %s", b)
 	}
 	if hits.Load() != 1 {
 		t.Errorf("hits = %d after toggling, want 1", hits.Load())

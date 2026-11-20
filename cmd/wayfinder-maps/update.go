@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/RamsesKools/wayfinder-maps/internal/installmethod"
@@ -25,6 +27,8 @@ type notifier struct {
 	settings settings
 	checker  *updatecheck.Checker
 	out      io.Writer
+	// settingsFile is named in the notice as the place to switch it off.
+	settingsFile string
 }
 
 // start looks up the latest release in the background and returns a func that
@@ -40,7 +44,7 @@ func (n notifier) start() (wait func()) {
 			done <- ""
 			return
 		}
-		done <- r.Notice()
+		done <- r.Notice(n.settingsFile)
 	}()
 	return func() {
 		if s := <-done; s != "" {
@@ -53,13 +57,16 @@ func (n notifier) start() (wait func()) {
 func startUpdateNotice() (wait func()) {
 	fi, err := os.Stderr.Stat()
 	tty := err == nil && fi.Mode()&os.ModeCharDevice != 0
-	return notifier{getenv: os.Getenv, tty: tty, settings: loadSettings(), checker: updateChecker(), out: os.Stderr}.start()
+	f, _ := settingsFile()
+	if home, err := os.UserHomeDir(); err == nil && home != "" && strings.HasPrefix(f, home+string(filepath.Separator)) {
+		f = "~" + f[len(home):]
+	}
+	return notifier{getenv: os.Getenv, tty: tty, settings: loadSettings(), checker: updateChecker(), out: os.Stderr, settingsFile: f}.start()
 }
 
 // updateInfo is the viewer's view of the check: only the current version while it is off.
 type updateInfo struct {
 	Enabled  bool   `json:"enabled"`
-	EnvOff   bool   `json:"envOff"`
 	Current  string `json:"current"`
 	Latest   string `json:"latest,omitempty"`
 	Outdated bool   `json:"outdated,omitempty"`
@@ -72,8 +79,7 @@ var updateMu sync.Mutex
 func currentUpdateInfo() updateInfo {
 	c := updateChecker()
 	info := updateInfo{Current: c.Current}
-	info.EnvOff = updatecheck.Disabled(os.Getenv)
-	if info.EnvOff || !loadSettings().UpdateCheck || c.Method == installmethod.Dev {
+	if !loadSettings().UpdateCheck || c.Method == installmethod.Dev {
 		return info
 	}
 	info.Enabled = true

@@ -23,5 +23,12 @@ When a newer release exists, the CLI ends with a short notice on stderr and the 
 
 ## Silence it
 
-- `export WAYFINDER_NO_UPDATE_CHECK=1` turns off both the check and the notice.
-- Or set `"updateCheck": false` in `settings.json`, from the Update check switch in the viewer's [settings menu](settings.md#update-check) or by editing the file.
+The notice names the file to edit, so silencing it needs no docs:
+
+```
+Silence: set "updateCheck": false in ~/Library/Application Support/wayfinder-maps/settings.json
+```
+
+- Set `"updateCheck": false` in `settings.json` in the `wayfinder-maps` folder of your user config directory (the notice prints the full path), or flip the Update check switch in the viewer's [settings menu](settings.md#update-check).
+- Either way it turns off both the check and the notice.
+- If the file does not exist yet, create it with just `{"updateCheck": false}`, missing keys keep their defaults.

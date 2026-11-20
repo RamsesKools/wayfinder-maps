@@ -37,7 +37,6 @@ With the check off, the menu shows only the running version.
 ![The Update check switch off](../images/update-off.png)
 
 The latest version comes from the server's cached lookup, so opening the menu, flipping the switch or reloading the page makes no new request to GitHub.
-`WAYFINDER_NO_UPDATE_CHECK=1` also turns the check off, and the menu says so.
 
 ## Where settings are saved
 

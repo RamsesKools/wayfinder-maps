@@ -290,6 +290,12 @@ func TestSettingsEndpoint(t *testing.T) {
 		t.Errorf("old file without updateCheck: %s", b)
 	}
 
+	// A hand-written file may hold just one key.
+	os.WriteFile(f0, []byte(`{"updateCheck":false}`), 0o644)
+	if _, b := get(); b != `{"direction":"E","freezeNodes":false,"updateCheck":false}` {
+		t.Errorf("minimal file: %s", b)
+	}
+
 	// A corrupt or invalid file falls back to the default.
 	f, _ := settingsFile()
 	os.WriteFile(f, []byte(`{"direction":"sideways","freezeNodes":true}`), 0o644)

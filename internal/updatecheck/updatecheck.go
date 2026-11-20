@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/RamsesKools/wayfinder-maps/internal/installmethod"
@@ -17,9 +16,6 @@ import (
 )
 
 const (
-	// SilenceEnv turns off both the check and the notice.
-	SilenceEnv = "WAYFINDER_NO_UPDATE_CHECK"
-
 	successTTL = 24 * time.Hour
 	// A failed lookup (offline, rate limit) is not retried on every run.
 	failureTTL = time.Hour
@@ -34,8 +30,8 @@ type Result struct {
 	Hint     string `json:"hint,omitempty"`
 }
 
-// Notice is the text printed when outdated, empty otherwise.
-func (r Result) Notice() string {
+// Notice is the text printed when outdated, empty otherwise; settingsFile is where to switch it off.
+func (r Result) Notice(settingsFile string) string {
 	if !r.Outdated {
 		return ""
 	}
@@ -43,7 +39,10 @@ func (r Result) Notice() string {
 	if r.Hint != "" {
 		s += "Update: " + r.Hint + "\n"
 	}
-	return s + "Silence: export " + SilenceEnv + "=1\n"
+	if settingsFile == "" {
+		settingsFile = "settings.json in your user config dir"
+	}
+	return s + "Silence: set \"updateCheck\": false in " + settingsFile + "\n"
 }
 
 // Checker looks up the latest release behind a file cache shared by the CLI and the server.
@@ -77,15 +76,9 @@ func New(current string, m installmethod.Method) *Checker {
 	return c
 }
 
-// Disabled reports whether the environment silences the check.
-func Disabled(getenv func(string) string) bool {
-	v := strings.ToLower(getenv(SilenceEnv))
-	return v != "" && v != "0" && v != "false"
-}
-
-// ShouldNotify reports whether the CLI may print a notice: on a terminal, outside CI, and not silenced.
+// ShouldNotify reports whether the CLI may print a notice: on a terminal and outside CI.
 func ShouldNotify(getenv func(string) string, stderrIsTerminal bool) bool {
-	return stderrIsTerminal && getenv("CI") == "" && !Disabled(getenv)
+	return stderrIsTerminal && getenv("CI") == ""
 }
 
 // Cached answers from the cache alone and never touches the network; ok is false when it holds nothing fresh.

@@ -26,7 +26,6 @@ export function renderUpdate(u) {
   var cur = u.current === "dev" ? "dev" : "v" + u.current;
   var text = cur;
   if (u.enabled && u.latest) text = cur + " (latest " + u.latest + ")";
-  else if (u.envOff) text = cur + " (check off: WAYFINDER_NO_UPDATE_CHECK)";
   ver.textContent = text;
   box.classList.toggle("old", !!u.outdated);
   hint.hidden = !(u.enabled && u.outdated && u.hint);

@@ -72,7 +72,7 @@ func loadSettings() settings {
 	if err != nil {
 		return s
 	}
-	got := settings{UpdateCheck: true}
+	got := s
 	if json.Unmarshal(b, &got) == nil && validDirection(got.Direction) {
 		s.Direction = got.Direction
 		s.FreezeNodes = got.FreezeNodes
