@@ -7,7 +7,7 @@ A CLI and star-map viewer for [wayfinder](https://github.com/mattpocock/skills/t
 - The wayfinder method and its skills were created by [Matt Pocock](https://github.com/mattpocock) in [mattpocock/skills](https://github.com/mattpocock/skills). This repo ships adapted copies, so one install gets you the method and the tools.
 - The CLI and viewer were created by John Goh in [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps). This fork extends both so a map carries on into implementation, see [fork vs upstream](docs/features/index.md).
 
-Full docs live at [ramseskools.github.io/wayfinder-maps](https://ramseskools.github.io/wayfinder-maps/).
+Full docs live at [wayfinder.ramseskools.nl](https://wayfinder.ramseskools.nl/).
 
 ## Install
 
@@ -67,6 +67,6 @@ MIT, see [LICENSE](https://github.com/RamsesKools/wayfinder-maps/blob/main/LICEN
 The CLI and viewer are by John Goh, the wayfinder method and skills by Matt Pocock (MIT, see [skills/LICENSE](https://github.com/RamsesKools/wayfinder-maps/blob/main/skills/LICENSE)).
 This is a fork of [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) and is not merged back upstream.
 
-- [Docs](https://ramseskools.github.io/wayfinder-maps/)
+- [Docs](https://wayfinder.ramseskools.nl/)
 - [Releases](https://github.com/RamsesKools/wayfinder-maps/releases)
 - [Discussions](https://github.com/RamsesKools/wayfinder-maps/discussions)
