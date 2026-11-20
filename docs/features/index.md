@@ -25,7 +25,6 @@ A map with no implement tickets reads exactly as it does upstream.
 | [`install-skill`](install-skill.md) | Skills embedded in the binary, installed per harness |
 | [`self-update`](self-update.md) | The binary upgrades itself |
 | [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper |
-| [Favicon](favicon.md) | A glowing constellation in the browser tab |
 
 The [design record](https://github.com/RamsesKools/wayfinder-maps/blob/main/docs/implement-phase-design.md) has the full plan for the implement phase.
 
