@@ -10,7 +10,7 @@ wayfinder-maps self-update --check            # report only, exit 1 if behind
 
 ![self-update --check, update, pin and refusal](../images/self-update.png)
 
-A Homebrew install is [upgraded by Homebrew](homebrew.md): `self-update` is hidden from `--help` there and refuses with `brew upgrade wayfinder-maps`.
+A Homebrew install is [upgraded by Homebrew](../install.md#homebrew): `self-update` is hidden from `--help` there and refuses with `brew upgrade wayfinder-maps`.
 
 Behind a release, other commands point here with an [outdated notice](update-notice.md).
 

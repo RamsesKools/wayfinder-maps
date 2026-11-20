@@ -37,6 +37,7 @@ brew install RamsesKools/tap/wayfinder-maps
 
 - It installs a cask, so the binary and the two `.command` launchers land in the Caskroom and `wayfinder-maps` is linked into your Homebrew `bin`.
 - The binary is not signed or notarized yet, so the cask strips the quarantine flag after install, the same as `install.sh` does.
+- Every `release` run commits the new cask to the tap, using a short-lived GitHub App token scoped to that repo, so a release is installable as soon as it is published.
 - Upgrade with `brew upgrade wayfinder-maps`, see [Updating the binary](#updating-the-binary).
 - Then install the skills with [`wayfinder-maps install-skill`](#installing-the-skills).
 
