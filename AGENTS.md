@@ -7,6 +7,16 @@
 - `uv run mkdocs build --strict` for the docs site.
 - Verify viewer changes in a headless browser (see the `verify` skill).
 
+## Viewer settings
+
+To add a setting to the gear popover:
+
+- `settings.go`: add the field to `settings` and `settingsPatch`, merge it in `apply`, and copy it in `loadSettings`.
+- `server_test.go`: extend `TestSettingsEndpoint` (default, round-trip, restart, partial update, invalid body).
+- `index.html`: copy the `.setrow` in `#setpop` (name, `?` button, `.tip` note, switch) with new ids.
+- `js/state.js`, `js/settings.js`, `js/main.js`: add the `S` field, save it with a partial `POST /api/settings`, and apply it from the boot read.
+- Docs: add a section for it to `docs/features/settings.md`.
+
 ## Git and PRs
 
 - Push to the fork (`origin`, RamsesKools) and open PRs there, not on `rengwu/wayfinder-maps`, until merging back upstream has been discussed.

@@ -131,7 +131,7 @@ func newServer(initial string) http.Handler {
 		writeJSON(w, loadRecents())
 	})
 
-	// Viewer preferences (map flow direction). POST with a custom header, like
+	// Viewer preferences (map flow direction, frozen nodes); POSTs merge into the stored ones. POST with a custom header, like
 	// the other writes, so a foreign page cannot change them.
 	mux.HandleFunc("/api/settings", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
@@ -142,9 +142,10 @@ func newServer(initial string) http.Handler {
 			http.Error(w, "POST with X-Wayfinder required", http.StatusBadRequest)
 			return
 		}
-		var s settings
-		if err := json.NewDecoder(io.LimitReader(r.Body, 2048)).Decode(&s); err != nil || !validDirection(s.Direction) {
-			http.Error(w, "a direction (N, NE, E, SE, S, SW, W, NW or none) is required", http.StatusBadRequest)
+		var p settingsPatch
+		s := loadSettings()
+		if err := json.NewDecoder(io.LimitReader(r.Body, 2048)).Decode(&p); err != nil || !p.apply(&s) {
+			http.Error(w, "a valid direction (N, NE, E, SE, S, SW, W, NW or none) or freezeNodes is required", http.StatusBadRequest)
 			return
 		}
 		if err := saveSettings(s); err != nil {

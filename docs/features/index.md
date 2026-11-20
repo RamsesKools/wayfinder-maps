@@ -16,6 +16,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Start and goal in the viewer](start-and-goal.md) | A virtual start and a goal cloud holding the fog |
 | [Compass](compass.md) | The map flows in any of 8 directions or radially |
 | [Tickets placed by age](age-layout.md) | Later tickets drift toward the goal without stretching the map |
+| [Settings menu](settings.md) | A gear popover for viewer toggles with hover notes, saved across restarts; the first is Freeze nodes, which stops the idle drift of the stars |
 | [Narrow-screen layout](narrow-screens.md) | Wrapping top bar and a status bar that collapses to a corner with the title and compass |
 | [`pull` in the binary](pull.md) | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
 | [Refresh button](pull.md#refresh-from-the-viewer) | The same pull from the viewer |
@@ -24,7 +25,6 @@ A map with no implement tickets reads exactly as it does upstream.
 | [`install-skill`](install-skill.md) | Skills embedded in the binary, installed per harness |
 | [`self-update`](self-update.md) | The binary upgrades itself |
 | [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper |
-| [Favicon](favicon.md) | A glowing constellation in the browser tab |
 
 The [design record](https://github.com/RamsesKools/wayfinder-maps/blob/main/docs/implement-phase-design.md) has the full plan for the implement phase.
 
