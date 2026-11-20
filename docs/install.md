@@ -154,6 +154,11 @@ wayfinder-maps self-update --force            # reinstall the same version
 - Windows is not supported yet.
 - `WAYFINDER_RELEASES_URL` and `WAYFINDER_API_URL` point it at another release host, the same overrides `install.sh` honours.
 
+## Outdated notice
+
+When a newer release exists, commands end with a notice on stderr (terminal only, never in CI) naming the update command for how you installed the binary.
+`export WAYFINDER_NO_UPDATE_CHECK=1` or `"updateCheck": false` in `settings.json` silences it, see [Outdated notice](features/update-notice.md).
+
 ## Build from source
 
 ```sh

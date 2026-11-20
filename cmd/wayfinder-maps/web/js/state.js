@@ -24,6 +24,9 @@ export const S = {
   // Freeze nodes: no idle bob; layout, tweens and every other effect keep moving.
   freeze: false,
 
+  // Update check: the opt-out switch (the stored setting).
+  updateCheck: true,
+
   clock: 0,
   lastClock: 0,
 

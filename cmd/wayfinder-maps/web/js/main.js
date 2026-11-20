@@ -39,7 +39,7 @@ resize(); initStars(); render(); startPolling();
 // The saved settings have to be known before the first layout runs.
 fetch("/api/settings").then(function(r) { return r.json(); }).then(function(st) {
   S.dir = isDir(st.direction) ? st.direction : DEFAULT; setCompass(S.dir);
-  S.freeze = st.freezeNodes === true; syncSettings();
+  S.freeze = st.freezeNodes === true; S.updateCheck = st.updateCheck !== false; syncSettings();
 }).catch(function() {}).then(function() { return fetch("/api/initial"); }).then(function(r) { return r.json(); }).then(function(init) {
   if (init.effort) loadMap(init.effort);
   else if (init.project) openProject(init.project);

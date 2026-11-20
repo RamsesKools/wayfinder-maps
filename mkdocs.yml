@@ -73,4 +73,5 @@ nav:
       - Recent maps: features/recent-maps.md
       - install-skill: features/install-skill.md
       - self-update: features/self-update.md
+      - Outdated notice: features/update-notice.md
   - Logo: logo.md

@@ -11,17 +11,19 @@ import (
 type settings struct {
 	Direction   string `json:"direction"`
 	FreezeNodes bool   `json:"freezeNodes"`
+	UpdateCheck bool   `json:"updateCheck"`
 }
 
 // settingsPatch is a partial update: absent fields keep their stored value.
 type settingsPatch struct {
 	Direction   *string `json:"direction"`
 	FreezeNodes *bool   `json:"freezeNodes"`
+	UpdateCheck *bool   `json:"updateCheck"`
 }
 
 // apply merges the patch into s, reporting false for an empty or invalid one.
 func (p settingsPatch) apply(s *settings) bool {
-	if p.Direction == nil && p.FreezeNodes == nil {
+	if p.Direction == nil && p.FreezeNodes == nil && p.UpdateCheck == nil {
 		return false
 	}
 	if p.Direction != nil {
@@ -32,6 +34,9 @@ func (p settingsPatch) apply(s *settings) bool {
 	}
 	if p.FreezeNodes != nil {
 		s.FreezeNodes = *p.FreezeNodes
+	}
+	if p.UpdateCheck != nil {
+		s.UpdateCheck = *p.UpdateCheck
 	}
 	return true
 }
@@ -58,7 +63,7 @@ func settingsFile() (string, error) {
 // loadSettings reads the file, falling back to defaults for a missing,
 // unreadable or invalid one.
 func loadSettings() settings {
-	s := settings{Direction: defaultDirection}
+	s := settings{Direction: defaultDirection, UpdateCheck: true}
 	f, err := settingsFile()
 	if err != nil {
 		return s
@@ -67,10 +72,11 @@ func loadSettings() settings {
 	if err != nil {
 		return s
 	}
-	var got settings
+	got := settings{UpdateCheck: true}
 	if json.Unmarshal(b, &got) == nil && validDirection(got.Direction) {
 		s.Direction = got.Direction
 		s.FreezeNodes = got.FreezeNodes
+		s.UpdateCheck = got.UpdateCheck
 	}
 	return s
 }

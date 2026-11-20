@@ -134,7 +134,7 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 #setbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;transition:transform .3s ease}
 #setbtn[aria-expanded=true] svg{transform:rotate(60deg)}
 /* The popover grows out of the gear: it sits behind it, top right, and reveals from a gear-sized circle. */
-#setpop{--gear:inset(0 0 calc(100% - 32px) calc(100% - 32px) round 16px);position:absolute;right:0;top:0;z-index:3;min-width:190px;box-sizing:border-box;
+#setpop{--gear:inset(0 0 calc(100% - 32px) calc(100% - 32px) round 16px);position:absolute;right:0;top:0;z-index:3;min-width:240px;box-sizing:border-box;
   padding:40px 4px 4px;background:#10131b;border:1px solid #3a4356;border-radius:10px;
   clip-path:inset(0 -300px -300px -300px round 10px);opacity:1;
   transition:clip-path .28s cubic-bezier(.2,.8,.2,1),opacity .2s,display .28s allow-discrete}
@@ -153,6 +153,11 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
   background:#10131b;border:1px solid #3a4356;border-radius:8px;color:#b7bdc9;font-size:12px;line-height:1.4;
   opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,visibility .15s}
 .help:hover~.tip,.help:focus~.tip{opacity:1;visibility:visible}
+#updinfo{padding:2px 10px 8px;color:#8b93a3;font-size:12px;line-height:1.4}
+#updinfo[hidden]{display:none}
+#updinfo.old #updver{color:#f0b35a}
+#updhint{margin-top:2px;color:#b7bdc9;user-select:all;overflow-wrap:anywhere}
+#updhint[hidden]{display:none}
 .swl{position:relative;display:flex;margin-left:auto;cursor:pointer}
 .swl input{position:absolute;opacity:0;pointer-events:none}
 .sw{position:relative;flex:none;width:30px;height:17px;border-radius:999px;background:#2a303d;transition:background .15s}

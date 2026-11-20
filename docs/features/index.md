@@ -16,7 +16,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Start and goal in the viewer](start-and-goal.md) | A virtual start and a goal cloud holding the fog |
 | [Compass](compass.md) | The map flows in any of 8 directions or radially |
 | [Tickets placed by age](age-layout.md) | Later tickets drift toward the goal without stretching the map |
-| [Settings menu](settings.md) | A gear popover for viewer toggles with hover notes, saved across restarts; the first is Freeze nodes, which stops the idle drift of the stars |
+| [Settings menu](settings.md) | A gear popover for viewer toggles with hover notes, saved across restarts; Freeze nodes stops the idle drift of the stars, Update check turns the outdated notice on or off |
 | [Narrow-screen layout](narrow-screens.md) | Wrapping top bar and a status bar that collapses to a corner, its fold tab always beside the compass |
 | [`pull` in the binary](pull.md) | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
 | [Refresh button](pull.md#refresh-from-the-viewer) | The same pull from the viewer |
@@ -24,6 +24,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Recent maps](recent-maps.md) | Maps opened from the CLI or the viewer are listed on the splash |
 | [`install-skill`](install-skill.md) | Skills embedded in the binary, installed per harness |
 | [`self-update`](self-update.md) | The binary upgrades itself |
+| [Outdated notice](update-notice.md) | A short stderr notice with the right update command when a newer release exists, and the latest version in the settings menu; cached for a day and easy to silence |
 | [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper |
 
 The [design record](https://github.com/RamsesKools/wayfinder-maps/blob/main/docs/implement-phase-design.md) has the full plan for the implement phase.
