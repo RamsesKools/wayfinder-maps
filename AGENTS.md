@@ -4,6 +4,7 @@
 
 - `go build ./... && go vet ./... && go test ./...`
 - `node --test cmd/wayfinder-maps/webtests/*.test.mjs` for the viewer.
+- `uv run mkdocs build --strict` for the docs site.
 - Verify viewer changes in a headless browser (see the `verify` skill).
 
 ## Git and PRs
@@ -14,8 +15,12 @@
 
 ## Docs
 
-- Document user-facing features in the README with visuals (screenshots or short diagrams in `docs/images/`), not only prose.
-- Any PR that adds or changes a user-facing feature updates both the README comparison table and `docs/comparison.md`.
+The docs site is MkDocs Material (`mkdocs.yml`, pages in `docs/`, images in `docs/images/`), deployed to GitHub Pages by the `release` workflow.
+`docs/index.md` includes `README.md` via snippets, so README links must work on GitHub and on the site: `docs/...` paths for docs pages and images, absolute GitHub URLs for anything else in the repo.
+
+- A PR that adds or changes a user-facing feature updates its page under `docs/features/` with visuals (screenshots or short diagrams in `docs/images/`), not only prose, and the table in `docs/features/index.md` (fork vs upstream).
+- Change the README only when the overview, install or basic usage changes.
+- Design notes (`docs/starmap-design.md`, `docs/implement-phase-design.md`) stay out of the site.
 
 ## Releases
 

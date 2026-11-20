@@ -1,0 +1,47 @@
+// Click-to-zoom lightbox for screenshots, adapted from the my-blog image-zoom.js.
+document.addEventListener("DOMContentLoaded", () => {
+  const images = document.querySelectorAll(".md-content .md-typeset img");
+  if (!images.length) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "image-zoom-overlay";
+  overlay.innerHTML =
+    '<button class="image-zoom-close" aria-label="Close">&times;</button>' +
+    '<a class="image-zoom-open-tab" target="_blank" rel="noopener">Open image<br>in tab</a>' +
+    '<img class="image-zoom-full" alt="">';
+  document.body.appendChild(overlay);
+
+  const fullImg = overlay.querySelector(".image-zoom-full");
+  const closeBtn = overlay.querySelector(".image-zoom-close");
+  const openTabLink = overlay.querySelector(".image-zoom-open-tab");
+
+  function open(img) {
+    const src = img.currentSrc || img.src;
+    fullImg.src = src;
+    fullImg.alt = img.alt || "";
+    openTabLink.href = src;
+    overlay.classList.add("image-zoom-overlay--visible");
+    document.body.classList.add("image-zoom-lock");
+  }
+
+  function close() {
+    overlay.classList.remove("image-zoom-overlay--visible");
+    document.body.classList.remove("image-zoom-lock");
+  }
+
+  images.forEach((img) => {
+    img.classList.add("zoomable");
+    img.addEventListener("click", () => open(img));
+  });
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay || event.target === fullImg) close();
+  });
+  closeBtn.addEventListener("click", close);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && overlay.classList.contains("image-zoom-overlay--visible")) {
+      close();
+    }
+  });
+});
