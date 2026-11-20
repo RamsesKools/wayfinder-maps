@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 // settings are the viewer preferences kept across restarts. They live in a file
@@ -12,6 +14,8 @@ type settings struct {
 	Direction   string `json:"direction"`
 	FreezeNodes bool   `json:"freezeNodes"`
 	UpdateCheck bool   `json:"updateCheck"`
+	// GHAccount is the default gh account for pull and Open from GitHub; empty means the active one.
+	GHAccount string `json:"ghAccount"`
 }
 
 // settingsPatch is a partial update: absent fields keep their stored value.
@@ -19,11 +23,12 @@ type settingsPatch struct {
 	Direction   *string `json:"direction"`
 	FreezeNodes *bool   `json:"freezeNodes"`
 	UpdateCheck *bool   `json:"updateCheck"`
+	GHAccount   *string `json:"ghAccount"`
 }
 
 // apply merges the patch into s, reporting false for an empty or invalid one.
 func (p settingsPatch) apply(s *settings) bool {
-	if p.Direction == nil && p.FreezeNodes == nil && p.UpdateCheck == nil {
+	if p.Direction == nil && p.FreezeNodes == nil && p.UpdateCheck == nil && p.GHAccount == nil {
 		return false
 	}
 	if p.Direction != nil {
@@ -38,8 +43,20 @@ func (p settingsPatch) apply(s *settings) bool {
 	if p.UpdateCheck != nil {
 		s.UpdateCheck = *p.UpdateCheck
 	}
+	if p.GHAccount != nil {
+		a := strings.TrimSpace(*p.GHAccount)
+		if !validAccount(a) {
+			return false
+		}
+		s.GHAccount = a
+	}
 	return true
 }
+
+var accountRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9-]{0,38}$`)
+
+// validAccount reports whether a is empty (the active gh account) or a GitHub login.
+func validAccount(a string) bool { return a == "" || accountRe.MatchString(a) }
 
 const defaultDirection = "E"
 
@@ -77,6 +94,9 @@ func loadSettings() settings {
 		s.Direction = got.Direction
 		s.FreezeNodes = got.FreezeNodes
 		s.UpdateCheck = got.UpdateCheck
+		if validAccount(got.GHAccount) {
+			s.GHAccount = got.GHAccount
+		}
 	}
 	return s
 }

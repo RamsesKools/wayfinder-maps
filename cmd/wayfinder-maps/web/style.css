@@ -144,7 +144,7 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 /* The open clip reaches past the panel so a row's tip can hang below it. */
 .setrow{position:relative;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;color:#e6e9ef;font-size:13px;line-height:18px}
 .setrow:hover{background:rgba(255,255,255,.06)}
-.setname{cursor:pointer}
+.setname{flex:none;width:88px;cursor:pointer}
 .help{flex:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border-radius:50%;cursor:help;
   background:none;border:1px solid #4b5261;color:#8b93a3}
 .help svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
@@ -153,6 +153,10 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
   background:#10131b;border:1px solid #3a4356;border-radius:8px;color:#b7bdc9;font-size:12px;line-height:1.4;
   opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,visibility .15s}
 .help:hover~.tip,.help:focus~.tip{opacity:1;visibility:visible}
+.setinput{flex:none;width:104px;margin-left:auto;box-sizing:border-box;height:26px;padding:0 7px;font:inherit;font-size:12px;color:#e6e9ef;background:#0b0e14;border:1px solid #3a4356;border-radius:6px}
+.setinput::placeholder{color:#6b7385}
+.setinput:focus{outline:none;border-color:#4f8cff}
+.setinput.bad{border-color:#e5646a}
 #updinfo{padding:2px 10px 8px;color:#8b93a3;font-size:12px;line-height:1.4}
 #updinfo[hidden]{display:none}
 #updinfo.old #updver{color:#f0b35a}

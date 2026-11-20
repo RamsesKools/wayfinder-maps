@@ -13,7 +13,15 @@ export function mountSettings() {
   freeze.onchange = function() { S.freeze = freeze.checked; save({freezeNodes: S.freeze}); };
   var upd = document.getElementById("updatecheck");
   upd.onchange = function() { S.updateCheck = upd.checked; save({updateCheck: S.updateCheck}).then(showUpdate); };
-  return function() { freeze.checked = S.freeze; upd.checked = S.updateCheck; showUpdate(); };
+  var acct = document.getElementById("ghaccount");
+  acct.oninput = function() { acct.classList.remove("bad"); };
+  acct.onchange = function() {
+    var v = acct.value.trim();
+    save({ghAccount: v}).then(function(r) {
+      if (r && r.ok) { S.ghAccount = v; acct.value = v; } else { acct.classList.add("bad"); }
+    });
+  };
+  return function() { freeze.checked = S.freeze; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate(); };
 }
 
 // The version line comes from the server's cached lookup, so this never costs a GitHub request.

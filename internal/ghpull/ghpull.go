@@ -88,8 +88,10 @@ type Options struct {
 type Puller struct {
 	GH     Runner
 	Getenv func(string) string
-	Stdout io.Writer
-	Stderr io.Writer
+	// DefaultAccount is the gh account used when nothing else picks one; the env var beats it.
+	DefaultAccount string
+	Stdout         io.Writer
+	Stderr         io.Writer
 }
 
 type issue struct {
@@ -167,6 +169,8 @@ func (p *Puller) pull(o Options, who *string) error {
 		auth, account = "gh", o.Account
 	case account == "" && p.Getenv("WAYFINDER_GH_ACCOUNT") != "":
 		auth, account = "gh", p.Getenv("WAYFINDER_GH_ACCOUNT")
+	case account == "" && p.DefaultAccount != "":
+		auth, account = "gh", p.DefaultAccount
 	}
 	if auth == "gh" && account != "" {
 		*who = fmt.Sprintf("gh account '%s'", account)

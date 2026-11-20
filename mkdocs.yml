@@ -55,6 +55,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - Install: install.md
+  - Configuration: configuration.md
   - Guide:
       - Usage: guide/usage.md
       - Map format: guide/map-format.md

@@ -22,7 +22,7 @@ usage:
                                        mirror a map kept as GitHub issues into .plan/
   wayfinder-maps pull [flags] --refresh <out-dir>
                                        re-pull a mirrored map from its .source.json
-      --account <gh-user>              pull as this gh account (or WAYFINDER_GH_ACCOUNT)
+      --account <gh-user>              pull as this gh account (default: WAYFINDER_GH_ACCOUNT, or ghAccount in settings.json)
       -q, --quiet                      no progress bar or "pulled N/M items" lines
   wayfinder-maps serve  [path]         open in a browser (local web server)
   wayfinder-maps app    [path]         open in a native window

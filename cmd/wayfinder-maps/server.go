@@ -145,7 +145,7 @@ func newServer(initial string) http.Handler {
 		var p settingsPatch
 		s := loadSettings()
 		if err := json.NewDecoder(io.LimitReader(r.Body, 2048)).Decode(&p); err != nil || !p.apply(&s) {
-			http.Error(w, "a valid direction (N, NE, E, SE, S, SW, W, NW or none), freezeNodes or updateCheck is required", http.StatusBadRequest)
+			http.Error(w, "a valid direction (N, NE, E, SE, S, SW, W, NW or none), freezeNodes, updateCheck or ghAccount is required", http.StatusBadRequest)
 			return
 		}
 		if err := saveSettings(s); err != nil {

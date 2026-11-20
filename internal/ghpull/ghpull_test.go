@@ -358,6 +358,31 @@ func TestAccountFlagEnvAndStorage(t *testing.T) {
 			t.Errorf("env var should win over an ambient token: %+v", src)
 		}
 	})
+	t.Run("default account", func(t *testing.T) {
+		f := newFakeGH(t, "full")
+		p, _, _ := f.puller(map[string]string{"GH_TOKEN": "ambient"})
+		p.DefaultAccount = "alice"
+		out := filepath.Join(t.TempDir(), "out")
+		if err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out}); err != nil {
+			t.Fatal(err)
+		}
+		if src := read(t, out); src.Auth != "gh" || src.Account != "alice" {
+			t.Errorf("default account should win over an ambient token: %+v", src)
+		}
+	})
+	t.Run("env beats the default account", func(t *testing.T) {
+		f := newFakeGH(t, "full")
+		f.accounts["bob"] = true
+		p, _, _ := f.puller(map[string]string{"WAYFINDER_GH_ACCOUNT": "bob"})
+		p.DefaultAccount = "alice"
+		out := filepath.Join(t.TempDir(), "out")
+		if err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out}); err != nil {
+			t.Fatal(err)
+		}
+		if src := read(t, out); src.Account != "bob" {
+			t.Errorf("source = %+v", src)
+		}
+	})
 	t.Run("flag switches a stored account", func(t *testing.T) {
 		f := newFakeGH(t, "full")
 		f.accounts["bob"] = true

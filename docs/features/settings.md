@@ -23,6 +23,16 @@ This switch stops that drift.
 Freezing only removes the idle drift.
 The layout is unchanged, and everything else keeps moving: flow particles on edges, the frontier pulse, claimed rings, the undermined halo, status flares, grow-in and the glide to new positions after a live update.
 
+## gh account
+
+The default `gh` account for [`pull`](pull.md) and [Open from GitHub](open-from-github.md).
+Leave it empty to use the active `gh` account.
+
+![The gh account field filled in](../images/settings-account.png)
+
+It is saved when you leave the field or press Enter, and a name that is not a GitHub login turns the field red and is not saved.
+`--account`, the account stored in a pulled map and the `WAYFINDER_GH_ACCOUNT` environment variable all beat it, see [Configuration](../configuration.md).
+
 ## Update check
 
 The switch turns the [outdated notice](update-notice.md) on or off, for the CLI and the viewer alike.
@@ -49,6 +59,9 @@ The [compass](compass.md) direction is saved there too, but is set from the comp
 {
   "direction": "E",
   "freezeNodes": false,
-  "updateCheck": true
+  "updateCheck": true,
+  "ghAccount": ""
 }
 ```
+
+The [Configuration](../configuration.md) page lists every key and environment variable.

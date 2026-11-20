@@ -23,7 +23,7 @@ var pullMu sync.Mutex
 
 // newPuller is the seam for the gh runner and the environment.
 func newPuller(gh ghpull.Runner, stdout, stderr io.Writer) *ghpull.Puller {
-	return &ghpull.Puller{GH: gh, Getenv: os.Getenv, Stdout: stdout, Stderr: stderr}
+	return &ghpull.Puller{GH: gh, Getenv: os.Getenv, DefaultAccount: loadSettings().GHAccount, Stdout: stdout, Stderr: stderr}
 }
 
 // runPull re-pulls the effort from GitHub in-process, reusing the gh account
