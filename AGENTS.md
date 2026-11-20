@@ -17,6 +17,16 @@ To add a setting to the gear popover:
 - `js/state.js`, `js/settings.js`, `js/main.js`: add the `S` field, save it with a partial `POST /api/settings`, and apply it from the boot read.
 - Docs: add a section for it to `docs/features/settings.md`.
 
+## Static export
+
+`wayfinder-maps export` (and the docs demo, rebuilt by every `mkdocs build`) has no server behind it, so the viewer runs with `S.static` set.
+
+- Mark every element in `index.html` that needs the server with `data-server-only`: one CSS rule hides it in static mode, so never hide things by id in CSS or JS.
+- Make the JS behind it skip its `/api` call when `S.static` is set.
+- A setting that still makes sense without a server is kept in `localStorage` via `loadPrefs` and `savePrefs` in `js/static.js`; one that needs the server gets `data-server-only` on its `.setrow`.
+- `webtests/index.test.mjs` pins the marked elements: add yours there.
+- Check a viewer change against the export too: serve a built `site/demo-fullscreen/` with a plain file server and confirm no `/api` requests, console errors or dead buttons.
+
 ## Git and PRs
 
 - Push to the fork (`origin`, RamsesKools) and open PRs there, not on `rengwu/wayfinder-maps`, until merging back upstream has been discussed.

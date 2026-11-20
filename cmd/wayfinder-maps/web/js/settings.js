@@ -23,7 +23,6 @@ export function mountSettings() {
       if (r && r.ok) { S.ghAccount = v; acct.value = v; } else { acct.classList.add("bad"); }
     });
   };
-  if (S.static) ["ghaccount", "updatecheck"].forEach(function(id) { document.getElementById(id).closest(".setrow").hidden = true; });
   return function() { freeze.checked = S.freeze; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate(); };
 }
 

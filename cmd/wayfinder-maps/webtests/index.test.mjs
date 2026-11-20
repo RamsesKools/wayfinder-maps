@@ -24,3 +24,18 @@ test("the screens and overlays are siblings of the top bar, not inside it", () =
     assert.ok(html.indexOf(`id="${id}"`) > end, `#${id} sits inside #topbar`);
   }
 });
+
+// The export has no server: whatever needs one carries data-server-only, and one CSS rule hides it in static mode.
+test("server-only UI is marked data-server-only", () => {
+  for (const id of ["backbtn", "pullbtn", "pullacct", "pullstat", "updinfo", "splash", "maplist"]) {
+    assert.match(html, new RegExp(`<[^>]*\\bid="${id}"[^>]*\\bdata-server-only\\b|<[^>]*\\bdata-server-only\\b[^>]*\\bid="${id}"`), `#${id} is not marked data-server-only`);
+  }
+  for (const input of ["ghaccount", "updatecheck"]) {
+    assert.match(html, new RegExp(`<div class="setrow" data-server-only><label class="setname" for="${input}"`), `the ${input} settings row is not marked data-server-only`);
+  }
+});
+
+test("one CSS rule hides data-server-only in static mode", () => {
+  const css = readFileSync(new URL("../web/style.css", import.meta.url), "utf8");
+  assert.match(css, /body\.static \[data-server-only\]\s*\{[^}]*display:\s*none\s*!important/);
+});
