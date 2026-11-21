@@ -1,8 +1,10 @@
 // The gear popover in the top bar: home for viewer toggles.
 import {S} from "./state.js";
 import {menu} from "./menu.js";
+import {savePrefs, localStore} from "./static.js";
 
 function save(patch) {
+  if (S.static) { savePrefs(localStore(), patch); return Promise.resolve({ok: true}); }
   return fetch("/api/settings", {method: "POST", headers: {"X-Wayfinder": "1"}, body: JSON.stringify(patch)}).catch(function() {});
 }
 
@@ -26,6 +28,7 @@ export function mountSettings() {
 
 // The version line comes from the server's cached lookup, so this never costs a GitHub request.
 function showUpdate() {
+  if (S.static) return;
   fetch("/api/update").then(function(r) { return r.json(); }).then(function(u) { renderUpdate(u); }).catch(function() {});
 }
 

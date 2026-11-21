@@ -4,11 +4,16 @@ import {S, canvas, dpr} from "./state.js";
 import {initStars, render} from "./draw.js";
 import "./input.js"; // wires pan/zoom/click on the canvas
 import "./panel.js"; // wires the panel close button and cross-ticket links
-import {startPolling, showSplash, openProject, loadMap, leaveMap, pullFromGithub, setDirection} from "./screens.js";
+import {startPolling, showSplash, openProject, loadMap, loadStaticMap, leaveMap, pullFromGithub, setDirection} from "./screens.js";
 import {mountGithub} from "./ghpicker.js";
 import {mountCompass} from "./compass.js";
 import {mountSettings} from "./settings.js";
 import {DEFAULT, isDir} from "./direction.js";
+import {isStatic, loadPrefs, localStore} from "./static.js";
+
+// An exported site has no server: the map comes from graph.json and the server-only UI is hidden by CSS.
+S.static = isStatic(document);
+document.body.classList.toggle("static", S.static);
 
 function resize() {
   canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
@@ -35,13 +40,24 @@ var setCompass = mountCompass(document.getElementById("compass"), function(d) { 
 setCompass(S.dir);
 var syncSettings = mountSettings();
 
-resize(); initStars(); render(); startPolling();
-// The saved settings have to be known before the first layout runs.
-fetch("/api/settings").then(function(r) { return r.json(); }).then(function(st) {
-  S.dir = isDir(st.direction) ? st.direction : DEFAULT; setCompass(S.dir);
-  S.freeze = st.freezeNodes === true; S.updateCheck = st.updateCheck !== false; S.ghAccount = typeof st.ghAccount === "string" ? st.ghAccount : ""; syncSettings();
-}).catch(function() {}).then(function() { return fetch("/api/initial"); }).then(function(r) { return r.json(); }).then(function(init) {
-  if (init.effort) loadMap(init.effort);
-  else if (init.project) openProject(init.project);
-  else showSplash();
-}).catch(showSplash);
+function bootStatic() {
+  var prefs = loadPrefs(localStore());
+  S.dir = prefs.direction; S.freeze = prefs.freeze; setCompass(S.dir); syncSettings();
+  loadStaticMap().catch(function(e) { console.error("wayfinder-maps: could not load graph.json", e); });
+}
+
+function bootServer() {
+  startPolling();
+  // The saved settings have to be known before the first layout runs.
+  fetch("/api/settings").then(function(r) { return r.json(); }).then(function(st) {
+    S.dir = isDir(st.direction) ? st.direction : DEFAULT; setCompass(S.dir);
+    S.freeze = st.freezeNodes === true; S.updateCheck = st.updateCheck !== false; S.ghAccount = typeof st.ghAccount === "string" ? st.ghAccount : ""; syncSettings();
+  }).catch(function() {}).then(function() { return fetch("/api/initial"); }).then(function(r) { return r.json(); }).then(function(init) {
+    if (init.effort) loadMap(init.effort);
+    else if (init.project) openProject(init.project);
+    else showSplash();
+  }).catch(showSplash);
+}
+
+resize(); initStars(); render();
+if (S.static) bootStatic(); else bootServer();

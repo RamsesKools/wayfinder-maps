@@ -299,3 +299,6 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 .card .cfront{color:#8ad8ff}
 .card .cbar{height:5px;background:#20242e;border-radius:999px;overflow:hidden}
 .card .cbar>span{display:block;height:100%;background:linear-gradient(90deg,#6d86ad,#b9c9e0)}
+
+/* Exported static site: no server, so nothing marked as needing one. !important beats the id and inline display rules. */
+body.static [data-server-only]{display:none!important}
