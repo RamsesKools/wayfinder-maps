@@ -1,18 +1,21 @@
-# Static demo and export
+# Export to a static site
 
-`wayfinder-maps export <map-dir> <out-dir>` writes a map as a self-contained static site: the viewer plus a `graph.json` snapshot of the map.
-Serve `<out-dir>` from any file server, no `wayfinder-maps` binary needed:
+`wayfinder-maps export <map-dir> <out-dir>` writes a map as a plain website: the viewer plus a `graph.json` snapshot of the map.
+Anyone can open it from any web server, with no `wayfinder-maps` binary and nothing to install.
 
 ```sh
 wayfinder-maps export .plan/my-effort site
 python3 -m http.server -d site
 ```
 
-The docs site uses it for the [live demo](../demo.md): every `mkdocs build` (and `mkdocs serve`) exports the test fixture `internal/wayfinder/testdata/implement-demo` into `site/demo-fullscreen/` through `docs_hooks.py`, so the demo always matches the viewer in the checkout.
+The [demo](../demo.md) on this site is an export of the test fixture map, rebuilt by every `mkdocs build` (see `docs_hooks.py`).
 
-![The demo page on the docs site, with the viewer embedded and a link to open it full screen](../images/demo-page.png)
+![An exported map shown in a web page](../images/demo-page.png)
 
-![The exported viewer full screen, the release-notes map laid out left to right](../images/demo-fullscreen.png)
+## Serving it
+
+The page loads `graph.json` and ES modules, which browsers block on `file://`, so open it over http(s).
+Any static host works: GitHub Pages, Netlify, S3, or `python3 -m http.server` for a quick local look.
 
 ## What changes in the exported viewer
 
