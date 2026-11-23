@@ -18,6 +18,9 @@ export const S = {
   byNum: {},
   selected: null,
 
+  // Static mode: an exported site with no server behind it (see static.js).
+  static: false,
+
   // Flow direction of the map: a compass point, or "none" for the radial layout.
   dir: "E",
 

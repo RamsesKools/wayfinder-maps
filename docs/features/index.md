@@ -17,6 +17,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Compass](compass.md) | The map flows in any of 8 directions or radially |
 | [Tickets placed by age](age-layout.md) | Later tickets drift toward the goal without stretching the map |
 | [Settings menu](settings.md) | A gear popover for viewer toggles with hover notes, saved across restarts; Freeze nodes stops the idle drift of the stars, Update check turns the outdated notice on or off, gh account sets the default account for pulls |
+| [`export` to a static site](export.md) | A map as a static, still interactive website to host, share, or embed in a page or presentation, no install needed to view it; the [demo](../demo.md) is one |
 | [Narrow-screen layout](narrow-screens.md) | Wrapping top bar and a status bar that collapses to a corner, its fold tab always beside the compass |
 | [`pull` in the binary](pull.md) | GitHub-issue maps mirrored into `.plan/`, with account choice and progress |
 | [Refresh button](pull.md#refresh-from-the-viewer) | The same pull from the viewer |
@@ -27,6 +28,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [`self-update`](self-update.md) | The binary upgrades itself, except under Homebrew, which hides and refuses it |
 | [Outdated notice](update-notice.md) | A short stderr notice with the right update command when a newer release exists, and the latest version in the settings menu; cached for a day and easy to silence |
 | [Logo](logo.md) | A small constellation as the favicon, the splash logo and the mark on the map |
+| [Dark mode](dark-mode.md) | A light or dark docs site behind a header toggle, with a star sky and the odd shooting star |
 | [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper; the CLI adds how it was installed and where |
 
 The [design record](https://github.com/RamsesKools/wayfinder-maps/blob/main/docs/implement-phase-design.md) has the full plan for the implement phase.

@@ -10,6 +10,7 @@ import {fillPanel, closePanel} from "./panel.js";
 import {startFade} from "./draw.js";
 import {readEvents, progressText} from "./sse.js";
 import {refreshGithub} from "./ghpicker.js";
+import {savePrefs, localStore} from "./static.js";
 
 function sortNodes(g) { return (g.nodes || []).slice().sort(function(a, b) { return a.num - b.num; }); }
 
@@ -33,7 +34,8 @@ function layoutFresh() {
 export function setDirection(dir) {
   if (dir === S.dir) return;
   S.dir = dir;
-  fetch("/api/settings", {method: "POST", headers: {"X-Wayfinder": "1"}, body: JSON.stringify({direction: dir})}).catch(function() {});
+  if (S.static) savePrefs(localStore(), {direction: dir});
+  else fetch("/api/settings", {method: "POST", headers: {"X-Wayfinder": "1"}, body: JSON.stringify({direction: dir})}).catch(function() {});
   if (!S.currentEffort || !S.nodes.length) return;
   startFade(S.mapAlpha, 0, 0.25, function() {
     layoutFresh();
@@ -264,6 +266,15 @@ function projectName(effort) {
   var i = effort.indexOf("/.plan/");
   if (i > 0) return effort.slice(0, i).split("/").pop();
   return "";
+}
+
+// loadStaticMap opens the snapshot an export wrote next to the page.
+export function loadStaticMap() {
+  S.currentEffort = "static"; S.selected = null;
+  return fetch("graph.json").then(function(r) { return r.json(); }).then(function(g) {
+    document.title = g.name + " · wayfinder-maps";
+    setScreen("map"); applyGraph(g); startFade(0, 1, 2.2);
+  });
 }
 
 export function loadMap(effort) {

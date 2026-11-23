@@ -14,9 +14,20 @@ theme:
   icon:
     repo: fontawesome/brands/github
   palette:
-    scheme: default
-    primary: custom
-    accent: custom
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
   features:
     - navigation.tabs
     - navigation.indexes
@@ -28,6 +39,8 @@ hooks:
 watch:
   - README.md
   - docs_hooks.py
+  - cmd/wayfinder-maps/web
+  - internal/wayfinder/testdata/implement-demo
 
 exclude_docs: |
   starmap-design.md
@@ -51,9 +64,11 @@ extra_css:
 
 extra_javascript:
   - assets/image-zoom.js
+  - assets/starfield.js
 
 nav:
   - Home: index.md
+  - Demo: demo.md
   - Install: install.md
   - Configuration: configuration.md
   - Guide:
@@ -68,6 +83,7 @@ nav:
       - Compass: features/compass.md
       - Tickets placed by age: features/age-layout.md
       - Settings menu: features/settings.md
+      - Export to a static site: features/export.md
       - Narrow screens: features/narrow-screens.md
       - Pull from GitHub: features/pull.md
       - Open a map from GitHub: features/open-from-github.md
@@ -76,3 +92,4 @@ nav:
       - self-update: features/self-update.md
       - Outdated notice: features/update-notice.md
       - Logo: features/logo.md
+      - Dark mode: features/dark-mode.md
