@@ -9,11 +9,5 @@
   },
   "repository": "https://github.com/RamsesKools/wayfinder-maps",
   "license": "MIT",
-  "keywords": [
-    "planning",
-    "wayfinder",
-    "tickets",
-    "grilling",
-    "domain-modeling"
-  ]
+  "keywords": ["planning", "wayfinder", "tickets", "grilling", "domain-modeling"]
 }
