@@ -14,9 +14,20 @@ theme:
   icon:
     repo: fontawesome/brands/github
   palette:
-    scheme: default
-    primary: custom
-    accent: custom
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
   features:
     - navigation.tabs
     - navigation.indexes
@@ -53,6 +64,7 @@ extra_css:
 
 extra_javascript:
   - assets/image-zoom.js
+  - assets/starfield.js
 
 nav:
   - Home: index.md
@@ -80,3 +92,4 @@ nav:
       - self-update: features/self-update.md
       - Outdated notice: features/update-notice.md
       - Logo: features/logo.md
+      - Dark mode: features/dark-mode.md
