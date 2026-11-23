@@ -1,4 +1,4 @@
-# Push/PR guard. release.yml only fires on releases, so nothing here caught a
+# PR guard. release.yml only fires on releases, so nothing here caught a
 # broken build — or, since the web/ refactor, a syntax error in an embedded JS
 # module, which no longer fails `go build` and would surface only at runtime in
 # the browser. This keeps it minimal: Go health plus an ESM syntax pass.
@@ -9,8 +9,6 @@
 name: ci
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
 
 env:
@@ -74,7 +72,6 @@ jobs:
       - run: bash scripts/tests/install_test.sh
 
   version-bump:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
