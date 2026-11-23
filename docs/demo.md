@@ -7,5 +7,4 @@ Click a star to read its ticket, drag to pan, scroll to zoom, and try the compas
 
 [Open it full screen](../demo-fullscreen/){ .md-button }
 
-This is a static export of the test fixture map: the same viewer as `wayfinder-maps serve`, minus everything that needs a server.
-See [Static demo and export](features/static-demo.md) to publish your own map this way.
+This is a static demo, made with [`wayfinder-maps export`](features/export.md).

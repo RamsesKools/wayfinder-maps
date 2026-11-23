@@ -8,6 +8,7 @@ A CLI and star-map viewer for [wayfinder](https://github.com/mattpocock/skills/t
 - The CLI and viewer were created by John Goh in [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps). This fork extends both so a map carries on into implementation, see [fork vs upstream](docs/features/index.md).
 
 Full docs live at [wayfinder.ramseskools.nl](https://wayfinder.ramseskools.nl/).
+To see the star-map before installing anything, open the [live demo](https://wayfinder.ramseskools.nl/demo-fullscreen/).
 
 ## Install
 
@@ -52,10 +53,8 @@ Silence it by setting `"updateCheck": false` in `settings.json`, or turn off Upd
 wayfinder-maps status .plan/<effort>   # resolved, in flight, and ready to claim
 wayfinder-maps lint .plan/<effort>     # does the map still tell the truth?
 wayfinder-maps app .plan/<effort>      # the star-map in a native window (serve for a browser)
-wayfinder-maps export .plan/<effort> site   # a static site of the map, for any file server
+wayfinder-maps export .plan/<effort> site   # the map as a static website to host, share or embed
 ```
-
-Try the star-map first in the [live demo](https://wayfinder.ramseskools.nl/demo/), a static export of a sample map.
 
 The [guide](docs/guide/usage.md) covers every command, the map format and maps kept as GitHub issues.
 

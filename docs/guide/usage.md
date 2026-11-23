@@ -101,7 +101,7 @@ See [Maps kept as GitHub issues](github-issues.md).
 ### export
 
 Writes a map as a static site, the viewer plus a `graph.json` snapshot, that any file server can host.
-See [Static demo and export](../features/static-demo.md), and the [live demo](../demo.md) built this way.
+See [Export to a static site](../features/export.md), also for embedding it in a page or slides.
 
 ### self-update and install-skill
 
