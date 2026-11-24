@@ -1,0 +1,22 @@
+/* The header compass: the viewer's dial, sized for the header, in both color schemes. */
+.md-header__compass { display: none; }
+@media screen and (min-width: 76.25em) {
+  .md-header__compass { display: block; position: relative; width: 44px; height: 44px; margin: 0 .3rem 0 .1rem; flex: none; }
+}
+.md-header__compass {
+  --dial-bg: rgba(27, 38, 41, .04); --dial-bd: rgba(27, 38, 41, .16);
+  --arrow: #8d9aa1; --arrow-hover: #1B2629; --on: #d68a00; --on-glow: rgba(214, 138, 0, .55);
+  background: var(--dial-bg); border: 1px solid var(--dial-bd); border-radius: 50%; box-sizing: border-box;
+}
+[data-md-color-scheme="slate"] .md-header__compass {
+  --dial-bg: rgba(14, 18, 26, .72); --dial-bd: #262b36;
+  --arrow: #4b5261; --arrow-hover: #b7bdc9; --on: #ffe29a; --on-glow: rgba(255, 211, 110, .6);
+}
+.md-header__compass .cbtn { position: absolute; width: 12px; height: 12px; padding: 0; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: 50%; color: var(--arrow); cursor: pointer; }
+.md-header__compass .cbtn:hover { color: var(--arrow-hover); background: rgba(127, 127, 127, .12); }
+.md-header__compass .cbtn:focus-visible { outline: 2px solid var(--md-accent-fg-color, currentColor); outline-offset: 1px; }
+.md-header__compass .cglyph { width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.md-header__compass .cnone .cglyph { fill: currentColor; stroke: none; }
+.md-header__compass .cbtn.on { color: var(--on); }
+.md-header__compass .cbtn.on .cglyph { filter: drop-shadow(0 0 2px var(--on)) drop-shadow(0 0 4px var(--on-glow)); }
+.md-header__button.md-logo img { transform-origin: 50% 50%; }

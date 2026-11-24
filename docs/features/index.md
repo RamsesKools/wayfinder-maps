@@ -28,6 +28,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [`self-update`](self-update.md) | The binary upgrades itself, except under Homebrew, which hides and refuses it |
 | [Outdated notice](update-notice.md) | A short stderr notice with the right update command when a newer release exists, and the latest version in the settings menu; cached for a day and easy to silence |
 | [Logo](logo.md) | A small constellation as the favicon, the splash logo and the mark on the map |
+| [Compass logo](compass-logo.md) | A compass in the docs header that turns the logo and the favicon to any of 8 directions or a radial one, remembered across pages and visits |
 | [Dark mode](dark-mode.md) | A light or dark docs site behind a header toggle, with a star sky and the odd shooting star |
 | [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper; the CLI adds how it was installed and where |
 
