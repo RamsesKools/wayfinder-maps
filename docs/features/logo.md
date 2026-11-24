@@ -30,3 +30,5 @@ Red and green ship as spare variants, in case the logo should signal a status la
 ![The logo in blue (default), red and green at 16, 32 and 64 px on light and dark tabs](../images/favicon-colors.png)
 
 The files live in `cmd/wayfinder-maps/web/`: `favicon.svg` is the source, `favicon-32.png` and `favicon.ico` are the fallbacks, and `favicon-red.svg` and `favicon-green.svg` are the spares.
+
+On the docs site, the [compass in the header](compass-logo.md) turns the logo and favicon to any direction.

@@ -7,6 +7,7 @@ import subprocess
 from markdown import Extension
 from markdown.preprocessors import Preprocessor
 from mkdocs.exceptions import PluginError
+from mkdocs.structure.files import File
 
 log = logging.getLogger("mkdocs.hooks.docs_hooks")
 
@@ -29,6 +30,17 @@ class ReadmeLinksExtension(Extension):
     def extendMarkdown(self, md):
         # Below pymdownx.snippets (32), so it sees the included README.
         md.preprocessors.register(ReadmeLinks(md), "readme_links", 31)
+
+
+# The header compass reuses the viewer's own dial, so the docs publish its modules as they are.
+VIEWER_JS = ["compass.js", "direction.js", "util.js"]
+
+
+def on_files(files, config):
+    web = os.path.join(os.path.dirname(config.config_file_path), "cmd/wayfinder-maps/web/js")
+    for name in VIEWER_JS:
+        files.append(File.generated(config, "assets/viewer/" + name, abs_src_path=os.path.join(web, name)))
+    return files
 
 
 def on_config(config):

@@ -61,10 +61,13 @@ markdown_extensions:
 
 extra_css:
   - assets/custom.css
+  - assets/compass-logo.css
 
 extra_javascript:
   - assets/image-zoom.js
   - assets/starfield.js
+  - path: assets/compass-logo.js
+    type: module
 
 nav:
   - Home: index.md
@@ -92,4 +95,5 @@ nav:
       - self-update: features/self-update.md
       - Outdated notice: features/update-notice.md
       - Logo: features/logo.md
+      - Compass logo: features/compass-logo.md
       - Light and dark mode: features/dark-mode.md
