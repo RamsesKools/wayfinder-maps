@@ -202,6 +202,10 @@ body,
     margin-right: auto;
 }
 
+.md-content__inner:has(.hero) {
+    max-width: 1000px;
+}
+
 /* When only one sidebar shows, add one sidebar's width on the other side so content stays centered. */
 @media screen and (min-width: 76.25em) {
     .md-sidebar--primary:not([hidden])~.md-sidebar--secondary[hidden]~.md-content {
@@ -704,10 +708,6 @@ body[data-md-color-scheme],
     font-size: 0.85rem;
 }
 
-[dir] .md-typeset :is(.cards, .sources) li {
-    margin-left: 0;
-}
-
 .md-typeset .cards li::before {
     content: counter(card);
     position: absolute;
@@ -1115,11 +1115,6 @@ body[data-md-color-scheme],
     .hud__bar i {
         transition: none;
     }
-}
-
-.md-content__inner:has(.hero) > :is(h2, p:not(:has(> img)), .highlight) {
-    max-width: 740px;
-    margin-inline: auto;
 }
 
 .flow {
