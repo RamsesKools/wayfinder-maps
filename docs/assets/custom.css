@@ -166,6 +166,10 @@ body,
     text-transform: uppercase;
 }
 
+.md-nav--primary .md-nav__title[for="__drawer"] {
+    color: var(--c-text);
+}
+
 .md-nav__link {
     font-size: 14px;
     color: var(--c-text-secondary);
