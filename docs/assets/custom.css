@@ -517,6 +517,25 @@ body[data-md-color-scheme],
     color: var(--sk-text);
 }
 
+/* Mobile drawer repo block: pick one style by swapping the two tokens.
+   Gold bar, dark text and logo: --nav-source-bg: var(--sk-blue-hover); --nav-source-fg: var(--sk-bg);
+   Slate bar, light text and logo: --nav-source-bg: var(--sk-raised); --nav-source-fg: var(--sk-text); */
+[data-md-color-scheme="slate"] {
+    --nav-source-bg: var(--sk-raised);
+    --nav-source-fg: var(--sk-text);
+}
+
+@media screen and (max-width: 76.1875em) {
+    [data-md-color-scheme="slate"] .md-nav__source {
+        background: var(--nav-source-bg);
+        color: var(--nav-source-fg);
+    }
+
+    [data-md-color-scheme="slate"] .md-nav__source .md-source {
+        color: var(--nav-source-fg);
+    }
+}
+
 [data-md-color-scheme="slate"] .md-footer {
     background: var(--sk-surface);
 }
