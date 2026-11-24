@@ -704,6 +704,10 @@ body[data-md-color-scheme],
     font-size: 0.85rem;
 }
 
+[dir] .md-typeset :is(.cards, .sources) li {
+    margin-left: 0;
+}
+
 .md-typeset .cards li::before {
     content: counter(card);
     position: absolute;
@@ -1113,8 +1117,9 @@ body[data-md-color-scheme],
     }
 }
 
-.md-content__inner:has(.hero)>p {
+.md-content__inner:has(.hero) > :is(h2, p:not(:has(> img)), .highlight) {
     max-width: 740px;
+    margin-inline: auto;
 }
 
 .flow {
