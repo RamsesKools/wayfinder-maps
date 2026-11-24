@@ -21,11 +21,15 @@ window.addEventListener("mouseup", function(ev) {
   if (moved < 5) hitTest(ev.clientX, ev.clientY);
 });
 canvas.addEventListener("wheel", function(ev) {
+  if (S.zoomButtons) return;
   ev.preventDefault();
   var f = Math.exp(-ev.deltaY * 0.0012);
   zoomAt(ev.clientX, ev.clientY, clamp(S.goal.s * f, 0.15, 4));
 }, {passive: false});
 window.addEventListener("keydown", function(ev) { if (ev.key === "Escape") closePanel(); });
+function zoomStep(f) { zoomAt(innerWidth / 2, innerHeight / 2, clamp(S.goal.s * f, 0.15, 4)); }
+document.getElementById("zoomin").onclick = function() { zoomStep(1.4); };
+document.getElementById("zoomout").onclick = function() { zoomStep(1 / 1.4); };
 
 // --- touch: one finger pans (a short tap selects), two fingers pinch-zoom ---
 // The canvas carries touch-action:none, so the browser never pans or zooms the

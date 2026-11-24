@@ -36,10 +36,11 @@ To add a setting to the gear popover:
 ## Docs
 
 The docs site is MkDocs Material (`mkdocs.yml`, pages in `docs/`, images in `docs/images/`), deployed to GitHub Pages by the `release` workflow.
-`docs/index.md` includes `README.md` via snippets, so README links must work on GitHub and on the site: `docs/...` paths for docs pages and images, absolute GitHub URLs for anything else in the repo.
+`docs/index.md` is a standalone landing page (pitch, why, the three steps, demo, install) and does not include `README.md`.
+The README is a lighter pitch for GitHub, so its links are repo-relative (`docs/...` for docs pages and images) or absolute GitHub URLs.
 
 - A PR that adds or changes a user-facing feature updates its page under `docs/features/` with visuals (screenshots or short diagrams in `docs/images/`), not only prose, and the table in `docs/features/index.md` (fork vs upstream).
-- Change the README only when the overview, install or basic usage changes.
+- Change the README or the landing page only when the overview, install or basic usage changes, and keep the two in step.
 - Design notes (`docs/starmap-design.md`, `docs/implement-phase-design.md`) stay out of the site.
 
 ## Releases

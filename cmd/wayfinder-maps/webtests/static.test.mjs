@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {isStatic, loadPrefs, savePrefs} from "../web/js/static.js";
+import {isStatic, loadPrefs, savePrefs, zoomMode} from "../web/js/static.js";
 
 const memory = () => {
   const m = new Map();
@@ -41,4 +41,11 @@ test("blocked storage is harmless", () => {
   assert.deepEqual(loadPrefs(blocked), {direction: "E", freeze: false});
   assert.doesNotThrow(() => savePrefs(blocked, {direction: "N"}));
   assert.deepEqual(loadPrefs(null), {direction: "E", freeze: false});
+});
+
+test("zoomMode is on only for zoom=buttons", () => {
+  assert.equal(zoomMode("?zoom=buttons"), true);
+  assert.equal(zoomMode("?a=1&zoom=buttons"), true);
+  assert.equal(zoomMode("?zoom=wheel"), false);
+  assert.equal(zoomMode(""), false);
 });

@@ -2,13 +2,17 @@
 
 # wayfinder-maps
 
-A CLI and star-map viewer for [wayfinder](https://github.com/mattpocock/skills/tree/main/skills/engineering/wayfinder) maps: the markdown planning memory an agent leaves under `.plan/<effort>/` while it charts a large effort as a graph of investigation tickets, resolved one per session.
+A CLI and star-map viewer for [wayfinder](https://github.com/mattpocock/skills/tree/main/skills/engineering/wayfinder) maps, carried on from the first question into implementation.
 
-- The wayfinder method and its skills were created by [Matt Pocock](https://github.com/mattpocock) in [mattpocock/skills](https://github.com/mattpocock/skills). This repo ships adapted copies, so one install gets you the method and the tools.
-- The CLI and viewer were created by John Goh in [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps). This fork extends both so a map carries on into implementation, see [fork vs upstream](docs/features/index.md).
+- Plan and build work too big for one agent session.
+- See the whole effort at a glance: decisions, dependencies, progress, and the fog that is left.
+- Carry the map from the first question to the merged PRs.
+- A CLI for agents, a star map for humans.
 
-Full docs live at [wayfinder.ramseskools.nl](https://wayfinder.ramseskools.nl/).
-To see the star-map before installing anything, open the [live demo](https://wayfinder.ramseskools.nl/demo-fullscreen/).
+Wayfinder, created by [Matt Pocock](https://github.com/mattpocock), charts "an idea whose destination you can name but whose route you cannot yet see" as a map of tickets, resolved one per session, see [his doc](https://github.com/mattpocock/skills/blob/main/docs/engineering/wayfinder.md).
+The CLI and viewer are by John Goh, and this fork extends both so a map carries on into implementation, see [fork vs upstream](docs/features/index.md).
+
+Read the full story and try the [live demo](https://wayfinder.ramseskools.nl/) before installing anything.
 
 ## Install
 
@@ -33,26 +37,19 @@ brew install RamsesKools/tap/wayfinder-maps
 brew upgrade wayfinder-maps
 ```
 
-![Installing with Homebrew: --version names the install, self-update is hidden from --help and refused with the brew hint](docs/images/homebrew-install.png)
-
-Windows, pinned releases, drop-in skills, updates and building from source are on the [install page](docs/install.md).
-
-When a newer release exists, commands end with a short notice on stderr with the update command for your install (terminal only, never in CI):
-
-![The outdated notice after a status run](docs/images/update-notice.png)
-
-Silence it by setting `"updateCheck": false` in `settings.json`, or turn off Update check in the viewer's settings, see [Outdated notice](docs/features/update-notice.md).
+Windows is not supported yet: I will add it when I need it myself, or when others [let me know](https://github.com/RamsesKools/wayfinder-maps/issues) they would like it.
+Pinned releases, drop-in skills and updates are on the [install page](docs/install.md).
 
 ## Usage
 
 1. Ask your agent to run `/wayfinder-maps` on a big, foggy effort. It charts the map under `.plan/<effort>/`.
 2. Each later session claims a ticket from the frontier and resolves it.
-3. Follow along from the terminal or the star-map:
+3. Follow along from the terminal or the star map:
 
 ```sh
 wayfinder-maps status .plan/<effort>   # resolved, in flight, and ready to claim
 wayfinder-maps lint .plan/<effort>     # does the map still tell the truth?
-wayfinder-maps app .plan/<effort>      # the star-map in a native window (serve for a browser)
+wayfinder-maps app .plan/<effort>      # the star map in a native window (serve for a browser)
 wayfinder-maps export .plan/<effort> site   # the map as a static website to host, share or embed
 ```
 
@@ -63,12 +60,18 @@ The [guide](docs/guide/usage.md) covers every command, the map format and maps k
 - Vote on [issues](https://github.com/RamsesKools/wayfinder-maps/issues) with a thumbs-up reaction, the most wanted go first.
 - Raise ideas and ask questions in [Discussions](https://github.com/RamsesKools/wayfinder-maps/discussions), under Ideas or Q&A.
 
-## Credits and license
+## Development
+
+```sh
+go build ./... && go vet ./... && go test ./...
+node --test cmd/wayfinder-maps/webtests/*.test.mjs   # the viewer
+uv run mkdocs build --strict                         # the docs site
+```
+
+More on [building from source](docs/install.md#build-from-source).
+
+## License
 
 MIT, see [LICENSE](https://github.com/RamsesKools/wayfinder-maps/blob/main/LICENSE).
 The CLI and viewer are by John Goh, the wayfinder method and skills by Matt Pocock (MIT, see [skills/LICENSE](https://github.com/RamsesKools/wayfinder-maps/blob/main/skills/LICENSE)).
 This is a fork of [rengwu/wayfinder-maps](https://github.com/rengwu/wayfinder-maps) and is not merged back upstream.
-
-- [Docs](https://wayfinder.ramseskools.nl/)
-- [Releases](https://github.com/RamsesKools/wayfinder-maps/releases)
-- [Discussions](https://github.com/RamsesKools/wayfinder-maps/discussions)
