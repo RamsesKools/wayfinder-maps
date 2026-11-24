@@ -29,7 +29,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Outdated notice](update-notice.md) | A short stderr notice with the right update command when a newer release exists, and the latest version in the settings menu; cached for a day and easy to silence |
 | [Logo](logo.md) | A small constellation as the favicon, the splash logo and the mark on the map |
 | [Compass logo](compass-logo.md) | A compass in the docs header that turns the logo and the favicon to any of 8 directions or a radial one, remembered across pages and visits |
-| [Dark mode](dark-mode.md) | A light or dark docs site behind a header toggle, with a star sky and the odd shooting star |
+| [Light and dark mode](dark-mode.md) | A light star chart or a dark night sky behind a header toggle, with constellations and the odd shooting star |
 | [`--version`](../install.md#check-the-version) | On `wayfinder-maps` and the Linux webview helper; the CLI adds how it was installed and where |
 
 The [design record](https://github.com/RamsesKools/wayfinder-maps/blob/main/docs/implement-phase-design.md) has the full plan for the implement phase.

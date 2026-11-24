@@ -96,4 +96,4 @@ nav:
       - Outdated notice: features/update-notice.md
       - Logo: features/logo.md
       - Compass logo: features/compass-logo.md
-      - Dark mode: features/dark-mode.md
+      - Light and dark mode: features/dark-mode.md
