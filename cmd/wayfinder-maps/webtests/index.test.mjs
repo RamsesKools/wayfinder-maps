@@ -35,6 +35,11 @@ test("server-only UI is marked data-server-only", () => {
   }
 });
 
+test("the zoom setting and its buttons work without a server", () => {
+  assert.match(html, /<div class="setrow"><label class="setname" for="zoombuttons"/);
+  assert.match(html, /<div id="zoombtns"><button id="zoomin"/);
+});
+
 test("one CSS rule hides data-server-only in static mode", () => {
   const css = readFileSync(new URL("../web/style.css", import.meta.url), "utf8");
   assert.match(css, /body\.static \[data-server-only\]\s*\{[^}]*display:\s*none\s*!important/);

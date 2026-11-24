@@ -34,7 +34,8 @@ function layoutFresh() {
 export function setDirection(dir) {
   if (dir === S.dir) return;
   S.dir = dir;
-  if (S.static) savePrefs(localStore(), {direction: dir});
+  if (S.override.dir !== null) {} // an address override lasts for this page load only, so nothing is saved
+  else if (S.static) savePrefs(localStore(), {direction: dir});
   else fetch("/api/settings", {method: "POST", headers: {"X-Wayfinder": "1"}, body: JSON.stringify({direction: dir})}).catch(function() {});
   if (!S.currentEffort || !S.nodes.length) return;
   startFade(S.mapAlpha, 0, 0.25, function() {

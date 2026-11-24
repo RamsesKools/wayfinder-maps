@@ -21,8 +21,12 @@ export const S = {
   // Static mode: an exported site with no server behind it (see static.js).
   static: false,
 
-  // Zoom with the +/- buttons only, so scrolling over an embedded map scrolls the page.
+  // Zoom with the +/- buttons instead of the wheel, so scrolling over an embedded map scrolls the page.
+  // zoomButtons is the effective value: the stored setting (zoomPref) unless the page address overrides it.
   zoomButtons: false,
+  zoomPref: false,
+  // Page-address overrides (see overrides in static.js): zoom, freeze and dir, each null when absent.
+  override: {zoom: null, freeze: null, dir: null},
 
   // Flow direction of the map: a compass point, or "none" for the radial layout.
   dir: "E",

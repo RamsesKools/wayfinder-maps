@@ -8,11 +8,23 @@ function save(patch) {
   return fetch("/api/settings", {method: "POST", headers: {"X-Wayfinder": "1"}, body: JSON.stringify(patch)}).catch(function() {});
 }
 
+const HINT = "drag to pan \u00b7 scroll to zoom \u00b7 click a star";
+const HINT_BUTTONS = "drag to pan \u00b7 press +/- to zoom \u00b7 click a star";
+
+// The effective mode is the page-address override when there is one, else the stored setting.
+export function applyZoomMode() {
+  S.zoomButtons = S.override.zoom === null ? S.zoomPref : S.override.zoom;
+  document.body.classList.toggle("zoombuttons", S.zoomButtons);
+  document.getElementById("hint").textContent = S.zoomButtons ? HINT_BUTTONS : HINT;
+}
+
 export function mountSettings() {
   var m = menu(document.getElementById("settings"), document.getElementById("setbtn"), document.getElementById("setpop"));
   document.getElementById("setbtn").onclick = m.toggle;
   var freeze = document.getElementById("freezenodes");
   freeze.onchange = function() { S.freeze = freeze.checked; save({freezeNodes: S.freeze}); };
+  var zoom = document.getElementById("zoombuttons");
+  zoom.onchange = function() { S.zoomPref = zoom.checked; save({zoomButtons: S.zoomPref}); applyZoomMode(); };
   var upd = document.getElementById("updatecheck");
   upd.onchange = function() { S.updateCheck = upd.checked; save({updateCheck: S.updateCheck}).then(showUpdate); };
   var acct = document.getElementById("ghaccount");
@@ -23,7 +35,10 @@ export function mountSettings() {
       if (r && r.ok) { S.ghAccount = v; acct.value = v; } else { acct.classList.add("bad"); }
     });
   };
-  return function() { freeze.checked = S.freeze; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate(); };
+  return function() {
+    zoom.checked = S.zoomButtons; zoom.disabled = S.override.zoom !== null;
+    freeze.checked = S.freeze; freeze.disabled = S.override.freeze !== null; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate();
+  };
 }
 
 // The version line comes from the server's cached lookup, so this never costs a GitHub request.

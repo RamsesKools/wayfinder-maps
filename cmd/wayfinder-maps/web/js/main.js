@@ -7,9 +7,9 @@ import "./panel.js"; // wires the panel close button and cross-ticket links
 import {startPolling, showSplash, openProject, loadMap, loadStaticMap, leaveMap, pullFromGithub, setDirection} from "./screens.js";
 import {mountGithub} from "./ghpicker.js";
 import {mountCompass} from "./compass.js";
-import {mountSettings} from "./settings.js";
+import {mountSettings, applyZoomMode} from "./settings.js";
 import {DEFAULT, isDir} from "./direction.js";
-import {isStatic, loadPrefs, localStore, zoomMode} from "./static.js";
+import {isStatic, loadPrefs, localStore, overrides} from "./static.js";
 
 // An exported site has no server: the map comes from graph.json and the server-only UI is hidden by CSS.
 S.static = isStatic(document);
@@ -39,13 +39,14 @@ new ResizeObserver(function() { document.documentElement.style.setProperty("--hu
 var setCompass = mountCompass(document.getElementById("compass"), function(d) { setDirection(d); setCompass(S.dir); });
 setCompass(S.dir);
 var syncSettings = mountSettings();
+S.override = overrides(location.search);
+
+// An address override wins over the saved value.
+function ov(override, saved) { return override === null ? saved : override; }
 
 function bootStatic() {
   var prefs = loadPrefs(localStore());
-  S.dir = prefs.direction; S.freeze = prefs.freeze; setCompass(S.dir); syncSettings();
-  S.zoomButtons = zoomMode(location.search);
-  document.body.classList.toggle("zoombuttons", S.zoomButtons);
-  if (S.zoomButtons) document.getElementById("hint").textContent = "drag to pan \u00b7 press +/- to zoom \u00b7 click a star";
+  S.dir = ov(S.override.dir, prefs.direction); S.freeze = ov(S.override.freeze, prefs.freeze); S.zoomPref = prefs.zoomButtons; setCompass(S.dir); applyZoomMode(); syncSettings();
   loadStaticMap().catch(function(e) { console.error("wayfinder-maps: could not load graph.json", e); });
 }
 
@@ -53,8 +54,8 @@ function bootServer() {
   startPolling();
   // The saved settings have to be known before the first layout runs.
   fetch("/api/settings").then(function(r) { return r.json(); }).then(function(st) {
-    S.dir = isDir(st.direction) ? st.direction : DEFAULT; setCompass(S.dir);
-    S.freeze = st.freezeNodes === true; S.updateCheck = st.updateCheck !== false; S.ghAccount = typeof st.ghAccount === "string" ? st.ghAccount : ""; syncSettings();
+    S.dir = ov(S.override.dir, isDir(st.direction) ? st.direction : DEFAULT); setCompass(S.dir);
+    S.freeze = ov(S.override.freeze, st.freezeNodes === true); S.zoomPref = st.zoomButtons === true; applyZoomMode(); S.updateCheck = st.updateCheck !== false; S.ghAccount = typeof st.ghAccount === "string" ? st.ghAccount : ""; syncSettings();
   }).catch(function() {}).then(function() { return fetch("/api/initial"); }).then(function(r) { return r.json(); }).then(function(init) {
     if (init.effort) loadMap(init.effort);
     else if (init.project) openProject(init.project);

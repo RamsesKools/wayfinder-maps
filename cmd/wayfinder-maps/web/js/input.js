@@ -21,12 +21,17 @@ window.addEventListener("mouseup", function(ev) {
   if (moved < 5) hitTest(ev.clientX, ev.clientY);
 });
 canvas.addEventListener("wheel", function(ev) {
-  if (S.zoomButtons) return;
+  if (S.zoomButtons && !ev.ctrlKey) return; // ctrl+wheel is a trackpad pinch: that still zooms
   ev.preventDefault();
   var f = Math.exp(-ev.deltaY * 0.0012);
   zoomAt(ev.clientX, ev.clientY, clamp(S.goal.s * f, 0.15, 4));
 }, {passive: false});
-window.addEventListener("keydown", function(ev) { if (ev.key === "Escape") closePanel(); });
+window.addEventListener("keydown", function(ev) {
+  if (ev.key === "Escape") closePanel();
+  else if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)) {
+    if (ev.key === "+" || ev.key === "=") zoomStep(1.4); else if (ev.key === "-" || ev.key === "_") zoomStep(1 / 1.4);
+  }
+});
 function zoomStep(f) { zoomAt(innerWidth / 2, innerHeight / 2, clamp(S.goal.s * f, 0.15, 4)); }
 document.getElementById("zoomin").onclick = function() { zoomStep(1.4); };
 document.getElementById("zoomout").onclick = function() { zoomStep(1 / 1.4); };

@@ -16,6 +16,8 @@ type settings struct {
 	UpdateCheck bool   `json:"updateCheck"`
 	// GHAccount is the default gh account for pull and Open from GitHub; empty means the active one.
 	GHAccount string `json:"ghAccount"`
+	// ZoomButtons zooms with the +/- buttons instead of the wheel.
+	ZoomButtons bool `json:"zoomButtons"`
 }
 
 // settingsPatch is a partial update: absent fields keep their stored value.
@@ -24,11 +26,12 @@ type settingsPatch struct {
 	FreezeNodes *bool   `json:"freezeNodes"`
 	UpdateCheck *bool   `json:"updateCheck"`
 	GHAccount   *string `json:"ghAccount"`
+	ZoomButtons *bool   `json:"zoomButtons"`
 }
 
 // apply merges the patch into s, reporting false for an empty or invalid one.
 func (p settingsPatch) apply(s *settings) bool {
-	if p.Direction == nil && p.FreezeNodes == nil && p.UpdateCheck == nil && p.GHAccount == nil {
+	if p.Direction == nil && p.FreezeNodes == nil && p.UpdateCheck == nil && p.GHAccount == nil && p.ZoomButtons == nil {
 		return false
 	}
 	if p.Direction != nil {
@@ -42,6 +45,9 @@ func (p settingsPatch) apply(s *settings) bool {
 	}
 	if p.UpdateCheck != nil {
 		s.UpdateCheck = *p.UpdateCheck
+	}
+	if p.ZoomButtons != nil {
+		s.ZoomButtons = *p.ZoomButtons
 	}
 	if p.GHAccount != nil {
 		a := strings.TrimSpace(*p.GHAccount)
@@ -94,6 +100,7 @@ func loadSettings() settings {
 		s.Direction = got.Direction
 		s.FreezeNodes = got.FreezeNodes
 		s.UpdateCheck = got.UpdateCheck
+		s.ZoomButtons = got.ZoomButtons
 		if validAccount(got.GHAccount) {
 			s.GHAccount = got.GHAccount
 		}

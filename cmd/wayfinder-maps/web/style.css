@@ -144,7 +144,7 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 /* The open clip reaches past the panel so a row's tip can hang below it. */
 .setrow{position:relative;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;color:#e6e9ef;font-size:13px;line-height:18px}
 .setrow:hover{background:rgba(255,255,255,.06)}
-.setname{flex:none;width:88px;cursor:pointer}
+.setname{flex:none;min-width:88px;white-space:nowrap;cursor:pointer}
 .help{flex:none;display:flex;align-items:center;justify-content:center;width:16px;height:16px;padding:0;border-radius:50%;cursor:help;
   background:none;border:1px solid #4b5261;color:#8b93a3}
 .help svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
@@ -168,9 +168,11 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 .sw::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:#b7bdc9;transition:transform .15s,background .15s}
 .swl input:checked+.sw{background:#4f8cff}
 .swl input:checked+.sw::after{transform:translateX(13px);background:#fff}
+.swl input:disabled+.sw{opacity:.5;cursor:not-allowed}
 .swl input:focus-visible+.sw{outline:2px solid #4f8cff;outline-offset:2px}
 #zoombtns{position:fixed;right:12px;bottom:calc(var(--hudh,80px) + 10px);z-index:7;display:none;flex-direction:column;gap:6px}
 body.zoombuttons #zoombtns{display:flex}
+body.panelopen #zoombtns{right:calc(min(420px,86vw) + 12px)}
 #zoombtns button{width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;cursor:pointer;
   background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;color:#b7bdc9;backdrop-filter:blur(8px)}
 #zoombtns button:hover{color:#e6e9ef;border-color:#3a4356}
