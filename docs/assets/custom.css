@@ -380,7 +380,7 @@ body.image-zoom-lock {
     border-radius: var(--r);
 }
 
-/* Dark mode: Material's slate scheme over a star sky (docs/assets/starfield.js) */
+/* Star sky in dark mode, printed star chart in light mode (docs/assets/starfield.js reads the --sf-* tokens) */
 html {
     --sk-bg: #08090c;
     --sk-surface: #0f1115;
@@ -399,6 +399,14 @@ html {
         radial-gradient(ellipse 60% 45% at 85% 8%, rgba(255, 255, 255, 0.075), transparent 70%),
         radial-gradient(ellipse 55% 50% at 8% 92%, rgba(200, 205, 215, 0.06), transparent 70%),
         radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255, 255, 255, 0.03), transparent 75%);
+    --sk-paper-glow:
+        radial-gradient(ellipse 60% 45% at 85% 8%, rgba(150, 138, 124, 0.12), transparent 70%),
+        radial-gradient(ellipse 55% 50% at 8% 92%, rgba(150, 138, 124, 0.09), transparent 70%);
+}
+
+:root:has(body[data-md-color-scheme="default"]) {
+    background: var(--sk-paper-glow), var(--c-bg);
+    background-attachment: fixed;
 }
 
 :root:has(body[data-md-color-scheme="slate"]) {
@@ -415,8 +423,32 @@ html {
     pointer-events: none;
 }
 
+[data-md-color-scheme="default"] {
+    --sf-stars: #1B2629 #3E77DC #4A6169;
+    --sf-alpha: 0.18 0.3 0.42;
+    --sf-shape: round;
+    --sf-bright: cross;
+    --sf-lines: rgba(27, 38, 41, 0.14);
+    --sf-trail: rgba(62, 119, 220, 0.6);
+    --sf-head: #1B2629;
+    --sf-halo: rgba(0, 0, 0, 0);
+    --sf-glass: rgba(248, 247, 246, 0.75);
+    --sf-panel: rgba(248, 247, 246, 0.22);
+}
+
 [data-md-color-scheme="slate"] {
     color-scheme: dark;
+
+    --sf-stars: #ffffff #b9c8ff #ffe6a0;
+    --sf-alpha: 0.5 0.7 0.95;
+    --sf-shape: square;
+    --sf-bright: square;
+    --sf-lines: rgba(232, 234, 238, 0.1);
+    --sf-trail: rgba(223, 232, 255, 0.6);
+    --sf-head: #ffffff;
+    --sf-halo: rgba(255, 255, 255, 0.6);
+    --sf-glass: var(--sk-glass);
+    --sf-panel: rgba(8, 9, 12, 0.22);
 
     --c-bg: var(--sk-bg);
     --c-surface: var(--sk-surface);
@@ -466,15 +498,15 @@ html {
     --md-shadow-z1: 0 0 0.25rem rgba(0, 0, 0, 0.5);
 }
 
-body[data-md-color-scheme="slate"],
-[data-md-color-scheme="slate"] .md-main,
-[data-md-color-scheme="slate"] .md-container {
+body[data-md-color-scheme],
+[data-md-color-scheme] .md-main,
+[data-md-color-scheme] .md-container {
     background: transparent;
 }
 
-[data-md-color-scheme="slate"] .md-header,
-[data-md-color-scheme="slate"] .md-tabs {
-    background: var(--sk-glass);
+[data-md-color-scheme] .md-header,
+[data-md-color-scheme] .md-tabs {
+    background: var(--sf-glass);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
@@ -555,11 +587,24 @@ body[data-md-color-scheme="slate"],
     color: var(--sk-bg);
 }
 
-[data-md-color-scheme="slate"] .md-sidebar .md-nav__title {
+[data-md-color-scheme] .md-sidebar .md-nav__title {
     background: transparent;
     box-shadow: none;
 }
 
-[data-md-color-scheme="slate"] .md-content__inner::before {
+[data-md-color-scheme] .md-content__inner {
+    background: var(--sf-panel);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    border-radius: 6px;
+    padding: 0.6rem 1.5rem 1rem;
+}
+
+[data-md-color-scheme] .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+    background: transparent;
+    box-shadow: none;
+}
+
+[data-md-color-scheme] .md-content__inner::before {
     display: none;
 }

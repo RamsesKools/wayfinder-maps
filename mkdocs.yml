@@ -92,4 +92,4 @@ nav:
       - self-update: features/self-update.md
       - Outdated notice: features/update-notice.md
       - Logo: features/logo.md
-      - Dark mode: features/dark-mode.md
+      - Light and dark mode: features/dark-mode.md
