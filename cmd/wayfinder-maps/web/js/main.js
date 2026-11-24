@@ -9,7 +9,7 @@ import {mountGithub} from "./ghpicker.js";
 import {mountCompass} from "./compass.js";
 import {mountSettings, applyZoomMode} from "./settings.js";
 import {DEFAULT, isDir} from "./direction.js";
-import {isStatic, loadPrefs, localStore, zoomOverride} from "./static.js";
+import {isStatic, loadPrefs, localStore, overrides} from "./static.js";
 
 // An exported site has no server: the map comes from graph.json and the server-only UI is hidden by CSS.
 S.static = isStatic(document);
@@ -39,11 +39,14 @@ new ResizeObserver(function() { document.documentElement.style.setProperty("--hu
 var setCompass = mountCompass(document.getElementById("compass"), function(d) { setDirection(d); setCompass(S.dir); });
 setCompass(S.dir);
 var syncSettings = mountSettings();
-S.zoomOverride = zoomOverride(location.search);
+S.override = overrides(location.search);
+
+// An address override wins over the saved value.
+function ov(override, saved) { return override === null ? saved : override; }
 
 function bootStatic() {
   var prefs = loadPrefs(localStore());
-  S.dir = prefs.direction; S.freeze = prefs.freeze; S.zoomPref = prefs.zoomButtons; setCompass(S.dir); applyZoomMode(); syncSettings();
+  S.dir = ov(S.override.dir, prefs.direction); S.freeze = ov(S.override.freeze, prefs.freeze); S.zoomPref = prefs.zoomButtons; setCompass(S.dir); applyZoomMode(); syncSettings();
   loadStaticMap().catch(function(e) { console.error("wayfinder-maps: could not load graph.json", e); });
 }
 
@@ -51,8 +54,8 @@ function bootServer() {
   startPolling();
   // The saved settings have to be known before the first layout runs.
   fetch("/api/settings").then(function(r) { return r.json(); }).then(function(st) {
-    S.dir = isDir(st.direction) ? st.direction : DEFAULT; setCompass(S.dir);
-    S.freeze = st.freezeNodes === true; S.zoomPref = st.zoomButtons === true; applyZoomMode(); S.updateCheck = st.updateCheck !== false; S.ghAccount = typeof st.ghAccount === "string" ? st.ghAccount : ""; syncSettings();
+    S.dir = ov(S.override.dir, isDir(st.direction) ? st.direction : DEFAULT); setCompass(S.dir);
+    S.freeze = ov(S.override.freeze, st.freezeNodes === true); S.zoomPref = st.zoomButtons === true; applyZoomMode(); S.updateCheck = st.updateCheck !== false; S.ghAccount = typeof st.ghAccount === "string" ? st.ghAccount : ""; syncSettings();
   }).catch(function() {}).then(function() { return fetch("/api/initial"); }).then(function(r) { return r.json(); }).then(function(init) {
     if (init.effort) loadMap(init.effort);
     else if (init.project) openProject(init.project);

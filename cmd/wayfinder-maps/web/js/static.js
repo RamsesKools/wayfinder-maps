@@ -8,10 +8,16 @@ export function localStore() {
   try { return localStorage; } catch (e) { return null; }
 }
 
-// ?zoom=buttons or ?zoom=wheel overrides the saved setting for this page load; anything else is no override.
-export function zoomOverride(search) {
-  var z = new URLSearchParams(search).get("zoom");
-  return z === "buttons" ? true : z === "wheel" ? false : null;
+// Page-address overrides for one page load, so an embed can choose without touching the reader's saved settings:
+// ?zoom=buttons|wheel, ?freeze=on|off, ?compass=<point>|none. Anything else is no override (null).
+export function overrides(search) {
+  var q = new URLSearchParams(search), z = q.get("zoom"), f = q.get("freeze"), c = (q.get("compass") || "").toLowerCase();
+  var dir = c === "none" ? "none" : c.toUpperCase();
+  return {
+    zoom: z === "buttons" ? true : z === "wheel" ? false : null,
+    freeze: f === "on" ? true : f === "off" ? false : null,
+    dir: isDir(dir) ? dir : null
+  };
 }
 
 export function isStatic(doc) { return !!doc.querySelector('meta[name="wayfinder-static"]'); }

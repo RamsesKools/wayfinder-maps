@@ -46,6 +46,7 @@ The hint in the top bar changes to "press +/- to zoom".
 `?zoom=buttons` on the viewer's address forces the buttons and `?zoom=wheel` forces scroll-zoom, for that page load only.
 It never changes the saved setting, so an embed can choose without touching what a reader picked, which is how the [demo](../demo.md) and the home page embed the map.
 The switch is greyed out while an override is in force.
+Freeze nodes and the compass have the same kind of override, see [Overrides from the address](#overrides-from-the-address).
 
 ![The switch greyed out under ?zoom=wheel](../images/zoom-override.png)
 
@@ -73,6 +74,26 @@ With the check off, the menu shows only the running version.
 ![The Update check switch off](../images/update-off.png)
 
 The latest version comes from the server's cached lookup, so opening the menu, flipping the switch or reloading the page makes no new request to GitHub.
+
+## Overrides from the address
+
+An embed can pick how the map starts with query parameters on the viewer's address, without touching what a reader saved.
+They work in the app, `serve` and every [export](export.md), and combine with `&`.
+
+| Parameter | Values | Overrides |
+| --- | --- | --- |
+| `zoom` | `buttons`, `wheel` | [Zoom with buttons](#zoom-with-buttons) |
+| `freeze` | `on`, `off` | [Freeze nodes](#freeze-nodes) |
+| `compass` | `N`, `NE`, `E`, `SE`, `S`, `SW`, `W`, `NW`, `none` | The [compass](compass.md) direction, `none` being the radial layout |
+
+```html
+<iframe src="my-map/?zoom=buttons&freeze=on&compass=S" style="width:100%;height:600px;border:0" title="My wayfinder map"></iframe>
+```
+
+- An override lasts for that page load only and is never saved.
+- The Freeze nodes and Zoom with buttons switches are greyed out while overridden.
+- The compass stays usable, but a direction picked under `?compass=` is not saved either.
+- A missing or unknown value is ignored, so the saved setting or the default applies.
 
 ## Where settings are saved
 

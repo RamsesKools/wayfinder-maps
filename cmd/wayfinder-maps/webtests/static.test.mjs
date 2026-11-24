@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {isStatic, loadPrefs, savePrefs, zoomOverride} from "../web/js/static.js";
+import {isStatic, loadPrefs, savePrefs, overrides} from "../web/js/static.js";
 
 const memory = () => {
   const m = new Map();
@@ -54,10 +54,18 @@ test("zoomButtons is saved and loaded", () => {
   assert.equal(loadPrefs(s).zoomButtons, false);
 });
 
-test("zoomOverride reads zoom=buttons and zoom=wheel, anything else is no override", () => {
-  assert.equal(zoomOverride("?zoom=buttons"), true);
-  assert.equal(zoomOverride("?a=1&zoom=buttons"), true);
-  assert.equal(zoomOverride("?zoom=wheel"), false);
-  assert.equal(zoomOverride("?zoom=other"), null);
-  assert.equal(zoomOverride(""), null);
+test("overrides reads zoom, freeze and compass from the address, anything else is no override", () => {
+  const none = {zoom: null, freeze: null, dir: null};
+  assert.deepEqual(overrides(""), none);
+  assert.deepEqual(overrides("?zoom=other&freeze=maybe&compass=up"), none);
+  assert.equal(overrides("?zoom=buttons").zoom, true);
+  assert.equal(overrides("?a=1&zoom=buttons").zoom, true);
+  assert.equal(overrides("?zoom=wheel").zoom, false);
+  assert.equal(overrides("?freeze=on").freeze, true);
+  assert.equal(overrides("?freeze=off").freeze, false);
+  assert.equal(overrides("?compass=SW").dir, "SW");
+  assert.equal(overrides("?compass=sw").dir, "SW");
+  assert.equal(overrides("?compass=none").dir, "none");
+  assert.equal(overrides("?compass=NONE").dir, "none");
+  assert.deepEqual(overrides("?zoom=buttons&freeze=on&compass=n"), {zoom: true, freeze: true, dir: "N"});
 });

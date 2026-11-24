@@ -13,7 +13,7 @@ const HINT_BUTTONS = "drag to pan \u00b7 press +/- to zoom \u00b7 click a star";
 
 // The effective mode is the page-address override when there is one, else the stored setting.
 export function applyZoomMode() {
-  S.zoomButtons = S.zoomOverride === null ? S.zoomPref : S.zoomOverride;
+  S.zoomButtons = S.override.zoom === null ? S.zoomPref : S.override.zoom;
   document.body.classList.toggle("zoombuttons", S.zoomButtons);
   document.getElementById("hint").textContent = S.zoomButtons ? HINT_BUTTONS : HINT;
 }
@@ -36,8 +36,8 @@ export function mountSettings() {
     });
   };
   return function() {
-    zoom.checked = S.zoomButtons; zoom.disabled = S.zoomOverride !== null;
-    freeze.checked = S.freeze; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate();
+    zoom.checked = S.zoomButtons; zoom.disabled = S.override.zoom !== null;
+    freeze.checked = S.freeze; freeze.disabled = S.override.freeze !== null; upd.checked = S.updateCheck; acct.value = S.ghAccount; showUpdate();
   };
 }
 
