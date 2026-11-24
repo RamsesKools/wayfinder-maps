@@ -60,6 +60,7 @@ Put the output folder next to your page, or host it separately, and point an ifr
 <iframe src="my-map/" style="width:100%;height:600px;border:0" title="My wayfinder map"></iframe>
 ```
 
+- Add `?zoom=buttons` to the iframe address (`my-map/?zoom=buttons`) to stop scroll-zoom: the wheel then scrolls your page, and zoom goes through the +/- buttons in the bottom right corner, so a reader scrolling past the embed does not zoom the map by accident.
 - It works from the same site or a different one.
 - A `sandbox` attribute needs `allow-scripts allow-same-origin`, or the viewer cannot load its modules.
 - A host that forbids framing (an `X-Frame-Options` or `frame-ancestors` header) blocks it.

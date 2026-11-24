@@ -8,6 +8,8 @@ export function localStore() {
   try { return localStorage; } catch (e) { return null; }
 }
 
+export function zoomMode(search) { return new URLSearchParams(search).get("zoom") === "buttons"; }
+
 export function isStatic(doc) { return !!doc.querySelector('meta[name="wayfinder-static"]'); }
 
 // Storage can throw (sandboxed iframes, blocked cookies); preferences then just do not persist.

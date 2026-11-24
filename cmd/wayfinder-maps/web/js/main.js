@@ -9,7 +9,7 @@ import {mountGithub} from "./ghpicker.js";
 import {mountCompass} from "./compass.js";
 import {mountSettings} from "./settings.js";
 import {DEFAULT, isDir} from "./direction.js";
-import {isStatic, loadPrefs, localStore} from "./static.js";
+import {isStatic, loadPrefs, localStore, zoomMode} from "./static.js";
 
 // An exported site has no server: the map comes from graph.json and the server-only UI is hidden by CSS.
 S.static = isStatic(document);
@@ -43,6 +43,9 @@ var syncSettings = mountSettings();
 function bootStatic() {
   var prefs = loadPrefs(localStore());
   S.dir = prefs.direction; S.freeze = prefs.freeze; setCompass(S.dir); syncSettings();
+  S.zoomButtons = zoomMode(location.search);
+  document.body.classList.toggle("zoombuttons", S.zoomButtons);
+  if (S.zoomButtons) document.getElementById("hint").textContent = "drag to pan \u00b7 press +/- to zoom \u00b7 click a star";
   loadStaticMap().catch(function(e) { console.error("wayfinder-maps: could not load graph.json", e); });
 }
 

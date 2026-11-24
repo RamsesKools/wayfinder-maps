@@ -169,6 +169,11 @@ body.panelopen #topbar{right:calc(min(420px,86vw) + 16px)}
 .swl input:checked+.sw{background:#4f8cff}
 .swl input:checked+.sw::after{transform:translateX(13px);background:#fff}
 .swl input:focus-visible+.sw{outline:2px solid #4f8cff;outline-offset:2px}
+#zoombtns{position:fixed;right:12px;bottom:calc(var(--hudh,80px) + 10px);z-index:7;display:none;flex-direction:column;gap:6px}
+body.zoombuttons #zoombtns{display:flex}
+#zoombtns button{width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;cursor:pointer;
+  background:rgba(14,18,26,.72);border:1px solid #262b36;border-radius:50%;color:#b7bdc9;backdrop-filter:blur(8px)}
+#zoombtns button:hover{color:#e6e9ef;border-color:#3a4356}
 #backbtn:hover,#pullbtn:hover{color:#e6e9ef;border-color:#3a4356}
 #pullbtn[hidden]{display:none}
 #pullbtn:disabled{opacity:.5;cursor:default}
