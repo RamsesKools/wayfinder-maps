@@ -33,7 +33,7 @@ site/
 2. It copies the viewer files baked into the binary and adds a `<meta name="wayfinder-static">` flag to `index.html`.
 3. When the page opens and sees the flag, the viewer loads `graph.json` instead of asking a server, and never polls for changes.
    It hides what needs a server: Open Folder, recent maps, Open from GitHub, Refresh from GitHub and the back to Maps button.
-   The [compass](compass.md) direction and Freeze nodes are kept in the browser's `localStorage`, and the gh account and update check rows of the [settings menu](settings.md) are hidden.
+   The [compass](compass.md) direction, Freeze nodes and Zoom with buttons are kept in the browser's `localStorage`, and the gh account and update check rows of the [settings menu](settings.md) are hidden.
 
 The `serve` and `app` viewer is unchanged.
 
@@ -61,6 +61,7 @@ Put the output folder next to your page, or host it separately, and point an ifr
 ```
 
 - Add `?zoom=buttons` to the iframe address (`my-map/?zoom=buttons`) to stop scroll-zoom: the wheel then scrolls your page, and zoom goes through the +/- buttons in the bottom right corner, so a reader scrolling past the embed does not zoom the map by accident.
+  It overrides the reader's own [Zoom with buttons](settings.md#zoom-with-buttons) setting for that page load without changing it, and `?zoom=wheel` forces scroll-zoom.
 - It works from the same site or a different one.
 - A `sandbox` attribute needs `allow-scripts allow-same-origin`, or the viewer cannot load its modules.
 - A host that forbids framing (an `X-Frame-Options` or `frame-ancestors` header) blocks it.

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {isStatic, loadPrefs, savePrefs, zoomMode} from "../web/js/static.js";
+import {isStatic, loadPrefs, savePrefs, zoomOverride} from "../web/js/static.js";
 
 const memory = () => {
   const m = new Map();
@@ -19,16 +19,16 @@ test("isStatic follows the wayfinder-static meta", () => {
 });
 
 test("loadPrefs falls back to the defaults", () => {
-  assert.deepEqual(loadPrefs(memory()), {direction: "E", freeze: false});
+  assert.deepEqual(loadPrefs(memory()), {direction: "E", freeze: false, zoomButtons: false});
 });
 
 test("savePrefs round-trips and merges partial updates", () => {
   const s = memory();
   savePrefs(s, {direction: "SW"});
-  savePrefs(s, {freeze: true});
-  assert.deepEqual(loadPrefs(s), {direction: "SW", freeze: true});
+  savePrefs(s, {freezeNodes: true});
+  assert.deepEqual(loadPrefs(s), {direction: "SW", freeze: true, zoomButtons: false});
   savePrefs(s, {direction: "none"});
-  assert.deepEqual(loadPrefs(s), {direction: "none", freeze: true});
+  assert.deepEqual(loadPrefs(s), {direction: "none", freeze: true, zoomButtons: false});
 });
 
 test("loadPrefs ignores an invalid stored direction", () => {
@@ -38,14 +38,26 @@ test("loadPrefs ignores an invalid stored direction", () => {
 });
 
 test("blocked storage is harmless", () => {
-  assert.deepEqual(loadPrefs(blocked), {direction: "E", freeze: false});
+  assert.deepEqual(loadPrefs(blocked), {direction: "E", freeze: false, zoomButtons: false});
   assert.doesNotThrow(() => savePrefs(blocked, {direction: "N"}));
-  assert.deepEqual(loadPrefs(null), {direction: "E", freeze: false});
+  assert.deepEqual(loadPrefs(null), {direction: "E", freeze: false, zoomButtons: false});
 });
 
-test("zoomMode is on only for zoom=buttons", () => {
-  assert.equal(zoomMode("?zoom=buttons"), true);
-  assert.equal(zoomMode("?a=1&zoom=buttons"), true);
-  assert.equal(zoomMode("?zoom=wheel"), false);
-  assert.equal(zoomMode(""), false);
+test("zoomButtons is saved and loaded", () => {
+  const s = memory();
+  assert.equal(loadPrefs(s).zoomButtons, false);
+  savePrefs(s, {zoomButtons: true});
+  assert.equal(loadPrefs(s).zoomButtons, true);
+  savePrefs(s, {direction: "N"});
+  assert.equal(loadPrefs(s).zoomButtons, true);
+  savePrefs(s, {zoomButtons: false});
+  assert.equal(loadPrefs(s).zoomButtons, false);
+});
+
+test("zoomOverride reads zoom=buttons and zoom=wheel, anything else is no override", () => {
+  assert.equal(zoomOverride("?zoom=buttons"), true);
+  assert.equal(zoomOverride("?a=1&zoom=buttons"), true);
+  assert.equal(zoomOverride("?zoom=wheel"), false);
+  assert.equal(zoomOverride("?zoom=other"), null);
+  assert.equal(zoomOverride(""), null);
 });

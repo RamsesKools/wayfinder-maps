@@ -13,7 +13,8 @@ A file that is not valid JSON, or holds an invalid value, falls back to the defa
   "direction": "E",
   "freezeNodes": false,
   "updateCheck": true,
-  "ghAccount": ""
+  "ghAccount": "",
+  "zoomButtons": false
 }
 ```
 
@@ -21,6 +22,7 @@ A file that is not valid JSON, or holds an invalid value, falls back to the defa
 | --- | --- | --- |
 | `direction` | `"E"` | Flow direction of the map: a [compass](features/compass.md) point (`N`, `NE`, `E`, `SE`, `S`, `SW`, `W`, `NW`) or `"none"` for the radial layout. |
 | `freezeNodes` | `false` | Stops the idle drift of the stars, see [Freeze nodes](features/settings.md#freeze-nodes). |
+| `zoomButtons` | `false` | Zooms with +/- buttons instead of the wheel, see [Zoom with buttons](features/settings.md#zoom-with-buttons). |
 | `updateCheck` | `true` | Looks for a newer release and prints the [outdated notice](features/update-notice.md). `false` turns off both. |
 | `ghAccount` | `""` | The `gh` account `pull` and Open from GitHub use by default. Empty means the active `gh` account. A GitHub login, see [Choosing the gh account](guide/github-issues.md#choosing-the-gh-account). |
 

@@ -23,6 +23,32 @@ This switch stops that drift.
 Freezing only removes the idle drift.
 The layout is unchanged, and everything else keeps moving: flow particles on edges, the frontier pulse, claimed rings, the undermined halo, status flares, grow-in and the glide to new positions after a live update.
 
+## Zoom with buttons
+
+Scrolling a page that embeds a map is annoying: when the cursor lands on the map, the wheel zooms the map instead of scrolling the page.
+This switch is off by default, so the wheel zooms as usual.
+
+![The Zoom with buttons switch on](../images/zoom-on.png)
+
+Switched on, the wheel stops zooming, and a + and a - button appear in the bottom right corner of the map.
+The hint in the top bar changes to "press +/- to zoom".
+
+![The + and - buttons in the bottom right corner](../images/zoom-buttons.png)
+
+- Pinching on a touch screen or a trackpad still zooms, as do the `+` and `-` keys, so neither needs a button.
+- The buttons sit beside the ticket panel when it is open, and the keys are ignored while you type in a field.
+- It works in the app, `serve` and every [export](export.md), where it is kept in the browser's `localStorage`.
+
+![The hover note for Zoom with buttons](../images/zoom-help.png)
+
+### Overriding it from the address
+
+`?zoom=buttons` on the viewer's address forces the buttons and `?zoom=wheel` forces scroll-zoom, for that page load only.
+It never changes the saved setting, so an embed can choose without touching what a reader picked, which is how the [demo](../demo.md) and the home page embed the map.
+The switch is greyed out while an override is in force.
+
+![The switch greyed out under ?zoom=wheel](../images/zoom-override.png)
+
 ## gh account
 
 The default `gh` account for [`pull`](pull.md) and [Open from GitHub](open-from-github.md).
@@ -54,13 +80,15 @@ Settings live in `settings.json` in the `wayfinder-maps` folder of your user con
 They are kept in a file rather than the browser because app mode picks a random port, which would look like a new site every time.
 A missing or invalid file falls back to the defaults.
 The [compass](compass.md) direction is saved there too, but is set from the compass on the map, not from this menu.
+In a static [export](export.md) there is no server, so Zoom with buttons, Freeze nodes and the compass direction are kept in the browser's `localStorage` instead.
 
 ```json
 {
   "direction": "E",
   "freezeNodes": false,
   "updateCheck": true,
-  "ghAccount": ""
+  "ghAccount": "",
+  "zoomButtons": false
 }
 ```
 
