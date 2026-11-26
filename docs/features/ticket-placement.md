@@ -11,6 +11,11 @@ Its 9th option, no direction (the centre button), switches to a [radial layout](
 - Any other ticket sits one past its deepest blocker.
 - So the longest chain of blockers sets how long the map is.
 
+## Columns narrow with depth
+
+The first gap between columns is 190 wide, each next one is 20 narrower, and none goes below 100.
+So long chains stay compact and fit the screen at a larger zoom.
+
 ## Age nudges it forward
 
 By depth alone, a ticket without blockers sits next to the start, even when it was added weeks into the effort.
@@ -22,16 +27,14 @@ So creation order nudges later tickets toward the goal:
 - A ticket only moves within its slack: the room it has before something it unblocks would have to move.
   So age doesn't stretch the map, except that a map less than 2 columns long can spread to 2.
 - A ticket's column stays at least one past each of its blockers.
+- A ticket that age puts between two columns lands proportionally within that gap.
 
-![One example map in two layouts: by depth only, every ticket without blockers sits in the first column; by depth and age, tickets created later sit further toward the goal while the map keeps its length](../images/ticket-placement-age.png)
+Here is one map in [rengwu's viewer](https://github.com/rengwu/wayfinder-maps), which places tickets on rings by depth alone, and in this fork.
+Tickets 06, 08 and 10 have no blockers and were added later.
+
+![A 10-ticket map in two viewers: rengwu's keeps all tickets without blockers on the inner ring; this fork lays the chain out in narrowing columns and moves the later tickets toward the goal](../images/ticket-placement-compare.png)
 
 The creation time comes from the issue for a map pulled from GitHub (saved as `created:` in the mirrored ticket), else the commit that first added the ticket file, else the file's creation time.
-
-## Columns narrow with depth
-
-The first gap between columns is 190 wide, each next one is 20 narrower, and none goes below 100.
-So long chains stay compact and fit the screen at a larger zoom.
-A ticket that age puts between two columns lands proportionally within that gap.
 
 ## Physics spreads the rest
 
