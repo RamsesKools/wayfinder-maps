@@ -12,7 +12,7 @@ For the short version side by side, see [Fork vs upstream](fork-vs-upstream.md).
 
 - [Start and goal](start-and-goal.md): the map reads as a journey, with the fog gathered in the goal.
 - [Compass](compass.md): point the map in any of 8 directions, or go radial.
-- [Tickets placed by age](age-layout.md): later tickets drift toward the goal.
+- [How tickets are placed](ticket-placement.md): depth and age set the column, and physics spreads the rest.
 - [Settings menu](settings.md): the gear popover with the viewer's toggles.
 - [Export to a static site](export.md): share or embed a map, no install needed to view it.
 - [Narrow screens](narrow-screens.md): stays usable in a narrow window or side panel.

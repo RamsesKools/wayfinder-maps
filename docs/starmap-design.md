@@ -28,7 +28,9 @@ same data, exactly as the first web UI was. Re-read-on-refresh stays. The
 2. **Layout: force-directed, rank-biased, along a chosen direction.** A physics sim
    spreads nodes into an organic constellation, but each node is soft-pulled toward a
    column set by its dependency depth, nudged forward by creation order within its
-   slack (`web/js/columns.js`; ticket ages come from the graph JSON). The sim always runs in a local
+   slack (`web/js/columns.js`; ticket ages come from the graph JSON). Column gaps narrow with
+   depth, from 190 by 20 per column to a floor of 100, so long chains stay compact.
+   The sim always runs in a local
    frame (ranks along +x, tickets of one rank spread along y) and the result is rotated
    to the chosen compass point: E is left to right (default), S top to bottom (suits a
    tall, narrow column), N bottom to top, W right to left, and the diagonals advance

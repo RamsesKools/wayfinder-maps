@@ -6,4 +6,4 @@ The map reads as a journey from where you are to where you are going, with the t
 
 ![The star-map laid out left to right from a start node to a goal cloud holding the fog](../images/demo.png)
 
-The [compass](compass.md) sets which way the journey runs, and [tickets placed by age](age-layout.md) decides how far along it each ticket sits.
+The [compass](compass.md) sets which way the journey runs, and [ticket placement](ticket-placement.md) decides where each ticket sits.
