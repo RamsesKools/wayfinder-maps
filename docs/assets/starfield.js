@@ -137,10 +137,13 @@
   const INTERACTIVE = 'a, button, input, select, textarea, label, summary, details, [role="button"], [tabindex], [class*="overlay"], iframe, img, svg, pre, code, table, kbd, blockquote, hr, .admonition, .highlight';
   const bare = (el) => el instanceof Element && !el.closest(INTERACTIVE) &&
     ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+  const armed = (e) => e.clientX >= innerWidth - CORNER && e.clientY >= innerHeight - CORNER &&
+    bare(e.target) && !still.matches && canvas.style.display !== "none";
+  // A repeat click selects the nearest text, even from blank space.
+  document.addEventListener("mousedown", (e) => { if (e.detail > 1 && armed(e)) e.preventDefault(); });
   let clicks = [];
   document.addEventListener("click", (e) => {
-    const inCorner = e.clientX >= innerWidth - CORNER && e.clientY >= innerHeight - CORNER;
-    if (!inCorner || !bare(e.target) || still.matches || canvas.style.display === "none") { clicks = []; return; }
+    if (!armed(e)) { clicks = []; return; }
     clicks = clicks.filter((t) => e.timeStamp - t < TRIPLE_MS);
     clicks.push(e.timeStamp);
     if (clicks.length >= 3) { clicks = []; if (!shot) startShot(performance.now()); }
