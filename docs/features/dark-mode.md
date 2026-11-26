@@ -33,8 +33,6 @@ In dark mode it is a normal star with a short glowing trail, in light mode a fad
 
 To see one right away, triple-click the bottom right corner of the page, on bare sky (a small spot, not a button).
 Nothing is drawn there, and the click does nothing on text, links, images, code or any other content.
-Clicking there repeatedly selects no text either.
-
 ## Page elements
 
 Headings, body text, links, code, admonitions, tables, images, search and the footer all use a palette from the same tokens in both schemes: ACD blue, sage green and dark teal surfaces, with links turning gold on hover in dark mode.
