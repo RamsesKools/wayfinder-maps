@@ -73,11 +73,13 @@ nav:
   - Install: install.md
   - Configuration: configuration.md
   - Guide:
+      - guide/index.md
       - Usage: guide/usage.md
       - Map format: guide/map-format.md
       - Maps kept as GitHub issues: guide/github-issues.md
   - Features:
       - features/index.md
+      - Fork vs upstream: features/fork-vs-upstream.md
       - Implement tickets: features/implement-tickets.md
       - AFK or HITL frontier: features/afk-hitl.md
       - Start and goal: features/start-and-goal.md

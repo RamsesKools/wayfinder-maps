@@ -10,7 +10,7 @@ A CLI and star-map viewer for [wayfinder](https://github.com/mattpocock/skills/t
 - A CLI for agents, a star map for humans.
 
 Wayfinder, created by [Matt Pocock](https://github.com/mattpocock), charts "an idea whose destination you can name but whose route you cannot yet see" as a map of tickets, resolved one per session, see [his doc](https://github.com/mattpocock/skills/blob/main/docs/engineering/wayfinder.md).
-The CLI and viewer are by John Goh, and this fork extends both so a map carries on into implementation, see [fork vs upstream](docs/features/index.md).
+The CLI and viewer are by John Goh, and this fork extends both so a map carries on into implementation, see [fork vs upstream](docs/features/fork-vs-upstream.md).
 
 Read the full story and try the [live demo](https://wayfinder.ramseskools.nl/) before installing anything.
 

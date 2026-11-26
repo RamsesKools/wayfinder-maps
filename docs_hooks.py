@@ -24,6 +24,17 @@ def on_files(files, config):
     return files
 
 
+def on_page_markdown(markdown, page, config, files):
+    if not (page.is_index and page.parent):
+        return
+    folder = os.path.dirname(page.file.src_uri)
+    for sibling in page.parent.children:
+        if sibling.is_page and sibling is not page:
+            link = os.path.relpath(sibling.file.src_uri, folder)
+            if "](%s)" % link not in markdown:
+                log.warning("%s does not link to %s", page.file.src_uri, link)
+
+
 def on_post_build(config):
     root = os.path.dirname(config.config_file_path)
     if not shutil.which("go"):
