@@ -16,6 +16,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Start and goal in the viewer](start-and-goal.md) | A virtual start and a goal cloud holding the fog |
 | [Compass](compass.md) | The map flows in any of 8 directions or radially |
 | [Tickets placed by age](age-layout.md) | Later tickets drift toward the goal without stretching the map |
+| [Narrower columns on deep maps](age-layout.md#narrower-columns-on-deep-maps) | Column gaps shrink with depth, so long chains fit the screen at a larger zoom |
 | [Settings menu](settings.md) | A gear popover for viewer toggles with hover notes, saved across restarts; Freeze nodes stops the idle drift of the stars, Zoom with buttons swaps scroll-zoom for +/- buttons (handy in embeds), `?zoom=`, `?freeze=` and `?compass=` override the settings per embed, Update check turns the outdated notice on or off, gh account sets the default account for pulls |
 | [`export` to a static site](export.md) | A map as a static, still interactive website to host, share, or embed in a page or presentation, no install needed to view it; the [demo](../demo.md) is one |
 | [Narrow-screen layout](narrow-screens.md) | Wrapping top bar and a status bar that collapses to a corner, its fold tab always beside the compass |

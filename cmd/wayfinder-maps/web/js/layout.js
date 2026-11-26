@@ -10,7 +10,13 @@ import {waves, columns} from "./columns.js";
 function radial() { return S.dir === NONE; }
 
 // A ticket sits in its column from columns.js: dependency depth, nudged forward by age.
-export function colX(rank) { return rank * 190; }
+// Gaps narrow with depth so long chains stay compact; a fractional column interpolates within its gap.
+var COL = 190, COL_STEP = 20, COL_MIN = 100;
+export function colX(rank) {
+  var x = 0;
+  for (var i = 0; i < rank; i++) x += Math.max(COL_MIN, COL - COL_STEP * i) * Math.min(1, rank - i);
+  return x;
+}
 export function ringR(rank) { return 130 + rank * 165; }
 
 // Implement tickets sit in a column past the rightmost decision column.

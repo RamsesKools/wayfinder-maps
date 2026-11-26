@@ -8,10 +8,10 @@ globalThis.document = { getElementById: () => ({ getContext: () => ({}) }) };
 globalThis.innerWidth = 1000;
 globalThis.innerHeight = 700;
 
-let S, layout, relayoutWarm, fitCamera, setupEndpoints, setupFog, D;
+let S, layout, relayoutWarm, fitCamera, colX, setupEndpoints, setupFog, D;
 before(async () => {
   ({ S } = await import("../web/js/state.js"));
-  ({ layout, relayoutWarm, fitCamera } = await import("../web/js/layout.js"));
+  ({ layout, relayoutWarm, fitCamera, colX } = await import("../web/js/layout.js"));
   ({ setupEndpoints } = await import("../web/js/endpoints.js"));
   ({ setupFog } = await import("../web/js/fog.js"));
   D = await import("../web/js/direction.js");
@@ -126,4 +126,32 @@ test("no direction restores the radial layout: rings by rank, no start or goal, 
   const rim = Math.max(...S.nodes.map((n) => Math.hypot(n.x, n.y)));
   assert.equal(S.fogPts.length, 2);
   S.fogPts.forEach((p) => assert.ok(Math.hypot(p.x, p.y) > rim, "fog beyond the outermost ticket"));
+});
+
+function loadChain(dir, length) {
+  const nodes = Array.from({ length }, (_, i) => ({ num: i + 1, blockers: i ? [i] : [], kind: "decision", rank: i }));
+  S.dir = dir;
+  S.graph = { name: "chain", fog: [] };
+  S.nodes = nodes; S.edges = nodes.slice(1).map((n) => ({ from: n.num - 1, to: n.num }));
+  S.byNum = Object.fromEntries(nodes.map((n) => [n.num, n]));
+  layout();
+}
+
+test("a 20-deep chain stays in order in all 8 directions and narrows with depth", () => {
+  for (const d of D.DIRS) {
+    loadChain(d, 20);
+    const f = D.flow(d), proj = (p) => p.x * f.x + p.y * f.y;
+    S.edges.forEach((e) => {
+      assert.ok(proj(S.byNum[e.to]) > proj(S.byNum[e.from]), `${d}: ${e.from} -> ${e.to}`);
+    });
+    // A fixed 190 per column makes this chain about 3600 long.
+    const length = proj(S.byNum[20]) - proj(S.byNum[1]);
+    assert.ok(length < 2500, `${d}: chain is ${Math.round(length)} long`);
+  }
+});
+
+test("column gaps shrink by 20 from 190 to a floor of 100, and fractional columns interpolate", () => {
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7].map(colX), [0, 190, 360, 510, 640, 750, 850, 950]);
+  assert.equal(colX(0.5), 95);
+  assert.equal(colX(1.5), 275);
 });
