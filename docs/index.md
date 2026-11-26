@@ -86,7 +86,7 @@ Keeping implementation on the map also allows for much bigger plans and more amb
 
 </div>
 
-See [fork vs upstream](features/index.md) for everything the fork adds.
+See [fork vs upstream](features/fork-vs-upstream.md) for everything the fork adds.
 
 ## How it works
 

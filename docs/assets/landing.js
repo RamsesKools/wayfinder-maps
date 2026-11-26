@@ -269,19 +269,8 @@
   const pin = root.querySelector(".story__pin");
   const stage = root.querySelector(".story__stage");
   let built = [];
-  let io;
 
   const jump = (i) => chapters[i].scrollIntoView({ behavior: "smooth", block: narrow.matches ? "start" : "center" });
-
-  const observe = () => {
-    if (io) io.disconnect();
-    const h = window.innerHeight;
-    const top = Math.round(h * 0.5);
-    io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) activate(chapters.indexOf(e.target));
-    }, { rootMargin: `-${top}px 0px -${h - top - 2}px 0px` });
-    chapters.forEach((c) => io.observe(c));
-  };
 
   let wideMap = null;
   const activate = (n) => {
@@ -291,12 +280,17 @@
     chapters.forEach((c, i) => c.classList.toggle("is-active", i === n));
   };
 
+  // The active step is the last one whose heading has scrolled above 60% of the viewport.
+  const sync = () => {
+    const line = window.innerHeight * 0.6;
+    activate(Math.max(0, chapters.findLastIndex((c) => c.querySelector("h3").getBoundingClientRect().top < line)));
+  };
+
   const layout = () => {
     built.forEach((b) => b.destroy());
     built = [];
     root.querySelectorAll(".story__card").forEach((c) => c.remove());
     wideMap = null;
-    if (io) io.disconnect();
     if (narrow.matches) {
       chapters.forEach((c, i) => {
         const card = document.createElement("div");
@@ -312,14 +306,13 @@
     } else {
       wideMap = build(stage, jump);
       built.push(wideMap);
-      wideMap.setStep(0);
-      activate(0);
-      observe();
+      sync();
     }
   };
 
   root.classList.add("story--live");
   layout();
   narrow.addEventListener("change", layout);
-  addEventListener("resize", () => !narrow.matches && observe());
+  addEventListener("scroll", sync, { passive: true });
+  addEventListener("resize", sync);
 })();
