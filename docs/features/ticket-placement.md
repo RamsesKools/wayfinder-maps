@@ -3,6 +3,7 @@
 Along the flow, a ticket's place comes from what blocks it and when it was created.
 Across the flow, a small physics simulation spreads the tickets out.
 The examples here flow east, and the [compass](compass.md) can point that flow any of 8 ways.
+Its 9th option, no direction (the centre button), switches to a [radial layout](#radial-layout) with rings instead of columns, and no start or goal.
 
 ## Depth sets the column
 
