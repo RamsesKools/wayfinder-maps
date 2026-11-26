@@ -84,7 +84,7 @@ nav:
       - AFK or HITL frontier: features/afk-hitl.md
       - Start and goal: features/start-and-goal.md
       - Compass: features/compass.md
-      - Tickets placed by age: features/age-layout.md
+      - How tickets are placed: features/ticket-placement.md
       - Settings menu: features/settings.md
       - Export to a static site: features/export.md
       - Narrow screens: features/narrow-screens.md
