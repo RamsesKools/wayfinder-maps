@@ -81,34 +81,28 @@ query($owner: String!, $name: String!) {
 // first within each group), closed ones after.
 func ListMaps(gh Runner, token, repo string) ([]MapInfo, error) {
 	owner, name, _ := strings.Cut(repo, "/")
-	b, err := gh(token, "api", "graphql", "-f", "query="+mapsQuery, "-f", "owner="+owner, "-f", "name="+name)
-	if err != nil {
+	var res struct {
+		Repository struct {
+			Issues struct {
+				Nodes []struct {
+					Number  int    `json:"number"`
+					Title   string `json:"title"`
+					State   string `json:"state"`
+					Summary struct {
+						Total, Completed, PercentCompleted int
+					} `json:"subIssuesSummary"`
+					SubIssues struct {
+						Nodes []labelled `json:"nodes"`
+					} `json:"subIssues"`
+				} `json:"nodes"`
+			} `json:"issues"`
+		} `json:"repository"`
+	}
+	if err := graphql(gh, token, repo, &res, mapsQuery, "-f", "owner="+owner, "-f", "name="+name); err != nil {
 		return nil, err
 	}
-	var res struct {
-		Data struct {
-			Repository struct {
-				Issues struct {
-					Nodes []struct {
-						Number  int    `json:"number"`
-						Title   string `json:"title"`
-						State   string `json:"state"`
-						Summary struct {
-							Total, Completed, PercentCompleted int
-						} `json:"subIssuesSummary"`
-						SubIssues struct {
-							Nodes []labelled `json:"nodes"`
-						} `json:"subIssues"`
-					} `json:"nodes"`
-				} `json:"issues"`
-			} `json:"repository"`
-		} `json:"data"`
-	}
-	if err := json.Unmarshal(b, &res); err != nil {
-		return nil, fmt.Errorf("gh graphql: bad JSON: %v", err)
-	}
 	var open, closed []MapInfo
-	for _, n := range res.Data.Repository.Issues.Nodes {
+	for _, n := range res.Repository.Issues.Nodes {
 		if n.Summary.Total == 0 || !hasWayfinderChild(n.SubIssues.Nodes) {
 			continue
 		}

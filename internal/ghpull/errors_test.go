@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -33,8 +34,8 @@ func TestGHFailuresAreExplained(t *testing.T) {
 		{"gh missing", &GHError{Kind: KindMissing, Endpoint: "user"}, "gh is not installed or not on PATH. Install it from https://cli.github.com"},
 		{"not logged in", &GHError{Kind: KindNoAuth, Endpoint: "user"}, "gh is not logged in. Run: gh auth login"},
 		{"expired", &GHError{Kind: KindForbidden, Status: 401, Endpoint: "x"}, "GitHub rejected gh account 'alice' (HTTP 401)"},
-		{"no access", &GHError{Kind: KindForbidden, Status: 404, Endpoint: "repos/acme/widgets/issues/10"}, "cannot read repos/acme/widgets/issues/10 as gh account 'alice' (HTTP 404)"},
-		{"forbidden", &GHError{Kind: KindForbidden, Status: 403, Endpoint: "repos/acme/widgets/issues/10"}, "(HTTP 403)"},
+		{"no access", &GHError{Kind: KindForbidden, Status: 404, Endpoint: "repos/acme/widgets"}, "cannot read repos/acme/widgets as gh account 'alice' (HTTP 404)"},
+		{"forbidden", &GHError{Kind: KindForbidden, Status: 403, Endpoint: "repos/acme/widgets"}, "(HTTP 403)"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			run := func(token string, args ...string) ([]byte, error) {
@@ -66,7 +67,7 @@ func TestGHMissingOnRefresh(t *testing.T) {
 }
 
 func TestFailedPullKeepsPreviousMirror(t *testing.T) {
-	f := newFakeGH(t, "full")
+	f := fixtures(t)
 	p, _, _ := f.puller(nil)
 	out := filepath.Join(t.TempDir(), "plan", "out")
 	if err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out}); err != nil {
@@ -74,8 +75,10 @@ func TestFailedPullKeepsPreviousMirror(t *testing.T) {
 	}
 	before := readTree(t, out)
 
+	// The second batch fails after the first was written to the staging dir.
+	f.pageSubIssues(5)
 	run := func(token string, args ...string) ([]byte, error) {
-		if strings.HasSuffix(endpointOf(args), "/issues/20/comments") {
+		if slices.Contains(args, "after=c1") {
 			return nil, classify(args, errors.New("exit status 1"), "gh: Resource not accessible (HTTP 403)")
 		}
 		return f.run(token, args...)
@@ -136,5 +139,76 @@ func TestRealGHRunner(t *testing.T) {
 	t.Setenv("PATH", dir)
 	if _, err := GH("", "api", "user"); err == nil || err.(*GHError).Kind != KindNoAuth {
 		t.Errorf("exit 4: %v", err)
+	}
+}
+
+// graphqlFailure is a gh run GraphQL answered with errors: HTTP 200, so
+// stderr carries only GitHub's message.
+func graphqlFailure(args []string, stderr string) error {
+	return classify(args, errors.New("exit status 1"), stderr)
+}
+
+func TestGraphQLFailuresAreExplained(t *testing.T) {
+	const check = " Check the repo name and issue number, and that this account can see the repo; check with: gh auth status"
+	for _, tc := range []struct {
+		name, stderr, want string
+	}{
+		{"unknown repo", "gh: Could not resolve to a Repository with the name 'acme/widgets'.",
+			"cannot read acme/widgets#10 as gh account 'alice': Could not resolve to a Repository with the name 'acme/widgets'." + check},
+		{"unknown issue", "gh: Could not resolve to an Issue with the number of 10.",
+			"cannot read acme/widgets#10 as gh account 'alice': Could not resolve to an Issue with the number of 10." + check},
+		{"integration", "gh: Resource not accessible by integration",
+			"cannot read acme/widgets#10 as gh account 'alice': Resource not accessible by integration." + check},
+		{"SAML", "gh: Resource protected by organization SAML enforcement. You must grant your OAuth token access to this organization.",
+			"You must grant your OAuth token access to this organization." + check},
+		{"scopes", "gh: Your token has not been granted the required scopes to execute this query.",
+			"cannot read acme/widgets#10 as gh account 'alice': Your token has not been granted the required scopes"},
+		{"primary rate limit", "gh: API rate limit exceeded for user ID 1.",
+			"GitHub rate limited gh account 'alice': API rate limit exceeded for user ID 1. Wait and pull again; see the reset time with: gh api rate_limit"},
+		{"secondary rate limit", "gh: You have exceeded a secondary rate limit. Please wait a few minutes before you try again. (HTTP 403)",
+			"GitHub rate limited gh account 'alice': You have exceeded a secondary rate limit."},
+		{"too many requests", "gh: HTTP 429 (HTTP 429)", "GitHub rate limited gh account 'alice'"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			run := func(token string, args ...string) ([]byte, error) {
+				if endpointOf(args) == "user" {
+					return []byte("alice\n"), nil
+				}
+				return nil, graphqlFailure(args, tc.stderr)
+			}
+			pe := pullErr(t, newFakeGH(t, "full"), run, filepath.Join(t.TempDir(), "out"))
+			if pe.Code != 2 || !strings.Contains(pe.Msg, tc.want) {
+				t.Errorf("code %d: %q, want it to contain %q", pe.Code, pe.Msg, tc.want)
+			}
+		})
+	}
+}
+
+func TestOtherGraphQLFailureNamesTheTicket(t *testing.T) {
+	f := fixtures(t)
+	f.pageConn(14, "blockedBy", 1)
+	p, _, _ := f.puller(nil)
+	p.GH = func(token string, args ...string) ([]byte, error) {
+		if slices.Contains(args, "id=I_14") {
+			return nil, graphqlFailure(args, "gh: Something went wrong while executing your query.")
+		}
+		return f.run(token, args...)
+	}
+	out := filepath.Join(t.TempDir(), "out")
+	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out})
+	if want := "gh acme/widgets#14: gh: Something went wrong while executing your query."; err == nil || err.Error() != want {
+		t.Errorf("got %v, want %q", err, want)
+	}
+	if _, err := os.Stat(out); err == nil {
+		t.Error("a partial mirror was swapped in")
+	}
+}
+
+func TestListMapsFailureNamesTheRepo(t *testing.T) {
+	_, err := ListMaps(func(_ string, args ...string) ([]byte, error) {
+		return nil, graphqlFailure(args, "gh: Could not resolve to a Repository with the name 'acme/secret'.")
+	}, "", "acme/secret")
+	if got, want := Explain(err, "").Error(), "cannot read acme/secret as the active gh account: Could not resolve"; !strings.Contains(got, want) {
+		t.Errorf("got %q, want it to contain %q", got, want)
 	}
 }

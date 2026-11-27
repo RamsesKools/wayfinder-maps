@@ -1,0 +1,524 @@
+{
+  "data": {
+    "repository": {
+      "issue": {
+        "title": "Billing Rewrite: Phase 1!",
+        "body": "Rework billing so invoices are final once issued.\n\n## Destination\n\nInvoices never change after issue.\n\n## Tickets\n\n- https://github.com/acme/widgets/11 is the first decision, see https://github.com/acme/widgets/issues/11 and https://github.com/acme/widgets/issues/110.\n- Research lives in https://github.com/acme/widgets/issues/12\n- https://github.com/acme/widgets/issues/13, https://github.com/acme/widgets/issues/14, https://github.com/acme/widgets/issues/15.\n\n## Fog\n\nTax handling is unclear until #12 lands.\n\n\n",
+        "subIssues": {
+          "totalCount": 10,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "id": "I_11",
+              "number": 11,
+              "title": "Should invoices be immutable?",
+              "body": "Decide whether issued invoices can change.\n\nSee also #12.\n",
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "createdAt": "2026-04-01T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:grilling"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "body": "## Outcome\n\nInvoices are immutable.\n\n### Why\n\nAudit. See https://github.com/acme/widgets/issues/12.\n\n#### Deep\n\n###### Six stays\n"
+                  },
+                  {
+                    "body": "Follow-up: confirmed with finance.\n\n"
+                  }
+                ]
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_12",
+              "number": 12,
+              "title": "Survey of payment providers",
+              "body": "Compare providers.",
+              "state": "OPEN",
+              "stateReason": null,
+              "createdAt": "2026-04-02T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": [
+                  {
+                    "login": "alice"
+                  }
+                ]
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:research"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 11
+                  }
+                ]
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_13",
+              "number": 13,
+              "title": "Prototype a credit-note flow",
+              "body": "Try it.",
+              "state": "CLOSED",
+              "stateReason": "NOT_PLANNED",
+              "createdAt": "2026-04-03T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:prototype"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "body": "Dropped, credit notes are out of scope."
+                  }
+                ]
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_14",
+              "number": 14,
+              "title": "Write the migration runbook",
+              "body": "Steps.",
+              "state": "OPEN",
+              "stateReason": null,
+              "createdAt": "2026-04-04T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:task"
+                  },
+                  {
+                    "name": "wayfinder:afk"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 11
+                  },
+                  {
+                    "number": 12
+                  }
+                ]
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_15",
+              "number": 15,
+              "title": "Implement immutable invoice store",
+              "body": "Build it.\n",
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "createdAt": "2026-04-05T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:implement"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "url": "https://github.com/acme/widgets/pull/50",
+                    "merged": false
+                  },
+                  {
+                    "url": "https://github.com/acme/widgets/pull/51",
+                    "merged": true
+                  }
+                ]
+              }
+            },
+            {
+              "id": "I_16",
+              "number": 16,
+              "title": "Implement credit notes",
+              "body": "Build more.",
+              "state": "OPEN",
+              "stateReason": null,
+              "createdAt": "2026-04-06T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": [
+                  {
+                    "login": "bob"
+                  }
+                ]
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:implement"
+                  },
+                  {
+                    "name": "wayfinder:afk"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "url": "https://github.com/acme/widgets/pull/60",
+                    "merged": false
+                  }
+                ]
+              }
+            },
+            {
+              "id": "I_17",
+              "number": 17,
+              "title": "Pick the PDF renderer",
+              "body": "Pick one.",
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "createdAt": "2026-04-07T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_18",
+              "number": 18,
+              "title": "Implement invoice emailing",
+              "body": "Skipped.",
+              "state": "CLOSED",
+              "stateReason": "NOT_PLANNED",
+              "createdAt": "2026-04-08T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:implement"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_19",
+              "number": 19,
+              "title": "\u00c9pique: a rather long ticket title that goes past the fifty character slug limit & more!",
+              "body": "",
+              "state": "OPEN",
+              "stateReason": null,
+              "createdAt": "2026-04-09T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:bogus"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_20",
+              "number": 20,
+              "title": "Implement tax lines",
+              "body": "With words.",
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "createdAt": "2026-04-10T09:00:00Z",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:implement"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "body": "Done, see PR."
+                  }
+                ]
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "url": "https://github.com/acme/widgets/pull/70",
+                    "merged": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

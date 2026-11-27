@@ -14,7 +14,7 @@ It needs the [GitHub CLI](https://cli.github.com), logged in.
 
 ![The repo box with its list of recently active repos open, and a chevron on the right of the box](../images/github-open-repos.png){ width="420" }
 
-![A map opened from the cache straight away, with the top bar showing the Refresh from GitHub button, the gh account and a spinner at 3/11 items while the refresh runs](../images/github-open-cached-refresh.png){ width="720" }
+![A map opened from the cache straight away, with the top bar showing the Refresh from GitHub button, the gh account and a spinner at 51/121 items while the refresh runs](../images/github-open-cached-refresh.png){ width="720" }
 
 ![The splash with the gh account, a pasted repo URL and the map dropdown showing three maps with their percent completed, the closed one dimmed](../images/github-open-pick-map.png){ width="420" }
 
