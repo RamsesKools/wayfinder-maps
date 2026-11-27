@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
 )
 
 // Runner runs `gh <args>` and returns stdout. A non-empty token is passed to
@@ -537,16 +539,35 @@ func (p *Puller) writeTicket(repo, out string, t issue, decisions, implemented, 
 	return link, nil
 }
 
-var headingRE = regexp.MustCompile(`(?m)^(#{1,5}) `)
+var headingRE = regexp.MustCompile(`^#{1,6} `)
 
-// closedAnswer is the ticket's comments, joined, with headings demoted one
-// level so a comment's own heading cannot end the "## Answer" section.
+// demoteHeadings moves a comment's headings to level 3 or lower, keeping their
+// hierarchy, since a "## " line ends the "## Answer" section. Code blocks stay
+// as written.
+func demoteHeadings(comment string) string {
+	raw, scan := wayfinder.SplitScan(comment)
+	by := 1
+	for _, l := range scan {
+		if strings.HasPrefix(l, "# ") {
+			by = 2
+		}
+	}
+	for i, l := range scan {
+		if m := headingRE.FindString(l); m != "" {
+			level := len(m) - 1
+			raw[i] = strings.Repeat("#", min(level+by, 6)) + raw[i][level:]
+		}
+	}
+	return strings.Join(raw, "\n")
+}
+
+// closedAnswer is the ticket's comments, joined, with their headings demoted.
 func closedAnswer(t issue, typ, pr string) string {
 	bodies := make([]string, len(t.Comments.Nodes))
 	for i, c := range t.Comments.Nodes {
-		bodies[i] = c.Body
+		bodies[i] = demoteHeadings(c.Body)
 	}
-	answer := strings.TrimRight(headingRE.ReplaceAllString(strings.Join(bodies, "\n\n---\n\n"), "#$1 "), "\n")
+	answer := strings.TrimRight(strings.Join(bodies, "\n\n---\n\n"), "\n")
 	if answer != "" {
 		return answer
 	}

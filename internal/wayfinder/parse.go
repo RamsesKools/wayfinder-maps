@@ -191,14 +191,14 @@ func fenceRun(line string) string {
 	return ""
 }
 
-// splitScan returns the source's lines, plus a parallel slice in which every
+// SplitScan returns the source's lines, plus a parallel slice in which every
 // line inside a fenced code block — and the fence delimiters themselves — is
 // blank.
 //
 // Structure is detected on the blanked copy and content is read from the
 // original at the same index. A ticket whose Question quotes the ticket format
 // must not resolve itself by containing the string "## Answer".
-func splitScan(src string) (raw, scan []string) {
+func SplitScan(src string) (raw, scan []string) {
 	raw = strings.Split(src, "\n")
 	scan = make([]string, len(raw))
 	open := ""
@@ -341,7 +341,7 @@ func ParseTicket(path, filename, src string) (*Ticket, error) {
 	num, _ := strconv.Atoi(strings.TrimLeft(m[1], "0"))
 
 	t := &Ticket{Num: num, Slug: m[2], Path: path}
-	raw, scan := splitScan(src)
+	raw, scan := SplitScan(src)
 
 	kv, bodyAt, ok := parseFrontmatter(raw)
 	if !ok {
@@ -425,7 +425,7 @@ func decisionsIn(raw, scan []string, name string) []Decision {
 }
 
 func ParseMap(path, src string) *Map {
-	raw, scan := splitScan(src)
+	raw, scan := SplitScan(src)
 	m := &Map{Path: path}
 	m.Name = firstH1(raw, scan, 0)
 	m.Destination = strings.TrimSpace(sectionOf(raw, scan, "Destination"))

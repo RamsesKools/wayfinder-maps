@@ -118,7 +118,9 @@ The viewer shows the same progress, see [Pull from GitHub](../features/pull.md).
 The mapping follows the GitHub adapter in the skill's setup notes.
 Two adjustments make the round trip parse:
 
-- Headings inside a resolve comment are demoted one level, since a comment opening with its own `##` would otherwise end the `## Answer` section before any prose landed and leave the ticket unresolved.
+- Headings inside a resolve comment are demoted, since a comment opening with its own `##` would otherwise end the `## Answer` or `## Ruled out` section before any prose landed and leave the ticket open.
+  They move down one level, or two in a comment with a `#` heading, so none lands above `###` and their hierarchy holds.
+  Code blocks are left as written.
 - The map body's ticket references (issue URLs) are rewritten to `./tickets/NN-<slug>.md`, which is the only form Decisions-so-far is scanned for.
   `## Decisions so far`, `## Implemented so far` and `## Out of scope` are generated only when the map body carries no section of that name.
 
