@@ -20,7 +20,7 @@ A map with no implement tickets reads exactly as it does upstream.
 | [Settings menu](settings.md) | A gear popover for viewer toggles with hover notes, saved across restarts; Freeze nodes stops the idle drift of the stars, Zoom with buttons swaps scroll-zoom for +/- buttons (handy in embeds), `?zoom=`, `?freeze=` and `?compass=` override the settings per embed, Update check turns the outdated notice on or off, gh account sets the default account for pulls |
 | [`export` to a static site](export.md) | A map as a static, still interactive website to host, share, or embed in a page or presentation, no install needed to view it; the [demo](../demo.md) is one |
 | [Narrow-screen layout](narrow-screens.md) | Wrapping top bar and a status bar that collapses to a corner, its fold tab always beside the compass |
-| [`pull` in the binary](pull.md) | GitHub-issue maps mirrored into `.plan/`, fetched in batches of 50 tickets, with account choice and progress |
+| [`pull` in the binary](pull.md) | GitHub-issue maps mirrored into `.plan/`, with account choice and progress. It uses GraphQL to [fetch 50 tickets per query](pull.md#fast-on-large-maps) where upstream's script goes one ticket at a time, which speeds up pulls a lot |
 | [Refresh button](pull.md#refresh-from-the-viewer) | The same pull from the viewer |
 | [Open from GitHub](open-from-github.md) | Find a map in a repo and open it from the splash, with account choice, no `pull` first |
 | [Recent maps](recent-maps.md) | Maps opened from the CLI or the viewer are listed on the splash |
