@@ -1,0 +1,155 @@
+{
+  "data": {
+    "repository": {
+      "issue": {
+        "title": "Store map",
+        "body": "Short map.\n\n## Decisions so far\n\n- [Pick a store](https://github.com/acme/widgets/issues/31)\n\n## Out of scope\n\n- nothing yet\n",
+        "subIssues": {
+          "totalCount": 3,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "id": "I_31",
+              "number": 31,
+              "title": "Pick a store",
+              "body": "",
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:grilling"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "body": "Use sqlite."
+                  }
+                ]
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_32",
+              "number": 32,
+              "title": "Drop the cache",
+              "body": "No.",
+              "state": "CLOSED",
+              "stateReason": "NOT_PLANNED",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:task"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            },
+            {
+              "id": "I_33",
+              "number": 33,
+              "title": "Implement the store",
+              "body": "Do.",
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "updatedAt": "2026-05-02T10:00:00Z",
+              "assignees": {
+                "nodes": []
+              },
+              "labels": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "name": "wayfinder:implement"
+                  }
+                ]
+              },
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              },
+              "closedByPullRequestsReferences": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

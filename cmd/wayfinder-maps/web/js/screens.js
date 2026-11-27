@@ -98,7 +98,7 @@ export function pullFromGithub() {
   var failed = false, finished = false, total = 0;
   btn.disabled = true; setPullStat("run", progressText(0, 0));
   var onEvent = function(ev) {
-    if (ev.event === "progress") { total = ev.data.total; if (live()) setPullStat("run", progressText(ev.data.done, ev.data.total)); }
+    if (ev.event === "progress") { total = ev.data.total; if (live()) setPullStat("run", progressText(ev.data.batch, ev.data.batches)); }
     else if (ev.event === "error") { failed = true; if (live()) setPullStat("err", errText(ev.data.message)); }
     else if (ev.event === "done") finished = true;
   };

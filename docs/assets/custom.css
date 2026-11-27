@@ -483,6 +483,7 @@ html {
     --md-primary-fg-color--dark: var(--sk-blue-hover);
     --md-primary-bg-color: var(--sk-text);
     --md-accent-fg-color: var(--sk-blue-hover);
+    --md-accent-bg-color: var(--sk-bg);
 
     --md-default-bg-color: var(--sk-bg);
     --md-default-fg-color: var(--sk-text);

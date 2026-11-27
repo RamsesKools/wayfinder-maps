@@ -150,9 +150,9 @@ func TestOpeningFromGitHubPullsIntoTheCacheRemembersTheRepoAndStreamsTheResult(t
 	cache := isolateGitHub(t, func(string, ...string) ([]byte, error) { return nil, errBoom })
 	var got ghpull.Options
 	oldOpen := runOpen
-	runOpen = func(o ghpull.Options, progress func(done, total int)) error {
+	runOpen = func(o ghpull.Options, progress func(ghpull.Step)) error {
 		got = o
-		progress(1, 2)
+		progress(ghpull.Step{Done: 1, Total: 2, Batches: 1})
 		fakeMirror(t, cache, "acme/widgets", "Live map", 2)
 		return nil
 	}
@@ -176,7 +176,7 @@ func TestOpeningFromGitHubPullsIntoTheCacheRemembersTheRepoAndStreamsTheResult(t
 func TestOpeningFromGitHubReportsAFailedPullAsAnErrorEventAndRemembersNothing(t *testing.T) {
 	isolateGitHub(t, func(string, ...string) ([]byte, error) { return nil, errBoom })
 	oldOpen := runOpen
-	runOpen = func(ghpull.Options, func(int, int)) error { return errBoom }
+	runOpen = func(ghpull.Options, func(ghpull.Step)) error { return errBoom }
 	t.Cleanup(func() { runOpen = oldOpen })
 
 	rec := call(newServer(""), "POST", "/api/github/open?repo=acme/widgets&map=2&title=x", true)

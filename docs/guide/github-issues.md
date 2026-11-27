@@ -34,8 +34,10 @@ wayfinder-maps pull: gh is not installed or not on PATH. Install it from https:/
 $ wayfinder-maps pull acme/widgets 10      # gh not logged in
 wayfinder-maps pull: gh is not logged in. Run: gh auth login (or set GH_TOKEN)
 $ wayfinder-maps pull acme/secret 10       # no access to the repo or issue
-wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'alice' (HTTP 404). Check the repo name and issue number, and that this account can see the repo; check with: gh auth status
+wayfinder-maps pull: cannot read acme/secret#10 as gh account 'alice': Could not resolve to a Repository with the name 'acme/secret'. Check the repo name and issue number, and that this account can see the repo; check with: gh auth status
 ```
+
+A GitHub [rate limit](https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api) is reported as such, with GitHub's own message; wait and pull again.
 
 These exit with code 2.
 In the viewer the same message shows when a refresh fails.
@@ -80,7 +82,7 @@ Maps pulled before `.source.json` existed need one manual pull to get the file.
 ```
 $ gh auth status | grep -E "account|Active"      # bob is active, alice has access
 $ wayfinder-maps pull acme/secret 10
-wayfinder-maps pull: cannot read repos/acme/secret/issues/10 as gh account 'bob' (HTTP 404). ...
+wayfinder-maps pull: cannot read acme/secret#10 as gh account 'bob': Could not resolve to a Repository with the name 'acme/secret'. ...
 $ wayfinder-maps pull --account ghost acme/secret 10
 wayfinder-maps pull: gh account 'ghost' is not logged in. Run: gh auth login
 $ wayfinder-maps pull --account alice acme/secret 10
@@ -90,27 +92,35 @@ $ wayfinder-maps pull --account alice acme/secret 10
 
 On a terminal, `pull` draws a progress bar with `N/M items` below the per-ticket log.
 Off a terminal (CI, pipes), it prints plain `pulled N/M items` lines instead.
-The total moves: it is 1 until the sub-issues are listed, then the ticket count plus the map issue.
+Tickets are [fetched in batches of 50](../features/pull.md#fast-on-large-maps), and both the per-ticket log and the progress advance a batch at a time.
+The total moves: it is 1 until the first batch is in, then the ticket count plus the map issue.
 `-q`/`--quiet` silences the bar and the lines (the per-ticket log stays).
 
 ![The progress bar on a terminal](../images/pull-cli-tty.png)
 
 ```
-$ wayfinder-maps pull --account alice acme/secret 10 | cat
-  #11  grilling  closed
-pulled 1/6 items
-...
-pulled 6/6 items
+$ wayfinder-maps pull --account alice acme/widgets 100 | cat    # 120 tickets
+  #101  grilling  closed
+  ...
+  #150  implement  closed
+pulled 51/121 items
+  ...
+pulled 101/121 items
+  ...
+pulled 121/121 items
+wayfinder-maps pull: acme/widgets#100 -> .plan/billing-rewrite (120 tickets)
 ```
 
-The viewer shows the same progress, see [Pull from GitHub](../features/pull.md).
+The viewer counts batches instead (`1/3 batches`), see [Pull from GitHub](../features/pull.md).
 
 ## How issues map to tickets
 
 The mapping follows the GitHub adapter in the skill's setup notes.
 Two adjustments make the round trip parse:
 
-- Headings inside a resolve comment are demoted one level, since a comment opening with its own `##` would otherwise end the `## Answer` section before any prose landed and leave the ticket unresolved.
+- Headings inside a resolve comment are demoted, since a comment opening with its own `##` would otherwise end the `## Answer` or `## Ruled out` section before any prose landed and leave the ticket open.
+  They move down one level, or two in a comment with a `#` heading, so none lands above `###` and their hierarchy holds.
+  Code blocks are left as written.
 - The map body's ticket references (issue URLs) are rewritten to `./tickets/NN-<slug>.md`, which is the only form Decisions-so-far is scanned for.
   `## Decisions so far`, `## Implemented so far` and `## Out of scope` are generated only when the map body carries no section of that name.
 

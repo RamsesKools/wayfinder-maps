@@ -14,9 +14,9 @@ export function parseSSE(buf) {
   return {events: events, rest: rest};
 }
 
-// progressText renders "N/M items"; a zero total means not known yet.
-export function progressText(done, total) {
-  return total > 0 ? done + "/" + total + " items" : "starting…";
+// progressText renders "N/M batches"; a zero total means not known yet.
+export function progressText(batch, batches) {
+  return batches > 0 ? batch + "/" + batches + " batches" : "starting…";
 }
 
 // readEvents pumps a fetch Response body through parseSSE, calling onEvent per

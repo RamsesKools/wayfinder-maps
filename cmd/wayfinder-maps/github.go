@@ -21,7 +21,7 @@ var (
 )
 
 // runOpen pulls a map into o.Out in-process, serialised with refresh pulls.
-var runOpen = func(o ghpull.Options, progress func(done, total int)) error {
+var runOpen = func(o ghpull.Options, progress func(ghpull.Step)) error {
 	pullMu.Lock()
 	defer pullMu.Unlock()
 	o.Progress = progress
@@ -104,9 +104,9 @@ func ghError(w http.ResponseWriter, err error, account string) {
 	http.Error(w, err.Error(), code)
 }
 
-// streamSSE runs fn and streams its progress as SSE: "progress" {done,total},
-// then "done" with the data or "error" {message}.
-func streamSSE(w http.ResponseWriter, fn func(progress func(done, total int)) (any, error)) {
+// streamSSE runs fn and streams its progress as SSE: "progress" with a
+// ghpull.Step, then "done" with the data or "error" {message}.
+func streamSSE(w http.ResponseWriter, fn func(progress func(ghpull.Step)) (any, error)) {
 	fl, _ := w.(http.Flusher)
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -117,8 +117,8 @@ func streamSSE(w http.ResponseWriter, fn func(progress func(done, total int)) (a
 			fl.Flush()
 		}
 	}
-	send("progress", map[string]int{"done": 0, "total": 0})
-	data, err := fn(func(done, total int) { send("progress", map[string]int{"done": done, "total": total}) })
+	send("progress", ghpull.Step{})
+	data, err := fn(func(s ghpull.Step) { send("progress", s) })
 	if err != nil {
 		send("error", map[string]string{"message": err.Error()})
 		return
@@ -227,7 +227,7 @@ func registerGitHub(mux *http.ServeMux, writeJSON func(http.ResponseWriter, any)
 			return
 		}
 		out := ghpull.MirrorDir(cache, repo, q.Get("title"), num)
-		streamSSE(w, func(progress func(done, total int)) (any, error) {
+		streamSSE(w, func(progress func(ghpull.Step)) (any, error) {
 			if err := runOpen(ghpull.Options{Repo: repo, Map: num, Out: out, Account: q.Get("account")}, progress); err != nil {
 				return nil, err
 			}

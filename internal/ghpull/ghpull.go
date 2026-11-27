@@ -5,6 +5,7 @@ package ghpull
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
 )
 
 // Runner runs `gh <args>` and returns stdout. A non-empty token is passed to
@@ -68,6 +71,15 @@ func userErr(format string, a ...any) error {
 	return &Error{Code: 2, Msg: fmt.Sprintf(format, a...)}
 }
 
+// Step is how far a pull has come, in mirrored items and fetched batches. Both
+// totals move: they are 1 until the first batch is in.
+type Step struct {
+	Done    int `json:"done"`
+	Total   int `json:"total"`
+	Batch   int `json:"batch"`
+	Batches int `json:"batches"`
+}
+
 // Options selects what to pull. With Refresh, only Out is read and the rest
 // comes from <Out>/.source.json.
 type Options struct {
@@ -78,9 +90,8 @@ type Options struct {
 	// Account pulls as this gh account and records it in .source.json. Empty
 	// keeps the recorded account, then $WAYFINDER_GH_ACCOUNT, then the active one.
 	Account string
-	// Progress, if set, gets (done, total) items as the pull advances. The
-	// total moves: it is 1 until the sub-issues are listed.
-	Progress func(done, total int)
+	// Progress, if set, is called at the start and once per batch.
+	Progress func(Step)
 }
 
 // Puller holds the injectable pieces: the gh runner, the environment, and the
@@ -95,26 +106,43 @@ type Puller struct {
 }
 
 type issue struct {
+	ID          string `json:"id"`
 	Number      int    `json:"number"`
 	Title       string `json:"title"`
 	Body        string `json:"body"`
 	State       string `json:"state"`
-	StateReason string `json:"state_reason"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-	Assignees   []struct {
-		Login string `json:"login"`
+	StateReason string `json:"stateReason"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+	Assignees   struct {
+		Nodes []struct {
+			Login string `json:"login"`
+		} `json:"nodes"`
 	} `json:"assignees"`
-	Labels []struct {
-		Name string `json:"name"`
-	} `json:"labels"`
-	Deps struct {
-		TotalBlockedBy int `json:"total_blocked_by"`
-	} `json:"issue_dependencies_summary"`
+	Labels    conn[label]    `json:"labels"`
+	Comments  conn[comment]  `json:"comments"`
+	BlockedBy conn[blocker]  `json:"blockedBy"`
+	PRs       conn[linkedPR] `json:"closedByPullRequestsReferences"`
+}
+
+type conn[T any] struct {
+	PageInfo struct {
+		HasNextPage bool   `json:"hasNextPage"`
+		EndCursor   string `json:"endCursor"`
+	} `json:"pageInfo"`
+	Nodes []T `json:"nodes"`
+}
+
+type label struct {
+	Name string `json:"name"`
 }
 
 type comment struct {
 	Body string `json:"body"`
+}
+
+type blocker struct {
+	Number int `json:"number"`
 }
 
 type linkedPR struct {
@@ -122,16 +150,154 @@ type linkedPR struct {
 	Merged bool   `json:"merged"`
 }
 
-const prQuery = `
-query($owner: String!, $name: String!, $number: Int!) {
+type mapPage struct {
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	SubIssues struct {
+		TotalCount int `json:"totalCount"`
+		conn[issue]
+	} `json:"subIssues"`
+}
+
+// nested is a paged connection of a ticket.
+type nested struct {
+	name, args, fields string
+	first              int
+}
+
+// A full batch asks for at most 6,100 of the 500,000 nodes GraphQL allows, and
+// stays well clear of its query timeout.
+const ticketBatch = 50
+
+var (
+	labelConn   = nested{name: "labels", fields: "name", first: 20}
+	commentConn = nested{name: "comments", fields: "body", first: 30}
+	// The default order is newest first; this one matches REST.
+	blockerConn = nested{name: "blockedBy", args: ", orderBy: {field: DEPENDENCY_ADDED_AT, direction: ASC}", fields: "number", first: 50}
+	prConn      = nested{name: "closedByPullRequestsReferences", args: ", includeClosedPrs: true", fields: "url merged", first: 20}
+)
+
+const pageInfoFields = "pageInfo { hasNextPage endCursor }"
+
+func (n nested) selection() string {
+	return fmt.Sprintf("%s(first: %d%s) { %s nodes { %s } }", n.name, n.first, n.args, pageInfoFields, n.fields)
+}
+
+var mapQuery = fmt.Sprintf(`query WayfinderMap($owner: String!, $name: String!, $number: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
     issue(number: $number) {
-      closedByPullRequestsReferences(first: 20, includeClosedPrs: true) {
-        nodes { url merged }
+      title body
+      subIssues(first: %d, after: $after) {
+        totalCount %s
+        nodes {
+          id number title body state stateReason(enableDuplicate: true) createdAt updatedAt
+          assignees(first: 1) { nodes { login } }
+          %s
+          %s
+          %s
+          %s
+        }
       }
     }
   }
-}`
+}`, ticketBatch, pageInfoFields, labelConn.selection(), commentConn.selection(), blockerConn.selection(), prConn.selection())
+
+// fetchMap reads one batch of the map's sub-issues, along with the map itself.
+func (p *Puller) fetchMap(token, repo string, num int, after string) (*mapPage, error) {
+	owner, name, _ := strings.Cut(repo, "/")
+	vars := []string{"-f", "owner=" + owner, "-f", "name=" + name, "-F", "number=" + strconv.Itoa(num)}
+	if after != "" {
+		vars = append(vars, "-f", "after="+after)
+	}
+	var res struct {
+		Repository struct {
+			Issue *mapPage `json:"issue"`
+		} `json:"repository"`
+	}
+	subject := fmt.Sprintf("%s#%d", repo, num)
+	if err := graphql(p.GH, token, subject, &res, mapQuery, vars...); err != nil {
+		return nil, err
+	}
+	m := res.Repository.Issue
+	if m == nil {
+		return nil, fmt.Errorf("gh %s: no issue in the response", subject)
+	}
+	// GraphQL enums are upper case; the mirror and the log use lower case.
+	for i := range m.SubIssues.Nodes {
+		t := &m.SubIssues.Nodes[i]
+		t.State, t.StateReason = strings.ToLower(t.State), strings.ToLower(t.StateReason)
+	}
+	return m, nil
+}
+
+const morePageSize = 100
+
+func (n nested) moreQuery() string {
+	return fmt.Sprintf(`query WayfinderMore_%s($id: ID!, $after: String!) {
+  node(id: $id) { ... on Issue { page: %s(first: %d, after: $after%s) { %s nodes { %s } } } }
+}`, n.name, n.name, morePageSize, n.args, pageInfoFields, n.fields)
+}
+
+// drain appends the pages of c that did not fit in the batch.
+func drain[T any](p *Puller, token, subject, id string, n nested, c *conn[T]) error {
+	for c.PageInfo.HasNextPage {
+		var res struct {
+			Node struct {
+				Page *conn[T] `json:"page"`
+			} `json:"node"`
+		}
+		err := graphql(p.GH, token, subject, &res, n.moreQuery(), "-f", "id="+id, "-f", "after="+c.PageInfo.EndCursor)
+		if err != nil {
+			return err
+		}
+		if res.Node.Page == nil {
+			return fmt.Errorf("gh %s: no %s page in the response", subject, n.name)
+		}
+		c.Nodes = append(c.Nodes, res.Node.Page.Nodes...)
+		c.PageInfo = res.Node.Page.PageInfo
+	}
+	return nil
+}
+
+// complete fetches what the mirror needs of the ticket's overflowing connections.
+func (p *Puller) complete(token, repo string, t *issue) error {
+	subject := fmt.Sprintf("%s#%d", repo, t.Number)
+	if err := drain(p, token, subject, t.ID, labelConn, &t.Labels); err != nil {
+		return err
+	}
+	if err := drain(p, token, subject, t.ID, blockerConn, &t.BlockedBy); err != nil {
+		return err
+	}
+	if typ, _ := ticketType(*t); typ == "implement" {
+		if err := drain(p, token, subject, t.ID, prConn, &t.PRs); err != nil {
+			return err
+		}
+	}
+	if t.State == "closed" {
+		return drain(p, token, subject, t.ID, commentConn, &t.Comments)
+	}
+	return nil
+}
+
+// graphql runs a query and decodes its data into v. subject names what is
+// read in errors.
+func graphql(gh Runner, token, subject string, v any, query string, vars ...string) error {
+	b, err := gh(token, append([]string{"api", "graphql", "-f", "query=" + query}, vars...)...)
+	if err != nil {
+		var ge *GHError
+		if errors.As(err, &ge) && ge.Endpoint == "graphql" {
+			ge.Endpoint = subject
+		}
+		return err
+	}
+	res := struct {
+		Data any `json:"data"`
+	}{v}
+	if err := json.Unmarshal(b, &res); err != nil {
+		return fmt.Errorf("gh %s: bad JSON: %v", subject, err)
+	}
+	return nil
+}
 
 // Pull mirrors the map into o.Out. The mirror is built in a staging dir and
 // swapped in at the end, so a failed pull leaves the previous mirror intact.
@@ -152,7 +318,7 @@ func (p *Puller) pull(o Options, who *string) error {
 	var auth, account, token string
 	progress := o.Progress
 	if progress == nil {
-		progress = func(int, int) {}
+		progress = func(Step) {}
 	}
 	if o.Refresh {
 		src, ok := ReadSource(out)
@@ -198,24 +364,17 @@ func (p *Puller) pull(o Options, who *string) error {
 		*who = fmt.Sprintf("gh account '%s'", account)
 	}
 
-	progress(0, 1)
-	var m issue
-	if err := p.getJSON(token, &m, "api", fmt.Sprintf("repos/%s/issues/%d", repo, mapNum)); err != nil {
+	progress(Step{Total: 1, Batches: 1})
+	m, err := p.fetchMap(token, repo, mapNum, "")
+	if err != nil {
 		return err
 	}
 	if out == "" {
 		out = filepath.Join(".plan", Slugify(m.Title))
 	}
-
-	subs, err := getPaged[issue](p, token, fmt.Sprintf("repos/%s/issues/%d/sub_issues", repo, mapNum))
-	if err != nil {
-		return err
-	}
-	if len(subs) == 0 {
+	if len(m.SubIssues.Nodes) == 0 && !m.SubIssues.PageInfo.HasNextPage {
 		return userErr("issue #%d has no sub-issues", mapNum)
 	}
-	total := len(subs) + 1
-	progress(1, total)
 
 	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
 		return err
@@ -235,15 +394,31 @@ func (p *Puller) pull(o Options, who *string) error {
 	var decisions, implemented, outOfScope strings.Builder
 	var rewrites []*regexp.Regexp
 	var rewriteTo []string
-	for i, t := range subs {
-		link, err := p.pullTicket(token, repo, stage, t, &decisions, &implemented, &outOfScope)
-		if err != nil {
+	count := 0
+	for page, batch := m, 1; ; batch++ {
+		for _, t := range page.SubIssues.Nodes {
+			if err := p.complete(token, repo, &t); err != nil {
+				return err
+			}
+			link, err := p.writeTicket(repo, stage, t, &decisions, &implemented, &outOfScope)
+			if err != nil {
+				return err
+			}
+			re := regexp.MustCompile(fmt.Sprintf(`(?m)https://github\.com/%s/issues/%d([^0-9]|$)`, regexp.QuoteMeta(repo), t.Number))
+			rewrites = append(rewrites, re)
+			rewriteTo = append(rewriteTo, link+"${1}")
+			count++
+		}
+		next := page.SubIssues.PageInfo
+		if !next.HasNextPage {
+			progress(Step{Done: count + 1, Total: count + 1, Batch: batch, Batches: batch})
+			break
+		}
+		progress(Step{Done: count + 1, Total: max(page.SubIssues.TotalCount, count+1) + 1,
+			Batch: batch, Batches: max((page.SubIssues.TotalCount+ticketBatch-1)/ticketBatch, batch+1)})
+		if page, err = p.fetchMap(token, repo, mapNum, next.EndCursor); err != nil {
 			return err
 		}
-		re := regexp.MustCompile(fmt.Sprintf(`(?m)https://github\.com/%s/issues/%d([^0-9]|$)`, regexp.QuoteMeta(repo), t.Number))
-		rewrites = append(rewrites, re)
-		rewriteTo = append(rewriteTo, link+"${1}")
-		progress(i+2, total)
 	}
 
 	// The map body is already a wayfinder map; point its issue URLs at the
@@ -290,39 +465,22 @@ func (p *Puller) pull(o Options, who *string) error {
 		return err
 	}
 
-	fmt.Fprintf(p.Stdout, "wayfinder-maps pull: %s#%d -> %s (%d tickets)\n", repo, mapNum, out, len(subs))
+	fmt.Fprintf(p.Stdout, "wayfinder-maps pull: %s#%d -> %s (%d tickets)\n", repo, mapNum, out, count)
 	return nil
 }
 
-// pullTicket writes one ticket file and returns its relative link. It also
+// writeTicket writes one ticket file and returns its relative link. It also
 // files the ticket into the generated map sections.
-func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, implemented, outOfScope *strings.Builder) (string, error) {
+func (p *Puller) writeTicket(repo, out string, t issue, decisions, implemented, outOfScope *strings.Builder) (string, error) {
 	assignee := ""
-	if len(t.Assignees) > 0 {
-		assignee = t.Assignees[0].Login
+	if len(t.Assignees.Nodes) > 0 {
+		assignee = t.Assignees.Nodes[0].Login
 	}
 	typ, afk := ticketType(t)
 
 	pr := ""
 	if typ == "implement" {
-		owner, name, _ := strings.Cut(repo, "/")
-		var res struct {
-			Data struct {
-				Repository struct {
-					Issue struct {
-						Closed struct {
-							Nodes []linkedPR `json:"nodes"`
-						} `json:"closedByPullRequestsReferences"`
-					} `json:"issue"`
-				} `json:"repository"`
-			} `json:"data"`
-		}
-		err := p.getJSON(token, &res, "api", "graphql", "-f", "query="+prQuery,
-			"-f", "owner="+owner, "-f", "name="+name, "-F", "number="+strconv.Itoa(t.Number))
-		if err != nil {
-			return "", err
-		}
-		nodes := res.Data.Repository.Issue.Closed.Nodes
+		nodes := t.PRs.Nodes
 		for i, n := range nodes {
 			if i == 0 {
 				pr = n.URL
@@ -338,14 +496,8 @@ func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, impleme
 	}
 
 	blockedBy := []int{}
-	if t.Deps.TotalBlockedBy != 0 {
-		var blockers []issue
-		if err := p.getJSON(token, &blockers, "api", fmt.Sprintf("repos/%s/issues/%d/dependencies/blocked_by", repo, t.Number)); err != nil {
-			return "", err
-		}
-		for _, b := range blockers {
-			blockedBy = append(blockedBy, b.Number)
-		}
+	for _, b := range t.BlockedBy.Nodes {
+		blockedBy = append(blockedBy, b.Number)
 	}
 	blockedJSON, _ := json.Marshal(blockedBy)
 
@@ -370,10 +522,7 @@ func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, impleme
 	fmt.Fprintf(&f, "---\n\n# %s\n\n%s\n", t.Title, t.Body)
 
 	if t.State == "closed" {
-		answer, err := p.closedAnswer(token, repo, t, typ, pr)
-		if err != nil {
-			return "", err
-		}
+		answer := closedAnswer(t, typ, pr)
 		item := fmt.Sprintf("- [%s](%s)\n", t.Title, link)
 		switch {
 		case t.StateReason == "not_planned":
@@ -399,27 +548,42 @@ func (p *Puller) pullTicket(token, repo, out string, t issue, decisions, impleme
 	return link, nil
 }
 
-var headingRE = regexp.MustCompile(`(?m)^(#{1,5}) `)
+var headingRE = regexp.MustCompile(`^#{1,6} `)
 
-// closedAnswer is the ticket's comments, joined, with headings demoted one
-// level so a comment's own heading cannot end the "## Answer" section.
-func (p *Puller) closedAnswer(token, repo string, t issue, typ, pr string) (string, error) {
-	comments, err := getPaged[comment](p, token, fmt.Sprintf("repos/%s/issues/%d/comments", repo, t.Number))
-	if err != nil {
-		return "", err
+// demoteHeadings moves a comment's headings to level 3 or lower, keeping their
+// hierarchy, since a "## " line ends the "## Answer" section. Code blocks stay
+// as written.
+func demoteHeadings(comment string) string {
+	raw, scan := wayfinder.SplitScan(comment)
+	by := 1
+	for _, l := range scan {
+		if strings.HasPrefix(l, "# ") {
+			by = 2
+		}
 	}
-	bodies := make([]string, len(comments))
-	for i, c := range comments {
-		bodies[i] = c.Body
+	for i, l := range scan {
+		if m := headingRE.FindString(l); m != "" {
+			level := len(m) - 1
+			raw[i] = strings.Repeat("#", min(level+by, 6)) + raw[i][level:]
+		}
 	}
-	answer := strings.TrimRight(headingRE.ReplaceAllString(strings.Join(bodies, "\n\n---\n\n"), "#$1 "), "\n")
+	return strings.Join(raw, "\n")
+}
+
+// closedAnswer is the ticket's comments, joined, with their headings demoted.
+func closedAnswer(t issue, typ, pr string) string {
+	bodies := make([]string, len(t.Comments.Nodes))
+	for i, c := range t.Comments.Nodes {
+		bodies[i] = demoteHeadings(c.Body)
+	}
+	answer := strings.TrimRight(strings.Join(bodies, "\n\n---\n\n"), "\n")
 	if answer != "" {
-		return answer, nil
+		return answer
 	}
 	if typ == "implement" && t.StateReason != "not_planned" && pr != "" {
-		return "Shipped in " + pr + ".", nil
+		return "Shipped in " + pr + "."
 	}
-	return "_Closed on GitHub with no answer comment._", nil
+	return "_Closed on GitHub with no answer comment._"
 }
 
 // ticketType is the first wayfinder:<type> label other than afk; anything
@@ -427,7 +591,7 @@ func (p *Puller) closedAnswer(token, repo string, t issue, typ, pr string) (stri
 func ticketType(t issue) (typ string, afk bool) {
 	typ = "grilling"
 	found := false
-	for _, l := range t.Labels {
+	for _, l := range t.Labels.Nodes {
 		if l.Name == "wayfinder:afk" {
 			afk = true
 			continue
@@ -442,30 +606,6 @@ func ticketType(t issue) (typ string, afk bool) {
 		typ = "grilling"
 	}
 	return typ, afk
-}
-
-func (p *Puller) getJSON(token string, v any, args ...string) error {
-	b, err := p.GH(token, args...)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, v); err != nil {
-		return fmt.Errorf("gh %s: bad JSON: %v", endpointOf(args), err)
-	}
-	return nil
-}
-
-// getPaged fetches every page of a list endpoint and merges them.
-func getPaged[T any](p *Puller, token, endpoint string) ([]T, error) {
-	var pages [][]T
-	if err := p.getJSON(token, &pages, "api", "--paginate", "--slurp", endpoint); err != nil {
-		return nil, err
-	}
-	var all []T
-	for _, pg := range pages {
-		all = append(all, pg...)
-	}
-	return all, nil
 }
 
 var nonSlug = regexp.MustCompile(`[^a-z0-9]+`)

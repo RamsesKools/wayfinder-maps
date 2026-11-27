@@ -19,7 +19,7 @@ For the short version side by side, see [Fork vs upstream](fork-vs-upstream.md).
 
 ## Opening maps
 
-- [Pull from GitHub](pull.md): mirror a map kept as GitHub issues into `.plan/`.
+- [Pull from GitHub](pull.md): mirror a map kept as GitHub issues into `.plan/`, in batches.
 - [Open a map from GitHub](open-from-github.md): open one straight from the splash.
 - [Recent maps](recent-maps.md): get back to maps you opened before.
 

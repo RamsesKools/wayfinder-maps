@@ -27,8 +27,8 @@ func newPuller(gh ghpull.Runner, stdout, stderr io.Writer) *ghpull.Puller {
 }
 
 // runPull re-pulls the effort from GitHub in-process, reusing the gh account
-// recorded in .source.json. progress gets (done, total) as the pull advances.
-var runPull = func(effort string, progress func(done, total int)) error {
+// recorded in .source.json. progress is called as the pull advances.
+var runPull = func(effort string, progress func(ghpull.Step)) error {
 	pullMu.Lock()
 	defer pullMu.Unlock()
 	return newPuller(ghpull.GH, io.Discard, io.Discard).Pull(ghpull.Options{Out: effort, Refresh: true, Progress: progress})
@@ -86,7 +86,7 @@ func pullCmd(args []string, gh ghpull.Runner, stdout, stderr io.Writer) int {
 	if !quiet {
 		pr := ghpull.NewProgress(stdout, ghpull.IsTerminal(stdout))
 		defer pr.Close()
-		o.Progress = pr.Update
+		o.Progress = func(s ghpull.Step) { pr.Update(s.Done, s.Total) }
 		if ghpull.IsTerminal(stdout) {
 			out = pr
 		}

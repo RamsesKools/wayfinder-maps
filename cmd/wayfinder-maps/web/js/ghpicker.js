@@ -155,7 +155,7 @@ function pull(m, ids) {
   return fetch(url, {method: "POST", headers: H.headers}).then(function(r) {
     if (!r.ok) return r.text().then(function(t) { throw new Error(t.trim()); });
     return readEvents(r, function(ev) {
-      if (ev.event === "progress") setStat("run", progressText(ev.data.done, ev.data.total));
+      if (ev.event === "progress") setStat("run", progressText(ev.data.batch, ev.data.batches));
       else if (ev.event === "error") { failed = true; setStat("err", (ev.data.message || "Pull failed")); }
       else if (ev.event === "done") path = ev.data.path;
     });

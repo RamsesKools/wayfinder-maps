@@ -2,11 +2,13 @@ package ghpull
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -46,24 +48,20 @@ func (f *fakeGH) run(token string, args ...string) ([]byte, error) {
 		}
 		return []byte("tok-" + args[3] + "\n"), nil
 	}
-	var endpoint, number string
-	slurp := false
+	vars := map[string]string{}
+	endpoint := ""
 	for i := 1; i < len(args); i++ {
 		switch a := args[i]; {
-		case a == "--slurp":
-			slurp = true
 		case a == "--jq":
 			i++
 		case a == "-f" || a == "-F":
 			i++
-			if v, ok := strings.CutPrefix(args[i], "number="); ok {
-				number = v
-			}
+			k, v, _ := strings.Cut(args[i], "=")
+			vars[k] = v
 		case !strings.HasPrefix(a, "-"):
 			endpoint = a
 		}
 	}
-	var file string
 	switch endpoint {
 	case "user":
 		if f.login == "" {
@@ -71,18 +69,34 @@ func (f *fakeGH) run(token string, args ...string) ([]byte, error) {
 		}
 		return []byte(f.login + "\n"), nil
 	case "graphql":
-		file = "graphql__" + number + ".json"
-	default:
-		file = strings.ReplaceAll(endpoint, "/", "__") + ".json"
+		b, err := os.ReadFile(filepath.Join(f.dir, fixtureName(f.t, vars)))
+		if err != nil {
+			return nil, classify(args, errors.New("exit status 1"), "gh: Could not resolve to a node.")
+		}
+		return b, nil
 	}
-	b, err := os.ReadFile(filepath.Join(f.dir, file))
-	if err != nil {
-		return nil, classify([]string{"api", endpoint}, errors.New("exit status 1"), "gh: Not Found (HTTP 404)")
+	return nil, classify(args, errors.New("exit status 1"), "gh: Not Found (HTTP 404)")
+}
+
+var operationRE = regexp.MustCompile(`^query Wayfinder(Map|More_(\w+))\(`)
+
+// fixtureName maps a query to map__<number>[__<cursor>].json or
+// more__<connection>__<issue id>__<cursor>.json.
+func fixtureName(t *testing.T, vars map[string]string) string {
+	m := operationRE.FindStringSubmatch(vars["query"])
+	if m == nil {
+		t.Fatalf("unknown query: %s", vars["query"])
 	}
-	if slurp {
-		b = append(append([]byte("["), b...), ']')
+	if m[1] != "Map" {
+		return "more__" + m[2] + "__" + vars["id"] + "__" + vars["after"] + ".json"
 	}
-	return b, nil
+	if vars["owner"] != "acme" || vars["name"] != "widgets" {
+		t.Errorf("wrong repo: %s/%s", vars["owner"], vars["name"])
+	}
+	if vars["after"] != "" {
+		return "map__" + vars["number"] + "__" + vars["after"] + ".json"
+	}
+	return "map__" + vars["number"] + ".json"
 }
 
 func (f *fakeGH) puller(env map[string]string) (*Puller, *bytes.Buffer, *bytes.Buffer) {
@@ -253,14 +267,8 @@ func TestUsageAndEmptyMap(t *testing.T) {
 
 	empty := newFakeGH(t, "full")
 	empty.dir = t.TempDir()
-	for name, body := range map[string]string{
-		"repos__acme__widgets__issues__9.json":             `{"number":9,"title":"Empty","body":""}`,
-		"repos__acme__widgets__issues__9__sub_issues.json": `[]`,
-	} {
-		if err := os.WriteFile(filepath.Join(empty.dir, name), []byte(body), 0o644); err != nil {
-			t.Fatal(err)
-		}
-	}
+	empty.save("map__9.json", json.RawMessage(
+		`{"data":{"repository":{"issue":{"title":"Empty","body":"","subIssues":{"totalCount":0,"nodes":[]}}}}}`))
 	p, _, _ = empty.puller(nil)
 	out := filepath.Join(t.TempDir(), "out")
 	err := p.Pull(Options{Repo: "acme/widgets", Map: 9, Out: out})
@@ -272,25 +280,15 @@ func TestUsageAndEmptyMap(t *testing.T) {
 	}
 }
 
-func TestDefaultOutAndPagination(t *testing.T) {
+func TestDefaultOut(t *testing.T) {
 	f := newFakeGH(t, "full")
-	two := func(token string, args ...string) ([]byte, error) {
-		if strings.HasSuffix(args[len(args)-1], "/issues/10/sub_issues") {
-			return []byte(`[[{"number":1,"title":"A","state":"open"}],[{"number":2,"title":"B","state":"open"}]]`), nil
-		}
-		return f.run(token, args...)
-	}
 	p, _, _ := f.puller(nil)
-	p.GH = two
 	t.Chdir(t.TempDir())
 	if err := p.Pull(Options{Repo: "acme/widgets", Map: 10}); err != nil {
 		t.Fatal(err)
 	}
-	tree := readTree(t, filepath.Join(".plan", "billing-rewrite-phase-1"))
-	for _, name := range []string{"tickets/1-a.md", "tickets/2-b.md", "map.md", ".source.json"} {
-		if _, ok := tree[name]; !ok {
-			t.Errorf("missing %s in %v", name, tree)
-		}
+	if _, err := os.Stat(filepath.Join(".plan", "billing-rewrite-phase-1", "map.md")); err != nil {
+		t.Error(err)
 	}
 }
 
@@ -413,19 +411,16 @@ func TestAccountFlagEnvAndStorage(t *testing.T) {
 	})
 }
 
-func TestProgressMovingTotal(t *testing.T) {
+func TestProgressSingleBatch(t *testing.T) {
 	f := newFakeGH(t, "full")
 	p, _, _ := f.puller(nil)
-	var got [][2]int
+	var got []Step
 	out := filepath.Join(t.TempDir(), "out")
-	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Progress: func(d, n int) { got = append(got, [2]int{d, n}) }})
+	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Progress: func(s Step) { got = append(got, s) }})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got) < 4 || got[0] != [2]int{0, 1} || got[1] != [2]int{1, 11} {
-		t.Fatalf("progress = %v", got)
-	}
-	if last := got[len(got)-1]; last != [2]int{11, 11} {
-		t.Errorf("last = %v", last)
+	if want := []Step{{Done: 0, Total: 1, Batch: 0, Batches: 1}, {Done: 11, Total: 11, Batch: 1, Batches: 1}}; !slices.Equal(got, want) {
+		t.Errorf("progress = %v, want %v", got, want)
 	}
 }

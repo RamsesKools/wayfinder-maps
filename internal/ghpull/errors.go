@@ -16,7 +16,8 @@ const (
 	KindOther     Kind = iota
 	KindMissing        // gh is not installed or not on PATH
 	KindNoAuth         // gh has no credentials at all
-	KindForbidden      // HTTP 401, 403 or 404: bad credentials or no access
+	KindForbidden      // bad credentials, no access or not found
+	KindRateLimit      // primary or secondary rate limit
 )
 
 // GHError is a failed gh call. Runners return it so Pull can explain the
@@ -24,7 +25,7 @@ const (
 type GHError struct {
 	Kind     Kind
 	Status   int    // HTTP status, when gh reported one
-	Endpoint string // the API path or "graphql"
+	Endpoint string // what was read: an API path, "owner/repo" or "owner/repo#N"
 	Detail   string // gh's own message, trimmed
 }
 
@@ -35,7 +36,12 @@ func (e *GHError) Error() string {
 	return "gh " + e.Endpoint + ": " + e.Detail
 }
 
-var httpStatusRE = regexp.MustCompile(`\(HTTP (\d{3})\)`)
+var (
+	httpStatusRE = regexp.MustCompile(`\(HTTP (\d{3})\)`)
+	// GraphQL answers HTTP 200, so only the message tells these apart.
+	rateLimitRE = regexp.MustCompile(`(?i)rate limit`)
+	noAccessRE  = regexp.MustCompile(`Could not resolve to an? |Resource not accessible|SAML enforcement|not been granted the required scopes`)
+)
 
 // classify builds a GHError from a failed gh run.
 func classify(args []string, runErr error, stderr string) *GHError {
@@ -54,7 +60,9 @@ func classify(args []string, runErr error, stderr string) *GHError {
 	case e.Kind == KindMissing:
 	case strings.Contains(e.Detail, "gh auth login") || errors.As(runErr, &exit) && exit.ExitCode() == 4:
 		e.Kind = KindNoAuth
-	case e.Status == 401 || e.Status == 403 || e.Status == 404:
+	case e.Status == 429 || rateLimitRE.MatchString(e.Detail):
+		e.Kind = KindRateLimit
+	case e.Status == 401 || e.Status == 403 || e.Status == 404 || noAccessRE.MatchString(e.Detail):
 		e.Kind = KindForbidden
 	}
 	return e
@@ -87,15 +95,24 @@ func explain(err error, who string) error {
 		return userErr("gh is not installed or not on PATH. Install it from https://cli.github.com, then run: gh auth login")
 	case KindNoAuth:
 		return userErr("gh is not logged in. Run: gh auth login (or set GH_TOKEN)")
+	case KindRateLimit:
+		return userErr("GitHub rate limited %s: %s. Wait and pull again; see the reset time with: gh api rate_limit", who, ge.reason())
 	case KindForbidden:
-		switch ge.Status {
-		case 401:
+		if ge.Status == 401 {
 			return userErr("GitHub rejected %s (HTTP 401). The login may have expired; check with: gh auth status", who)
-		default:
-			return userErr("cannot read %s as %s (HTTP %d). Check the repo name and issue number, and that this account can see the repo; check with: gh auth status", ge.Endpoint, who, ge.Status)
 		}
+		why := ": " + ge.reason()
+		if ge.Status != 0 {
+			why = fmt.Sprintf(" (HTTP %d)", ge.Status)
+		}
+		return userErr("cannot read %s as %s%s. Check the repo name and issue number, and that this account can see the repo; check with: gh auth status", ge.Endpoint, who, why)
 	}
 	return fmt.Errorf("%v", ge)
+}
+
+// reason is gh's message, ready to be followed by a full stop.
+func (e *GHError) reason() string {
+	return strings.TrimSuffix(strings.TrimPrefix(e.Detail, "gh: "), ".")
 }
 
 // Explain is explain for callers outside Pull; who names the credentials, e.g.
