@@ -71,6 +71,15 @@ func userErr(format string, a ...any) error {
 	return &Error{Code: 2, Msg: fmt.Sprintf(format, a...)}
 }
 
+// Step is how far a pull has come, in mirrored items and fetched batches. Both
+// totals move: they are 1 until the first batch is in.
+type Step struct {
+	Done    int `json:"done"`
+	Total   int `json:"total"`
+	Batch   int `json:"batch"`
+	Batches int `json:"batches"`
+}
+
 // Options selects what to pull. With Refresh, only Out is read and the rest
 // comes from <Out>/.source.json.
 type Options struct {
@@ -81,9 +90,8 @@ type Options struct {
 	// Account pulls as this gh account and records it in .source.json. Empty
 	// keeps the recorded account, then $WAYFINDER_GH_ACCOUNT, then the active one.
 	Account string
-	// Progress, if set, gets (done, total) items once per batch. The total
-	// moves: it is 1 until the first batch is in.
-	Progress func(done, total int)
+	// Progress, if set, is called at the start and once per batch.
+	Progress func(Step)
 }
 
 // Puller holds the injectable pieces: the gh runner, the environment, and the
@@ -310,7 +318,7 @@ func (p *Puller) pull(o Options, who *string) error {
 	var auth, account, token string
 	progress := o.Progress
 	if progress == nil {
-		progress = func(int, int) {}
+		progress = func(Step) {}
 	}
 	if o.Refresh {
 		src, ok := ReadSource(out)
@@ -356,7 +364,7 @@ func (p *Puller) pull(o Options, who *string) error {
 		*who = fmt.Sprintf("gh account '%s'", account)
 	}
 
-	progress(0, 1)
+	progress(Step{Total: 1, Batches: 1})
 	m, err := p.fetchMap(token, repo, mapNum, "")
 	if err != nil {
 		return err
@@ -387,7 +395,7 @@ func (p *Puller) pull(o Options, who *string) error {
 	var rewrites []*regexp.Regexp
 	var rewriteTo []string
 	count := 0
-	for page := m; ; {
+	for page, batch := m, 1; ; batch++ {
 		for _, t := range page.SubIssues.Nodes {
 			if err := p.complete(token, repo, &t); err != nil {
 				return err
@@ -403,10 +411,11 @@ func (p *Puller) pull(o Options, who *string) error {
 		}
 		next := page.SubIssues.PageInfo
 		if !next.HasNextPage {
-			progress(count+1, count+1)
+			progress(Step{Done: count + 1, Total: count + 1, Batch: batch, Batches: batch})
 			break
 		}
-		progress(count+1, max(page.SubIssues.TotalCount, count+1)+1)
+		progress(Step{Done: count + 1, Total: max(page.SubIssues.TotalCount, count+1) + 1,
+			Batch: batch, Batches: max((page.SubIssues.TotalCount+ticketBatch-1)/ticketBatch, batch+1)})
 		if page, err = p.fetchMap(token, repo, mapNum, next.EndCursor); err != nil {
 			return err
 		}

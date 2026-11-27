@@ -111,7 +111,7 @@ pulled 121/121 items
 wayfinder-maps pull: acme/widgets#100 -> .plan/billing-rewrite (120 tickets)
 ```
 
-The viewer shows the same progress, see [Pull from GitHub](../features/pull.md).
+The viewer counts batches instead (`1/3 batches`), see [Pull from GitHub](../features/pull.md).
 
 ## How issues map to tickets
 

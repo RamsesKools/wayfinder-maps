@@ -107,16 +107,38 @@ func TestPagedSubIssuesKeepOrder(t *testing.T) {
 }
 
 func TestProgressAdvancesOncePerBatch(t *testing.T) {
-	f := fixtures(t)
-	f.pageSubIssues(4, 4)
+	f := newFakeGH(t, "full")
+	f.dir = t.TempDir()
+	// 120 tickets, as GitHub pages them: 50, 50 and 20.
+	for i, size := range []int{50, 50, 20} {
+		nodes := make([]any, size)
+		for j := range nodes {
+			n := 101 + 50*i + j
+			nodes[j] = object{"id": fmt.Sprintf("I_%d", n), "number": n, "title": "T", "state": "OPEN"}
+		}
+		name := "map__10.json"
+		if i > 0 {
+			name = fmt.Sprintf("map__10__c%d.json", i)
+		}
+		f.save(name, object{"data": object{"repository": object{"issue": object{"title": "Big", "subIssues": object{
+			"totalCount": 120, "nodes": nodes,
+			"pageInfo": object{"hasNextPage": i < 2, "endCursor": fmt.Sprintf("c%d", i+1)},
+		}}}}})
+	}
 	p, _, _ := f.puller(nil)
-	var got [][2]int
+	var got []Step
 	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: filepath.Join(t.TempDir(), "out"),
-		Progress: func(d, n int) { got = append(got, [2]int{d, n}) }})
+		Progress: func(s Step) { got = append(got, s) }})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := [][2]int{{0, 1}, {5, 11}, {9, 11}, {11, 11}}; !slices.Equal(got, want) {
+	want := []Step{
+		{Done: 0, Total: 1, Batch: 0, Batches: 1},
+		{Done: 51, Total: 121, Batch: 1, Batches: 3},
+		{Done: 101, Total: 121, Batch: 2, Batches: 3},
+		{Done: 121, Total: 121, Batch: 3, Batches: 3},
+	}
+	if !slices.Equal(got, want) {
 		t.Errorf("progress = %v, want %v", got, want)
 	}
 }

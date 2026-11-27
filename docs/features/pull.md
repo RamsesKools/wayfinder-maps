@@ -28,12 +28,12 @@ batched         tickets 1-50 -> tickets 51-100 -> tickets 101-120
 
 ## Refresh from the viewer
 
-A Refresh from GitHub button in the top bar re-pulls the map and streams progress from the server (server-sent events) as a spinner and `N/M items`, then a done or error state with the message.
+A Refresh from GitHub button in the top bar re-pulls the map and streams progress from the server (server-sent events) as a spinner and `N/M batches`, then the number of items refreshed, or the error message.
 The account in use is shown next to the button.
 
 ![The pull button with the gh account it pulls as](../images/pull-account.png)
 
-![Pull in progress: spinner and 51/121 items](../images/pull-progress.png)
+![Pull in progress: spinner and 1/3 batches](../images/pull-progress.png)
 
 ![Pull finished](../images/pull-done.png)
 

@@ -414,13 +414,13 @@ func TestAccountFlagEnvAndStorage(t *testing.T) {
 func TestProgressSingleBatch(t *testing.T) {
 	f := newFakeGH(t, "full")
 	p, _, _ := f.puller(nil)
-	var got [][2]int
+	var got []Step
 	out := filepath.Join(t.TempDir(), "out")
-	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Progress: func(d, n int) { got = append(got, [2]int{d, n}) }})
+	err := p.Pull(Options{Repo: "acme/widgets", Map: 10, Out: out, Progress: func(s Step) { got = append(got, s) }})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := [][2]int{{0, 1}, {11, 11}}; !slices.Equal(got, want) {
+	if want := []Step{{Done: 0, Total: 1, Batch: 0, Batches: 1}, {Done: 11, Total: 11, Batch: 1, Batches: 1}}; !slices.Equal(got, want) {
 		t.Errorf("progress = %v, want %v", got, want)
 	}
 }

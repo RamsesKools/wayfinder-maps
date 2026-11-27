@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/RamsesKools/wayfinder-maps/internal/ghpull"
 	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
 )
 
@@ -189,7 +190,7 @@ func newServer(initial string) http.Handler {
 	})
 
 	// Re-pull a GitHub-backed effort into .plan/ and stream progress as SSE
-	// ("progress" {done,total}, then "done" or "error" {message}). POST with a
+	// ("progress" {done,total,batch,batches}, then "done" or "error" {message}). POST with a
 	// custom header (forces a CORS preflight), since it pulls from GitHub and
 	// writes files; the viewer then refreshes the map.
 	mux.HandleFunc("/api/pull", func(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +203,7 @@ func newServer(initial string) http.Handler {
 			http.Error(w, "not a GitHub-backed map (no .source.json); run wayfinder-maps pull once", http.StatusBadRequest)
 			return
 		}
-		streamSSE(w, func(progress func(done, total int)) (any, error) {
+		streamSSE(w, func(progress func(ghpull.Step)) (any, error) {
 			return map[string]string{}, runPull(effort, progress)
 		})
 	})

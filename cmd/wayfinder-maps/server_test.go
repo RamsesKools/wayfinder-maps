@@ -12,6 +12,8 @@ import (
 	"testing"
 
 	"github.com/RamsesKools/wayfinder-maps/internal/wayfinder"
+
+	"github.com/RamsesKools/wayfinder-maps/internal/ghpull"
 )
 
 func graphTicket(num int, typ wayfinder.Type, answered bool, pr string, afk bool, blocked ...int) *wayfinder.Ticket {
@@ -142,10 +144,10 @@ func TestPullEndpoint(t *testing.T) {
 	var pulled []string
 	old := runPull
 	var fail error
-	runPull = func(e string, progress func(done, total int)) error {
+	runPull = func(e string, progress func(ghpull.Step)) error {
 		pulled = append(pulled, e)
-		progress(1, 3)
-		progress(2, 4)
+		progress(ghpull.Step{Done: 1, Total: 3, Batches: 1})
+		progress(ghpull.Step{Done: 2, Total: 4, Batch: 1, Batches: 2})
 		return fail
 	}
 	defer func() { runPull = old }()
@@ -171,7 +173,7 @@ func TestPullEndpoint(t *testing.T) {
 	if c := post(dir, true); c != http.StatusOK || len(pulled) != 1 || pulled[0] != dir {
 		t.Errorf("pull: %d %v", c, pulled)
 	}
-	for _, want := range []string{"event: progress\ndata: {\"done\":2,\"total\":4}\n\n", "event: done\n"} {
+	for _, want := range []string{"event: progress\ndata: {\"done\":2,\"total\":4,\"batch\":1,\"batches\":2}\n\n", "event: done\n"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("stream missing %q: %q", want, body)
 		}

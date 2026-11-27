@@ -15,8 +15,8 @@ test("parseSSE tolerates bad data", () => {
   assert.deepEqual(parseSSE("event: error\ndata: nope\n\n").events, [{event: "error", data: {}}]);
 });
 
-test("progressText follows a moving total", () => {
-  assert.equal(progressText(5, 15), "5/15 items");
-  assert.equal(progressText(6, 20), "6/20 items");
+test("progressText counts batches and follows a moving total", () => {
+  assert.equal(progressText(0, 1), "0/1 batches");
+  assert.equal(progressText(2, 3), "2/3 batches");
   assert.equal(progressText(0, 0), "starting…");
 });
